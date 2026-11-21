@@ -3078,9 +3078,33 @@ public class Launcher extends Activity {
             @Override public void onItemClick(AdapterView<?> p, View v, int pos, long id) { dlg.dismiss(); open(f.items.get(pos), v); }
         });
         g.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override public boolean onItemLongClick(AdapterView<?> p, View v, int pos, long id) {
-                dlg.dismiss();
-                startDrag(v, f.items.get(pos), mine ? "hfolder:" + f.key.substring(7) : "drawer", -1);
+            @Override public boolean onItemLongClick(AdapterView<?> p, final View v, int pos, long id) {
+                final App a = f.items.get(pos);
+                if (!mine) { dlg.dismiss(); startDrag(v, a, "drawer", -1); return true; }
+                // in your own folder: say plainly what can happen to the app, rather than relying on a drag
+                final String fid = f.key.substring(7);
+                android.widget.PopupMenu pm = new android.widget.PopupMenu(Launcher.this, v);
+                pm.getMenu().add(0, 1, 0, L.t("Move to home screen"));
+                pm.getMenu().add(0, 2, 1, L.t("Remove from folder"));
+                pm.getMenu().add(0, 3, 2, L.t("Drag to a place"));
+                pm.getMenu().add(0, 4, 3, L.t("App info"));
+                pm.setOnMenuItemClickListener(new android.widget.PopupMenu.OnMenuItemClickListener() {
+                    @Override public boolean onMenuItemClick(android.view.MenuItem it) {
+                        dlg.dismiss();
+                        DragItem d = new DragItem(); d.app = a; d.from = "hfolder:" + fid; d.index = -1;
+                        switch (it.getItemId()) {
+                            case 1: {
+                                HashMap<Integer, String> m = deskItems();
+                                int cell = freeCellNear(m, 0);
+                                if (cell < 0) { Toast.makeText(Launcher.this, L.t("No room left on the home screen"), Toast.LENGTH_SHORT).show(); return true; }
+                                m.put(cell, a.key); saveDesk(m); leftFolder(d); break;
+                            }
+                            case 2: leftFolder(d); Toast.makeText(Launcher.this, L.t("Still in the app list"), Toast.LENGTH_SHORT).show(); break;
+                            case 3: startDrag(v, a, "hfolder:" + fid, -1); break;
+                            case 4: appInfo(a); break;
+                        }
+                        return true; } });
+                pm.show();
                 return true; }
         });
         int rows = (f.items.size() + cols - 1) / cols;

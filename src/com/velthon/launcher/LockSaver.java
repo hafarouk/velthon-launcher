@@ -205,7 +205,18 @@ public class LockSaver extends Activity {
         registerReceiver(unlocked, new IntentFilter(Intent.ACTION_USER_PRESENT));
     }
     @Override protected void onNewIntent(Intent i) { super.onNewIntent(i); clearNote(this); }
-    @Override protected void onResume() { super.onResume(); showing = true; clearNote(this); }
+    /** A phone call always comes first: the moment it rings (or one is going on), step aside for the call screen. */
+    private final Handler calls = new Handler(Looper.getMainLooper());
+    private final Runnable callWatch = new Runnable() { @Override public void run() {
+        if (inCall(LockSaver.this)) { log(LockSaver.this, "call: stepped aside"); finish(); return; }
+        calls.postDelayed(this, 300);
+    } };
+    @Override protected void onResume() {
+        super.onResume(); showing = true; clearNote(this);
+        if (inCall(this)) { finish(); return; }
+        calls.removeCallbacks(callWatch); calls.postDelayed(callWatch, 300);
+    }
+    @Override protected void onPause() { super.onPause(); calls.removeCallbacks(callWatch); }
     @Override protected void onStart() { super.onStart(); showing = true; }
     @Override protected void onStop() {
         super.onStop();
