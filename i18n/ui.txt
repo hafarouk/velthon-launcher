@@ -1,0 +1,231 @@
+Scripture|الكتاب المقدس|Écriture|Escritura|Schrift|Escritura
+What appears on screen and how often|ما يظهر على الشاشة وكم مرة|Ce qui s'affiche et à quelle fréquence|Qué aparece en pantalla y cada cuánto|Was angezeigt wird und wie oft|O que aparece no ecrã e com que frequência
+Atmosphere|الأجواء|Ambiance|Ambiente|Stimmung|Ambiente
+The picture, the season and the window|الصورة والموسم والنافذة|L'image, la saison et la fenêtre|La imagen, la estación y la ventana|Bild, Jahreszeit und Fenster|A imagem, a estação e a janela
+Sound & voice|الصوت والقراءة|Son et voix|Sonido y voz|Ton & Stimme|Som e voz
+Reading the verse aloud|قراءة الآية بصوت عالٍ|Lire le verset à voix haute|Leer el versículo en voz alta|Vers vorlesen|Ler o versículo em voz alta
+Weather & calendar|الطقس والتقويم|Météo et calendrier|Tiempo y calendario|Wetter & Kalender|Tempo e calendário
+Forecast, alerts and church feasts|التوقعات والتنبيهات والأعياد الكنسية|Prévisions, alertes et fêtes|Pronóstico, alertas y fiestas|Vorhersage, Warnungen und Kirchenfeste|Previsão, alertas e festas
+Home screen|الشاشة الرئيسية|Écran d'accueil|Pantalla de inicio|Startbildschirm|Ecrã inicial
+Apps, icons and widgets|التطبيقات والأيقونات والأدوات|Applis, icônes et widgets|Apps, iconos y widgets|Apps, Symbole und Widgets|Apps, ícones e widgets
+Gestures|الإيماءات|Gestes|Gestos|Gesten|Gestos
+Swipe anywhere on the home screen|اسحب في أي مكان على الشاشة الرئيسية|Balayez n'importe où sur l'accueil|Desliza en cualquier parte del inicio|Überall auf dem Startbildschirm wischen|Deslize em qualquer lugar do ecrã inicial
+Screensaver|شاشة التوقف|Économiseur d'écran|Salvapantallas|Bildschirmschoner|Proteção de ecrã
+The window, while the phone rests or charges|النافذة أثناء راحة الهاتف أو شحنه|La fenêtre, pendant le repos ou la charge|La ventana, mientras el teléfono descansa o carga|Das Fenster, während das Telefon ruht oder lädt|A janela, enquanto o telefone descansa ou carrega
+Verse language|لغة الآية|Langue du verset|Idioma del versículo|Sprache des Verses|Idioma do versículo
+Verse changes|تغيير الآية|Changement de verset|Cambio de versículo|Verswechsel|Mudança de versículo
+Verse font|خط الآية|Police du verset|Fuente del versículo|Schrift des Verses|Fonte do versículo
+Next-verse countdown on the home screen|العد التنازلي للآية التالية|Compte à rebours du verset suivant|Cuenta atrás del siguiente versículo|Countdown zum nächsten Vers|Contagem para o próximo versículo
+Verse text size|حجم نص الآية|Taille du verset|Tamaño del versículo|Textgröße des Verses|Tamanho do versículo
+Feast-day verses|آيات الأعياد|Versets des fêtes|Versículos de fiestas|Verse an Festtagen|Versículos de festas
+Season theme|طابع الموسم|Thème de saison|Tema de temporada|Jahreszeit|Tema da estação
+Motion (window depth)|الحركة (عمق النافذة)|Mouvement (profondeur)|Movimiento (profundidad)|Bewegung (Fenstertiefe)|Movimento (profundidade)
+Living weather (rain, snow, sun rays, stars)|طقس حي (مطر، ثلج، أشعة، نجوم)|Météo vivante (pluie, neige, rayons, étoiles)|Tiempo vivo (lluvia, nieve, rayos, estrellas)|Lebendiges Wetter (Regen, Schnee, Sonne, Sterne)|Tempo vivo (chuva, neve, raios, estrelas)
+Animations|الحركات|Animations|Animaciones|Animationen|Animações
+Corner leaves|أوراق الزاوية|Feuilles en coin|Hojas en la esquina|Blätter in der Ecke|Folhas no canto
+Wind|الرياح|Vent|Viento|Wind|Vento
+Night mode|الوضع الليلي|Mode nuit|Modo noche|Nachtmodus|Modo noturno
+Reading speed|سرعة القراءة|Vitesse de lecture|Velocidad de lectura|Lesegeschwindigkeit|Velocidade de leitura
+Temperature|درجة الحرارة|Température|Temperatura|Temperatur|Temperatura
+Weather alerts|تنبيهات الطقس|Alertes météo|Alertas del tiempo|Wetterwarnungen|Alertas meteorológicos
+Church calendar|التقويم الكنسي|Calendrier liturgique|Calendario litúrgico|Kirchenkalender|Calendário litúrgico
+App icons|أيقونات التطبيقات|Icônes des applis|Iconos de apps|App-Symbole|Ícones das apps
+Icon style|نمط الأيقونات|Style des icônes|Estilo de iconos|Symbolstil|Estilo dos ícones
+Columns|الأعمدة|Colonnes|Columnas|Spalten|Colunas
+Phone text size|حجم خط الهاتف|Taille du texte du téléphone|Tamaño de texto del teléfono|Textgröße des Telefons|Tamanho do texto do telefone
+Notification dots|نقاط الإشعارات|Pastilles de notification|Puntos de notificación|App-Punkte|Pontos de notificação
+Swipe up|السحب لأعلى|Balayer vers le haut|Deslizar arriba|Nach oben wischen|Deslizar para cima
+Swipe down|السحب لأسفل|Balayer vers le bas|Deslizar abajo|Nach unten wischen|Deslizar para baixo
+Swipe left|السحب لليسار|Balayer à gauche|Deslizar a la izquierda|Nach links wischen|Deslizar para a esquerda
+Swipe right|السحب لليمين|Balayer à droite|Deslizar a la derecha|Nach rechts wischen|Deslizar para a direita
+Double tap|النقر المزدوج|Double appui|Doble toque|Doppeltippen|Toque duplo
+On the lock screen|على شاشة القفل|Sur l'écran verrouillé|En la pantalla de bloqueo|Auf dem Sperrbildschirm|No ecrã de bloqueio
+Next calendar events under the verse|المواعيد القادمة تحت الآية|Prochains événements sous le verset|Próximos eventos bajo el versículo|Nächste Termine unter dem Vers|Próximos eventos sob o versículo
+Saved verses|الآيات المحفوظة|Versets enregistrés|Versículos guardados|Gespeicherte Verse|Versículos guardados
+Your favourites and all verses|المفضلة وكل الآيات|Vos favoris et tous les versets|Tus favoritos y todos los versículos|Deine Favoriten und alle Verse|Os seus favoritos e todos os versículos
+Reading voice|صوت القراءة|Voix de lecture|Voz de lectura|Vorlesestimme|Voz de leitura
+Choose a natural voice for each language|اختر صوتًا طبيعيًا لكل لغة|Choisissez une voix naturelle par langue|Elige una voz natural para cada idioma|Wähle eine natürliche Stimme je Sprache|Escolha uma voz natural para cada idioma
+Weather city|مدينة الطقس|Ville météo|Ciudad del tiempo|Wetter-Stadt|Cidade do tempo
+Your location|موقعك|Votre position|Tu ubicación|Dein Standort|A sua localização
+Hidden apps|التطبيقات المخفية|Applis masquées|Apps ocultas|Ausgeblendete Apps|Apps ocultas
+Choose apps to keep out of the app list|اختر تطبيقات لإخفائها من القائمة|Choisissez les applis à masquer|Elige apps para ocultar de la lista|Apps aus der Liste ausblenden|Escolha apps a ocultar da lista
+Add a widget|إضافة أداة|Ajouter un widget|Añadir un widget|Widget hinzufügen|Adicionar widget
+Make Velthon my home screen|اجعل Velthon شاشتي الرئيسية|Faire de Velthon mon écran d'accueil|Usar Velthon como pantalla de inicio|Velthon als Startbildschirm|Tornar Velthon o meu ecrã inicial
+Allow full-screen notifications|السماح بإشعارات ملء الشاشة|Autoriser les notifications plein écran|Permitir notificaciones a pantalla completa|Vollbild-Benachrichtigungen erlauben|Permitir notificações em ecrã inteiro
+Needed so the window opens on the lock screen by itself|ضروري لتظهر النافذة على شاشة القفل تلقائيًا|Pour que la fenêtre s'ouvre seule sur l'écran verrouillé|Para que la ventana se abra sola en la pantalla de bloqueo|Damit das Fenster von selbst auf dem Sperrbildschirm erscheint|Para a janela abrir sozinha no ecrã de bloqueio
+Allow it over the lock screen|السماح بالظهور فوق شاشة القفل|L'autoriser sur l'écran verrouillé|Permitir sobre la pantalla de bloqueo|Über dem Sperrbildschirm erlauben|Permitir sobre o ecrã de bloqueio
+Make it my screensaver|اجعلها شاشة التوقف|En faire mon économiseur|Usar como salvapantallas|Als Bildschirmschoner|Usar como proteção de ecrã
+Preview|معاينة|Aperçu|Vista previa|Vorschau|Pré-visualizar
+Launcher settings|إعدادات الواجهة|Réglages du lanceur|Ajustes del lanzador|Launcher-Einstellungen|Definições do launcher
+Settings|الإعدادات|Réglages|Ajustes|Einstellungen|Definições
+Background picture|صورة الخلفية|Image de fond|Imagen de fondo|Hintergrundbild|Imagem de fundo
+Choose a background|اختر خلفية|Choisir un fond|Elegir un fondo|Hintergrund wählen|Escolher um fundo
+From gallery|من المعرض|Depuis la galerie|De la galería|Aus der Galerie|Da galeria
+Live weather sky|سماء الطقس الحي|Ciel météo en direct|Cielo del tiempo en vivo|Live-Wetterhimmel|Céu do tempo ao vivo
+Bible & coffee|الكتاب والقهوة|Bible et café|Biblia y café|Bibel & Kaffee|Bíblia e café
+Candlelight|ضوء الشموع|Bougie|Luz de vela|Kerzenlicht|Luz de vela
+Misty forest|غابة ضبابية|Forêt brumeuse|Bosque brumoso|Nebelwald|Floresta enevoada
+Starry night|ليلة مرصعة بالنجوم|Nuit étoilée|Noche estrellada|Sternennacht|Noite estrelada
+Setting your background…|جارٍ تعيين الخلفية…|Application du fond…|Aplicando el fondo…|Hintergrund wird gesetzt…|A definir o fundo…
+That picture couldn't be opened|تعذّر فتح الصورة|Impossible d'ouvrir l'image|No se pudo abrir la imagen|Bild konnte nicht geöffnet werden|Não foi possível abrir a imagem
+No gallery app found|لا يوجد تطبيق معرض|Aucune galerie trouvée|No hay app de galería|Keine Galerie-App gefunden|Nenhuma galeria encontrada
+Credits|الشكر|Crédits|Créditos|Danksagung|Créditos
+Change it in the phone's Display settings|غيّره من إعدادات العرض في الهاتف|Modifiez-le dans les réglages d'affichage|Cámbialo en los ajustes de pantalla|In den Anzeige-Einstellungen ändern|Altere nas definições de ecrã
+Display over other apps|الظهور فوق التطبيقات الأخرى|Superposition sur d'autres applis|Mostrar sobre otras apps|Über anderen Apps einblenden|Sobrepor a outras apps
+Allowed|مسموح|Autorisé|Permitido|Erlaubt|Permitido
+Arabic|العربية|Arabe|Árabe|Arabisch|Árabe
+English|الإنجليزية|Anglais|Inglés|Englisch|Inglês
+Automatic|تلقائي|Automatique|Automático|Automatisch|Automático
+Automatic (by date)|تلقائي (حسب التاريخ)|Automatique (selon la date)|Automático (según la fecha)|Automatisch (nach Datum)|Automático (pela data)
+Spring|الربيع|Printemps|Primavera|Frühling|Primavera
+Summer|الصيف|Été|Verano|Sommer|Verão
+Autumn|الخريف|Automne|Otoño|Herbst|Outono
+Winter|الشتاء|Hiver|Invierno|Winter|Inverno
+Calm|هادئ|Calme|Calma|Ruhig|Calmo
+Strong|قوي|Fort|Fuerte|Stark|Forte
+Light (recommended)|خفيف (مُستحسن)|Léger (recommandé)|Ligero (recomendado)|Leicht (empfohlen)|Leve (recomendado)
+Off|إيقاف|Désactivé|Desactivado|Aus|Desligado
+On|تشغيل|Activé|Activado|An|Ligado
+Shown|ظاهر|Affiché|Visible|Angezeigt|Visível
+Hidden (more room for apps)|مخفي (مساحة أكبر للتطبيقات)|Masqué (plus de place)|Oculto (más espacio)|Ausgeblendet (mehr Platz)|Oculto (mais espaço)
+Normal|عادي|Normal|Normal|Normal|Normal
+Slow|بطيء|Lent|Lento|Langsam|Lento
+Small|صغير|Petit|Pequeño|Klein|Pequeno
+Smaller|أصغر|Plus petit|Más pequeño|Kleiner|Mais pequeno
+Large|كبير|Grand|Grande|Groß|Grande
+Larger|أكبر|Plus grand|Más grande|Größer|Maior
+Largest|الأكبر|Très grand|Muy grande|Am größten|Muito grande
+Huge|ضخم|Énorme|Enorme|Riesig|Enorme
+Default|افتراضي|Par défaut|Predeterminado|Standard|Predefinido
+Auto fit|ملاءمة تلقائية|Ajustement auto|Ajuste automático|Automatisch|Ajuste automático
+Once a day|مرة يوميًا|Une fois par jour|Una vez al día|Einmal täglich|Uma vez por dia
+Every hour|كل ساعة|Toutes les heures|Cada hora|Stündlich|A cada hora
+Every 30 minutes|كل 30 دقيقة|Toutes les 30 minutes|Cada 30 minutos|Alle 30 Minuten|A cada 30 minutos
+Every 15 minutes|كل 15 دقيقة|Toutes les 15 minutes|Cada 15 minutos|Alle 15 Minuten|A cada 15 minutos
+Every 5 minutes|كل 5 دقائق|Toutes les 5 minutes|Cada 5 minutos|Alle 5 Minuten|A cada 5 minutos
+Classic serif|كلاسيكي|Serif classique|Serif clásica|Klassische Serifen|Serifa clássica
+The phone's font|خط الهاتف|Police du téléphone|Fuente del teléfono|Schrift des Telefons|Fonte do telefone
+The phone's own|إعداد الهاتف|Celle du téléphone|La del teléfono|Die des Telefons|A do telefone
+Celsius (°C)|مئوية (°م)|Celsius (°C)|Celsius (°C)|Celsius (°C)|Celsius (°C)
+Fahrenheit (°F)|فهرنهايت (°ف)|Fahrenheit (°F)|Fahrenheit (°F)|Fahrenheit (°F)|Fahrenheit (°F)
+Coptic Orthodox|القبطي الأرثوذكسي|Copte orthodoxe|Copto ortodoxo|Koptisch-orthodox|Copta ortodoxo
+Catholic|الكاثوليكي|Catholique|Católico|Katholisch|Católico
+Velthon line icons|أيقونات Velthon الخطية|Icônes au trait Velthon|Iconos de línea Velthon|Velthon-Liniensymbole|Ícones de linha Velthon
+Glass (symbol on frosted glass)|زجاجي (رمز على زجاج مثلج)|Verre (symbole sur verre dépoli)|Cristal (símbolo sobre cristal esmerilado)|Glas (Symbol auf Milchglas)|Vidro (símbolo em vidro fosco)
+Classic (full app icon)|كلاسيكي (أيقونة كاملة)|Classique (icône complète)|Clásico (icono completo)|Klassisch (volles Symbol)|Clássico (ícone completo)
+All apps|كل التطبيقات|Toutes les applis|Todas las apps|Alle Apps|Todas as apps
+Search apps|ابحث في التطبيقات|Rechercher des applis|Buscar apps|Apps suchen|Pesquisar apps
+Recent apps & VIP|التطبيقات الأخيرة وVIP|Applis récentes et VIP|Apps recientes y VIP|Letzte Apps & VIP|Apps recentes e VIP
+Coptic calendar|التقويم القبطي|Calendrier copte|Calendario copto|Koptischer Kalender|Calendário copta
+Second home page|الصفحة الرئيسية الثانية|Deuxième page d'accueil|Segunda página de inicio|Zweite Startseite|Segunda página inicial
+Notifications|الإشعارات|Notifications|Notificaciones|Benachrichtigungen|Notificações
+Quick settings|الإعدادات السريعة|Réglages rapides|Ajustes rápidos|Schnelleinstellungen|Definições rápidas
+Verses|الآيات|Versets|Versículos|Verse|Versículos
+Weather|الطقس|Météo|Tiempo|Wetter|Tempo
+Lock the phone|قفل الهاتف|Verrouiller le téléphone|Bloquear el teléfono|Telefon sperren|Bloquear o telefone
+Nothing|لا شيء|Rien|Nada|Nichts|Nada
+Save|حفظ|Enregistrer|Guardar|Speichern|Guardar
+Cancel|إلغاء|Annuler|Cancelar|Abbrechen|Cancelar
+Done|تم|OK|Listo|Fertig|Concluído
+Allow|سماح|Autoriser|Permitir|Erlauben|Permitir
+Not now|ليس الآن|Pas maintenant|Ahora no|Nicht jetzt|Agora não
+Open|فتح|Ouvrir|Abrir|Öffnen|Abrir
+Remove|إزالة|Retirer|Quitar|Entfernen|Remover
+Rename|إعادة تسمية|Renommer|Renombrar|Umbenennen|Mudar o nome
+Share|مشاركة|Partager|Compartir|Teilen|Partilhar
+Listen|استماع|Écouter|Escuchar|Anhören|Ouvir
+Saved|محفوظة|Enregistré|Guardado|Gespeichert|Guardado
+Uninstall|إلغاء التثبيت|Désinstaller|Desinstalar|Deinstallieren|Desinstalar
+App info|معلومات التطبيق|Infos sur l'appli|Info de la app|App-Info|Informações da app
+Shortcut|اختصار|Raccourci|Acceso directo|Verknüpfung|Atalho
+Add to dock|إضافة إلى الشريط|Ajouter au dock|Añadir al dock|Zum Dock hinzufügen|Adicionar à doca
+Add to home screen|إضافة إلى الشاشة الرئيسية|Ajouter à l'accueil|Añadir al inicio|Zum Startbildschirm|Adicionar ao ecrã inicial
+Add to VIP  ★|إضافة إلى VIP  ★|Ajouter aux VIP  ★|Añadir a VIP  ★|Zu VIP hinzufügen  ★|Adicionar a VIP  ★
+Remove from VIP|إزالة من VIP|Retirer des VIP|Quitar de VIP|Aus VIP entfernen|Remover de VIP
+Hide from app list|إخفاء من القائمة|Masquer de la liste|Ocultar de la lista|In der Liste ausblenden|Ocultar da lista
+Hide from the app list|إخفاء من قائمة التطبيقات|Masquer de la liste des applis|Ocultar de la lista de apps|In der App-Liste ausblenden|Ocultar da lista de apps
+Show in app list|إظهار في القائمة|Afficher dans la liste|Mostrar en la lista|In der Liste zeigen|Mostrar na lista
+Add folder to home screen|إضافة المجلد للشاشة الرئيسية|Ajouter le dossier à l'accueil|Añadir carpeta al inicio|Ordner zum Startbildschirm|Adicionar pasta ao ecrã inicial
+Edit widget|تعديل الأداة|Modifier le widget|Editar widget|Widget bearbeiten|Editar widget
+Move or resize|نقل أو تغيير الحجم|Déplacer ou redimensionner|Mover o cambiar tamaño|Verschieben oder Größe ändern|Mover ou redimensionar
+Move up|نقل لأعلى|Monter|Subir|Nach oben|Mover para cima
+Move down|نقل لأسفل|Descendre|Bajar|Nach unten|Mover para baixo
+Remove widget|إزالة الأداة|Retirer le widget|Quitar widget|Widget entfernen|Remover widget
+Remove a widget|إزالة أداة|Retirer un widget|Quitar un widget|Ein Widget entfernen|Remover um widget
+Hide widget background|إخفاء خلفية الأداة|Masquer le fond du widget|Ocultar fondo del widget|Widget-Hintergrund ausblenden|Ocultar fundo do widget
+Show widget background|إظهار خلفية الأداة|Afficher le fond du widget|Mostrar fondo del widget|Widget-Hintergrund zeigen|Mostrar fundo do widget
+Home screen settings|إعدادات الشاشة الرئيسية|Réglages de l'accueil|Ajustes del inicio|Startbildschirm-Einstellungen|Definições do ecrã inicial
+Next verse|الآية التالية|Verset suivant|Siguiente versículo|Nächster Vers|Próximo versículo
+Share verse|مشاركة الآية|Partager le verset|Compartir versículo|Vers teilen|Partilhar versículo
+Remove from saved|إزالة من المحفوظات|Retirer des enregistrés|Quitar de guardados|Aus Gespeicherten entfernen|Remover dos guardados
+Widget|أداة|Widget|Widget|Widget|Widget
+Small (1 row)|صغير (صف)|Petit (1 ligne)|Pequeño (1 fila)|Klein (1 Reihe)|Pequeno (1 linha)
+Medium (2 rows)|متوسط (صفان)|Moyen (2 lignes)|Mediano (2 filas)|Mittel (2 Reihen)|Médio (2 linhas)
+Large (3 rows)|كبير (3 صفوف)|Grand (3 lignes)|Grande (3 filas)|Groß (3 Reihen)|Grande (3 linhas)
+Extra large (4 rows)|كبير جدًا (4 صفوف)|Très grand (4 lignes)|Extra grande (4 filas)|Sehr groß (4 Reihen)|Muito grande (4 linhas)
+Medium|متوسط|Moyen|Mediano|Mittel|Médio
+Extra large|كبير جدًا|Très grand|Extra grande|Sehr groß|Muito grande
+Folder|مجلد|Dossier|Carpeta|Ordner|Pasta
+Folders|المجلدات|Dossiers|Carpetas|Ordner|Pastas
+Folder name|اسم المجلد|Nom du dossier|Nombre de la carpeta|Ordnername|Nome da pasta
+Original name|الاسم الأصلي|Nom d'origine|Nombre original|Ursprünglicher Name|Nome original
+Folders stay on the home screen|تبقى المجلدات على الشاشة الرئيسية|Les dossiers restent sur l'accueil|Las carpetas quedan en el inicio|Ordner bleiben auf dem Startbildschirm|As pastas ficam no ecrã inicial
+Open the folder to see its apps|افتح المجلد لرؤية تطبيقاته|Ouvrez le dossier pour voir ses applis|Abre la carpeta para ver sus apps|Ordner öffnen, um Apps zu sehen|Abra a pasta para ver as apps
+Recently used|المستخدمة مؤخرًا|Utilisées récemment|Usadas recientemente|Zuletzt verwendet|Usadas recentemente
+Apps you open will show here.|ستظهر هنا التطبيقات التي تفتحها.|Les applis ouvertes apparaîtront ici.|Las apps que abras aparecerán aquí.|Geöffnete Apps erscheinen hier.|As apps que abrir aparecem aqui.
+Swipe up or tap outside to close|اسحب لأعلى أو انقر خارجًا للإغلاق|Balayez vers le haut ou touchez à côté pour fermer|Desliza arriba o toca fuera para cerrar|Nach oben wischen oder außerhalb tippen|Deslize para cima ou toque fora para fechar
+Saint of the day|قديس اليوم|Saint du jour|Santo del día|Heiliger des Tages|Santo do dia
+No room left on the home screen|لا توجد مساحة على الشاشة الرئيسية|Plus de place sur l'accueil|No queda espacio en el inicio|Kein Platz mehr auf dem Startbildschirm|Sem espaço no ecrã inicial
+No widgets are installed.|لا توجد أدوات مثبتة.|Aucun widget installé.|No hay widgets instalados.|Keine Widgets installiert.|Nenhum widget instalado.
+This widget has no settings|هذه الأداة بلا إعدادات|Ce widget n'a pas de réglages|Este widget no tiene ajustes|Dieses Widget hat keine Einstellungen|Este widget não tem definições
+Drag up to 6 apps here|اسحب حتى 6 تطبيقات هنا|Glissez jusqu'à 6 applis ici|Arrastra hasta 6 apps aquí|Bis zu 6 Apps hierher ziehen|Arraste até 6 apps para aqui
+Can't open that shortcut|تعذّر فتح الاختصار|Impossible d'ouvrir ce raccourci|No se puede abrir el acceso|Verknüpfung kann nicht geöffnet werden|Não é possível abrir o atalho
+Drag to move  ·  dots to resize  ·  tap outside when done|اسحب للنقل  ·  النقاط لتغيير الحجم  ·  انقر خارجًا للإنهاء|Glissez pour déplacer  ·  points pour redimensionner  ·  touchez à côté pour finir|Arrastra para mover  ·  puntos para redimensionar  ·  toca fuera al terminar|Ziehen zum Verschieben  ·  Punkte zum Ändern  ·  außerhalb tippen|Arraste para mover  ·  pontos para redimensionar  ·  toque fora para terminar
+Tap a widget to add it. Later, hold it on the home screen to edit, resize, move or remove it.|انقر على أداة لإضافتها، ثم اضغط عليها مطولًا لتعديلها أو نقلها أو إزالتها.|Touchez un widget pour l'ajouter. Maintenez-le ensuite pour le modifier, déplacer ou retirer.|Toca un widget para añadirlo. Luego mantenlo pulsado para editarlo, moverlo o quitarlo.|Tippe auf ein Widget, um es hinzuzufügen. Später gedrückt halten zum Bearbeiten.|Toque num widget para adicionar. Depois mantenha premido para editar, mover ou remover.
+Today|اليوم|Aujourd'hui|Hoy|Heute|Hoje
+Tomorrow|غدًا|Demain|Mañana|Morgen|Amanhã
+Faith|الإيمان|Foi|Fe|Glaube|Fé
+Communication|التواصل|Communication|Comunicación|Kommunikation|Comunicação
+Social|اجتماعي|Réseaux sociaux|Social|Soziale Netzwerke|Social
+Internet|الإنترنت|Internet|Internet|Internet|Internet
+Photos & Video|الصور والفيديو|Photos et vidéos|Fotos y vídeo|Fotos & Video|Fotos e vídeo
+Music & Audio|الموسيقى والصوت|Musique et audio|Música y audio|Musik & Audio|Música e áudio
+Games|الألعاب|Jeux|Juegos|Spiele|Jogos
+News & Reading|الأخبار والقراءة|Actualités et lecture|Noticias y lectura|Nachrichten & Lesen|Notícias e leitura
+Productivity|الإنتاجية|Productivité|Productividad|Produktivität|Produtividade
+Travel & Maps|السفر والخرائط|Voyage et cartes|Viajes y mapas|Reisen & Karten|Viagens e mapas
+Shopping|التسوق|Shopping|Compras|Shopping|Compras
+Finance|المال|Finance|Finanzas|Finanzen|Finanças
+Health & Fitness|الصحة واللياقة|Santé et forme|Salud y ejercicio|Gesundheit & Fitness|Saúde e fitness
+Tools|الأدوات|Outils|Herramientas|Tools|Ferramentas
+Up next|التالي|À venir|A continuación|Als Nächstes|A seguir
+Lock screen|شاشة القفل|Écran de verrouillage|Pantalla de bloqueo|Sperrbildschirm|Ecrã de bloqueio
+The window on your lock screen|النافذة على شاشة القفل|La fenêtre sur votre écran verrouillé|La ventana en tu pantalla de bloqueo|Das Fenster auf dem Sperrbildschirm|A janela no ecrã de bloqueio
+Tap to unlock|انقر لإلغاء القفل|Touchez pour déverrouiller|Toca para desbloquear|Zum Entsperren tippen|Toque para desbloquear
+Tap to unlock with your face|انقر لإلغاء القفل بوجهك|Touchez pour déverrouiller avec le visage|Toca para desbloquear con tu cara|Tippen, mit Gesicht entsperren|Toque para desbloquear com o rosto
+Touch to unlock with your fingerprint|المس لإلغاء القفل ببصمتك|Touchez pour déverrouiller avec l'empreinte|Toca para desbloquear con tu huella|Mit Fingerabdruck entsperren|Toque para desbloquear com a impressão digital
+Also remembered today|نتذكر اليوم أيضًا|Également commémorés aujourd'hui|También se recuerda hoy|Heute ebenfalls gedacht|Também lembrados hoje
+Every Coptic month|كل شهر قبطي|Chaque mois copte|Cada mes copto|Jeden koptischen Monat|Todos os meses coptas
+Feasts and fasts ahead|الأعياد والأصوام القادمة|Fêtes et jeûnes à venir|Fiestas y ayunos próximos|Kommende Feste und Fasten|Festas e jejuns próximos
+Loading the Synaxarium…|جارٍ تحميل السنكسار…|Chargement du Synaxaire…|Cargando el Sinaxario…|Synaxarion wird geladen…|A carregar o Sinaxário…
+Read today's Synaxarium  ›|اقرأ سنكسار اليوم  ›|Lire le Synaxaire du jour  ›|Leer el Sinaxario de hoy  ›|Heutiges Synaxarion lesen  ›|Ler o Sinaxário de hoje  ›
+Synaxarium: CopticChurch.net|السنكسار: CopticChurch.net|Synaxaire : CopticChurch.net|Sinaxario: CopticChurch.net|Synaxarion: CopticChurch.net|Sinaxário: CopticChurch.net
+Event|موعد|Événement|Evento|Termin|Evento
+Clear|صافٍ|Dégagé|Despejado|Klar|Limpo
+Cloudy|غائم|Nuageux|Nublado|Bewölkt|Nublado
+Partly cloudy|غائم جزئيًا|Partiellement nuageux|Parcialmente nublado|Teilweise bewölkt|Parcialmente nublado
+Drizzle|رذاذ|Bruine|Llovizna|Nieselregen|Chuvisco
+Fog|ضباب|Brouillard|Niebla|Nebel|Nevoeiro
+Rain|مطر|Pluie|Lluvia|Regen|Chuva
+Showers|زخات|Averses|Chubascos|Schauer|Aguaceiros
+Snow|ثلج|Neige|Nieve|Schnee|Neve
+Snow showers|زخات ثلجية|Averses de neige|Chubascos de nieve|Schneeschauer|Aguaceiros de neve
+Thunderstorm|عاصفة رعدية|Orage|Tormenta|Gewitter|Trovoada
+Thunderstorms|عواصف رعدية|Orages|Tormentas|Gewitter|Trovoadas
+Heavy rain|أمطار غزيرة|Fortes pluies|Lluvia intensa|Starkregen|Chuva forte
+Heavy snow|ثلوج كثيفة|Fortes chutes de neige|Nevada intensa|Starker Schneefall|Neve forte
+Freezing rain|أمطار متجمدة|Pluie verglaçante|Lluvia helada|Eisregen|Chuva gelada
+Freezing fog|ضباب متجمد|Brouillard givrant|Niebla helada|Gefrierender Nebel|Nevoeiro gelado
+Strong wind gusts|هبات رياح قوية|Fortes rafales|Rachas fuertes|Starke Windböen|Rajadas fortes
+Extreme heat|حر شديد|Chaleur extrême|Calor extremo|Extreme Hitze|Calor extremo
+Extreme cold|برد شديد|Froid extrême|Frío extremo|Extreme Kälte|Frio extremo

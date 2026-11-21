@@ -1,0 +1,10 @@
+build/
+app/smali/
+app/build/
+*.apk
+*.jks
+*.p12
+*.keystore
+keystore-password.txt
+test/rec/
+apktool.jar

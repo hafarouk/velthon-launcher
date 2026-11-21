@@ -1,0 +1,136 @@
+set -x
+mkdir -p rec
+P=com.velthon.launcher
+adb wait-for-device
+until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do sleep 2; done
+adb shell settings put global package_verifier_enable 0
+adb install -r -g app.apk > rec/install.txt 2>&1
+adb logcat -c
+adb shell am start -a android.intent.action.SET_ALARM --ei android.intent.extra.alarm.HOUR 6 --ei android.intent.extra.alarm.MINUTES 45 --ez android.intent.extra.alarm.SKIP_UI true; sleep 3
+# two calendar events for the lock screen
+adb shell "content insert --uri 'content://com.android.calendar/calendars?caller_is_syncadapter=true&account_name=v&account_type=LOCAL' --bind account_name:s:v --bind account_type:s:LOCAL --bind name:s:v --bind calendar_displayName:s:Velthon --bind calendar_access_level:i:700 --bind ownerAccount:s:v --bind visible:i:1 --bind sync_events:i:1 --bind calendar_color:i:-16776961"
+adb shell content query --uri content://com.android.calendar/calendars --projection _id:name > rec/cals.txt 2>&1
+NOW=$(adb shell date +%s | tr -d '\r')
+T1=$(( (NOW + 7200) * 1000 )); T2=$(( (NOW + 10800) * 1000 )); T3=$(( (NOW + 90000) * 1000 )); T4=$(( (NOW + 93600) * 1000 ))
+adb shell content insert --uri content://com.android.calendar/events --bind calendar_id:i:1 --bind title:s:"'Bible study at St. Mark'" --bind dtstart:l:$T1 --bind dtend:l:$T2 --bind eventTimezone:s:UTC
+adb shell content insert --uri content://com.android.calendar/events --bind calendar_id:i:1 --bind title:s:"'Divine Liturgy'" --bind dtstart:l:$T3 --bind dtend:l:$T4 --bind eventTimezone:s:UTC
+T5=$(( (NOW - 1800) * 1000 )); T6=$(( (NOW + 3600) * 1000 ))
+adb shell content insert --uri content://com.android.calendar/events --bind calendar_id:i:1 --bind title:s:"'Prayer meeting'" --bind dtstart:l:$T5 --bind dtend:l:$T6 --bind eventTimezone:s:UTC
+adb shell content query --uri content://com.android.calendar/events --projection title:dtstart > rec/events.txt 2>&1
+adb shell cmd package set-home-activity $P/.Launcher
+adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME
+sleep 15
+adb exec-out screencap -p > rec/01_home.png
+# tilt the phone: the sky should move more than the sill
+adb emu sensor set acceleration 0:9.81:0; sleep 2
+true
+adb emu sensor set acceleration 4.5:8.7:3; sleep 2; adb exec-out screencap -p > rec/02_tilted.png
+true
+adb emu sensor set acceleration 0:9.81:0; sleep 1
+dump() { adb shell uiautomator dump /sdcard/s.xml >/dev/null 2>&1; adb pull /sdcard/s.xml rec/s.xml >/dev/null 2>&1; }
+centerp() { grep -o "text=\"[^\"]*$1[^\"]*\"[^>]*bounds=\"[^\"]*\"" rec/s.xml | head -1 | sed 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]"/\1 \2 \3 \4/' | awk '{print int(($1+$3)/2), int(($2+$4)/2)}'; }
+center() { grep -o "text=\"$1\"[^>]*bounds=\"[^\"]*\"" rec/s.xml | head -1 | sed 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]"/\1 \2 \3 \4/' | awk '{print int(($1+$3)/2), int(($2+$4)/2)}'; }
+# put Clock, Calculator and a folder (Settings + Contacts + Files) on the home screen via the saved settings
+adb root >/dev/null 2>&1; sleep 3
+F=/data/data/$P/shared_prefs/velthon.xml
+adb shell am force-stop $P; sleep 1
+adb shell cat $F > rec/prefs.xml
+adb shell cmd package query-activities -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --components > rec/acts.txt 2>&1
+python3 - <<'PY'
+import re
+s=open('rec/prefs.xml').read()
+acts=[l.strip() for l in open('rec/acts.txt') if '/' in l]
+def key(pkgpart):
+    for a in acts:
+        if pkgpart in a:
+            p,c=a.split('/'); c=p+c if c.startswith('.') else c
+            return p+'/'+c
+    return None
+k={n:key(n) for n in ['deskclock','settings/','contacts','documentsui','camera2']}
+print(k)
+fold='\u0001'.join(['77','Tools',','.join(x for x in [k['contacts'],k['documentsui'],k['camera2']] if x)])
+desk='0=folder:77;1=%s;2=%s;3=%s;4=%s'%(k['deskclock'],k['settings/'],k['contacts'],k['documentsui'])
+s=re.sub(r'<string name="(desk|hfolders|widgets)">[^<]*</string>','',s)
+s=s.replace('</map>','<string name="desk">'+desk+'</string>\n<string name="hfolders">'+fold+'</string>\n</map>')
+open('rec/prefs_new.xml','w').write(s)
+PY
+adb push rec/prefs_new.xml /data/local/tmp/v.xml >/dev/null; adb shell "cat /data/local/tmp/v.xml > $F"
+adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME; sleep 8
+adb exec-out screencap -p > rec/70_home_items.png; adb shell uiautomator dump /sdcard/h.xml >/dev/null 2>&1; adb pull /sdcard/h.xml rec/home.xml >/dev/null 2>&1; adb shell cat $F > rec/prefs_after.xml
+# v3.5: gestures, page 2, Coptic page, recent/VIP panel, app list, widget move, text size
+shot() { adb exec-out screencap -p > rec/$1.png; }
+adb shell input swipe 200 1300 900 1310 250; sleep 3; shot 10_page2
+adb shell input swipe 900 1300 200 1310 250; sleep 3; shot 11_back_page1
+adb shell input swipe 900 1300 200 1310 250; sleep 9; shot 12_church
+dump; cp rec/s.xml rec/church.xml
+adb shell input swipe 300 900 300 1400 300; sleep 2; shot 12b_church_scrolled
+adb shell input keyevent KEYCODE_BACK; sleep 2
+adb shell input swipe 540 1000 540 1700 250; sleep 2; shot 13_quick
+adb shell input swipe 540 1500 540 600 250; sleep 2
+adb shell input swipe 540 1700 540 800 250; sleep 3; shot 14_search
+adb shell input keyevent KEYCODE_BACK; sleep 2; shot 15_drawer
+dump; cp rec/s.xml rec/drawer.xml
+c=$(grep -o 'content-desc="Calendar"[^>]*bounds="[^"]*"' rec/s.xml | head -1 | sed 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]"/\1 \2 \3 \4/' | awk '{print int(($1+$3)/2), int(($2+$4)/2)}'); [ -z "$c" ] && c=$(center "Calendar")
+if [ -n "$c" ]; then set -- $c; adb shell input motionevent DOWN $1 $2; sleep 1.2; adb shell input motionevent UP $1 $2; sleep 2; shot 16_app_menu
+  dump; c2=$(centerp "Add to VIP"); [ -n "$c2" ] && adb shell input tap $c2; sleep 2; fi
+adb shell input swipe 900 1700 200 1710 250; sleep 2; shot 17_drawer_next_cat
+adb shell input swipe 900 1700 200 1710 250; sleep 2; shot 18_drawer_next_cat2
+adb shell input keyevent KEYCODE_HOME; sleep 2
+adb shell input swipe 540 1000 540 1700 250; sleep 2; shot 19_quick_with_vip
+adb shell input keyevent KEYCODE_BACK; sleep 1
+# the phone's text size
+adb shell appops set $P WRITE_SETTINGS allow
+adb shell settings put system font_scale 1.3; sleep 6; adb shell input keyevent KEYCODE_HOME; sleep 3; shot 26_font_large
+adb shell settings put system font_scale 1.0; sleep 4
+# living weather: tap the sky, then rain, snow, storm
+adb shell input keyevent KEYCODE_HOME; sleep 2; shot 30_sun_a; sleep 1; shot 30_sun_b
+adb shell input tap 540 330; sleep .5; shot 31_poke
+for code in 63 73 95; do
+  adb shell am force-stop $P; sleep 1
+  adb shell "sed -i -e 's/<int name=\"wx_code\" value=\"[0-9]*\"/<int name=\"wx_code\" value=\"'$code'\"/' $F"
+  adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME; sleep 7; shot 32_wx_$code
+  adb shell input tap 540 330; sleep .4; shot 33_poke_$code
+done
+# a clear night with the moon (the location moved to where it is night now)
+adb shell am force-stop $P; sleep 1
+adb shell "sed -i -e 's/<int name=\"wx_code\" value=\"[0-9]*\"/<int name=\"wx_code\" value=\"0\"/' -e 's/<long name=\"lat\" value=\"[-0-9]*\"/<long name=\"lat\" value=\"4629137466983448576\"/' -e 's/<long name=\"lon\" value=\"[-0-9]*\"/<long name=\"lon\" value=\"4636033603912859648\"/' $F"
+adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME; sleep 8; shot 34_night
+# the lock screen, then home again after unlocking (everything must be visible)
+adb shell appops set $P SYSTEM_ALERT_WINDOW allow
+adb shell input keyevent KEYCODE_BACK; sleep 1; adb shell input keyevent KEYCODE_BACK; sleep 1
+adb shell input keyevent KEYCODE_HOME; sleep 2; shot 39_before_lock
+adb shell locksettings set-disabled false >/dev/null 2>&1
+adb shell input keyevent KEYCODE_SLEEP; sleep 5
+adb shell input keyevent KEYCODE_WAKEUP; sleep .2; shot 40a_wake; sleep .4; shot 40b_wake; sleep 3; shot 40_lock
+adb shell input swipe 540 1800 540 500 200; sleep 3; shot 41_home_after_unlock
+adb shell input swipe 200 1300 900 1310 250; sleep 2; adb shell input swipe 900 1300 200 1310 250; sleep 3; shot 42_after_page_swipes
+adb shell input keyevent KEYCODE_SLEEP; sleep 4; adb shell input keyevent KEYCODE_WAKEUP; sleep 2
+adb shell input swipe 900 1500 200 1500 150; sleep 3; shot 43_unlock_by_side_swipe
+# lock while another app is open (the case that failed on the phone)
+adb shell appops set $P SYSTEM_ALERT_WINDOW deny
+adb shell monkey -p com.google.android.deskclock -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; sleep 3; shot 50_other_app
+adb shell input keyevent KEYCODE_SLEEP; sleep 6
+adb shell input keyevent KEYCODE_WAKEUP; sleep 4; shot 51_lock_from_app
+adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp" > rec/lock2.txt
+adb shell dumpsys notification | grep -iE "velthon_lock|fullscreen|NotificationRecord.*velthon" | head -5 >> rec/lock2.txt
+# a call / screen-off in the middle of closing the app list must not leave an invisible cover
+adb shell input keyevent KEYCODE_HOME; sleep 2
+adb shell input swipe 540 1700 540 800 200; sleep 1.5
+adb shell "input keyevent KEYCODE_BACK; input keyevent KEYCODE_SLEEP"; sleep 3
+adb shell input keyevent KEYCODE_WAKEUP; sleep 3; adb shell input swipe 540 1800 540 500 200; sleep 4; shot 55_after_interrupted_close
+adb shell input swipe 540 1700 540 800 200; sleep 1.5
+adb shell "input keyevent KEYCODE_HOME; input keyevent KEYCODE_SLEEP"; sleep 3
+adb shell input keyevent KEYCODE_WAKEUP; sleep 3; adb shell input swipe 540 1800 540 500 200; sleep 4; shot 56_after_interrupted_close2
+adb shell input swipe 540 1000 540 1700 250; sleep 2; shot 57_still_responds
+adb shell input keyevent KEYCODE_HOME; sleep 2
+adb shell input keyevent KEYCODE_HOME; sleep 2
+adb shell run-as $P cat shared_prefs/velthon.xml | grep -A14 lock_log > rec/locklog.txt
+adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3
+for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 1700 540 500 200; sleep .6; done; sleep 1; shot 66_settings_bottom
+adb shell input swipe 540 700 540 1500 300; sleep 1; shot 67_settings_lock
+adb shell input swipe 540 700 540 1500 300; sleep 1; shot 68_settings_lock2
+adb logcat -d -s velthon-desk | tail -30 > rec/desk.txt
+adb logcat -d -s velthon-ink | tail -80 > rec/ink.txt
+adb logcat -d -b crash > rec/crash.txt
+adb logcat -d | grep -iE "velthon|AndroidRuntime" | tail -60 > rec/log.txt
+adb logcat -d -s velthon-sill | tail -40 > rec/sill.txt
