@@ -188,7 +188,41 @@ public class SettingsActivity extends Activity {
                 action(L.t("Preview"), null, new Runnable() { @Override public void run() {
                     startActivity(new Intent(SettingsActivity.this, PreviewActivity.class)); } }));
 
+        section(Ico.GEAR, L.t("Backup & clean up"), L.t("Save your set-up, bring it back, tidy up or remove Velthon"),
+                action(L.t("Back up settings"), L.t("Save your layout, folders, VIP and choices to a file on the phone"), new Runnable() { @Override public void run() {
+                    Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json")
+                            .putExtra(Intent.EXTRA_TITLE, "Velthon-backup-" + new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date()) + ".json");
+                    try { startActivityForResult(i, SAVE_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } }),
+                action(L.t("Restore settings"), L.t("Bring back a saved set-up"), new Runnable() { @Override public void run() {
+                    Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
+                    try { startActivityForResult(i, LOAD_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } }),
+                action(L.t("Clean up"), L.t("Clear saved pictures, weather and leftovers that Velthon fetches again") + "  ·  " + android.text.format.Formatter.formatShortFileSize(this, Backup.size(this)), new Runnable() { @Override public void run() {
+                    long n = Backup.cleanUp(SettingsActivity.this);
+                    Toast.makeText(SettingsActivity.this, L.t("Cleaned up") + ": " + android.text.format.Formatter.formatShortFileSize(SettingsActivity.this, n), Toast.LENGTH_LONG).show();
+                    recreate(); } }),
+                action(L.t("Reset Velthon"), L.t("Back to how it was on the first start (your apps are not touched)"), new Runnable() { @Override public void run() {
+                    confirm(L.t("Reset Velthon"), L.t("All Velthon settings, folders and layout go back to the start. Back up first if you may want them again."), new Runnable() { @Override public void run() {
+                        Backup.resetAll(SettingsActivity.this); restartLauncher(); } }); } }),
+                action(L.t("Uninstall Velthon"), L.t("Remove the launcher from this phone"), new Runnable() { @Override public void run() {
+                    confirm(L.t("Uninstall Velthon"), L.t("Velthon will be removed and the phone goes back to its own home screen. Back up first to keep your set-up."), new Runnable() { @Override public void run() {
+                        try { startActivity(new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + getPackageName()))); }
+                        catch (Throwable t) { open(Settings.ACTION_APPLICATION_SETTINGS); } } }); } }));
+
         footer();
+    }
+
+    private static final int SAVE_BACKUP = 42, LOAD_BACKUP = 43;
+    private void confirm(String title, String msg, final Runnable yes) {
+        new android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle(title).setMessage(msg)
+                .setPositiveButton(L.t("Continue"), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) { yes.run(); } })
+                .setNegativeButton(L.t("Cancel"), null).show();
+    }
+    private void restartLauncher() {
+        Intent h = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        h.setPackage(getPackageName());
+        try { startActivity(h); } catch (Throwable ignored) { }
+        finishAffinity();
+        android.os.Process.killProcess(android.os.Process.myPid());   // start clean, with the new settings
     }
 
     private void header() {
@@ -568,6 +602,29 @@ public class SettingsActivity extends Activity {
 
     @Override protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
+        if ((req == SAVE_BACKUP || req == LOAD_BACKUP) && res == RESULT_OK && data != null && data.getData() != null) {
+            final Uri u = data.getData(); final boolean save = req == SAVE_BACKUP;
+            new Thread(new Runnable() { @Override public void run() {
+                String msg; boolean restart = false;
+                try {
+                    if (save) {
+                        try (java.io.OutputStream out = getContentResolver().openOutputStream(u, "wt")) { out.write(Backup.export(SettingsActivity.this).getBytes("UTF-8")); }
+                        msg = L.t("Backup saved");
+                    } else {
+                        String json;
+                        try (InputStream in = getContentResolver().openInputStream(u)) { json = new String(Backup.read(in), "UTF-8"); }
+                        int n = Backup.restore(SettingsActivity.this, json);
+                        msg = L.t("Settings restored") + " (" + n + ")"; restart = true;
+                    }
+                } catch (Throwable t) { msg = save ? L.t("The backup couldn't be saved") : L.t("That file isn't a Velthon backup"); }
+                final String m = msg; final boolean r = restart;
+                ui.post(new Runnable() { @Override public void run() {
+                    Toast.makeText(SettingsActivity.this, m, Toast.LENGTH_LONG).show();
+                    if (r) ui.postDelayed(new Runnable() { @Override public void run() { restartLauncher(); } }, 900);
+                } });
+            } }).start();
+            return;
+        }
         if (req != PICK_IMAGE || res != RESULT_OK || data == null || data.getData() == null) return;
         final Uri uri = data.getData();
         Toast.makeText(this, L.t("Setting your background…"), Toast.LENGTH_SHORT).show();
