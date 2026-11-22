@@ -95,6 +95,42 @@ final class Shape {
         return b;
     }
 
+    /** "Colour glass": the app's own full-colour icon, a little smaller, sitting inside the frosted glass tile, with
+     *  clear glass all around it inside the tile's rounded edge. */
+    static Bitmap colorGlass(Context c, String key, Drawable d, int px, boolean dark) {
+        String k = key + (dark ? "#cd@" : "#cg@") + px;
+        synchronized (CACHE) { Bitmap b = CACHE.get(k); if (b != null) return b; }
+        Bitmap b = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(b);
+        float in = U.dp(c, .75f) + .5f, rad = px * .27f;
+        RectF r = new RectF(in, in, px - in, px - in);
+        Path shape = new Path(); shape.addRoundRect(r, rad, rad, Path.Direction.CW);
+        Paint tile = new Paint(Paint.ANTI_ALIAS_FLAG);
+        tile.setShader(new android.graphics.LinearGradient(0, 0, 0, px, dark ? 0x80243248 : 0x33FFFFFF, dark ? 0x99131C2C : 0x14FFFFFF, android.graphics.Shader.TileMode.CLAMP));
+        cv.drawPath(shape, tile);
+        Paint rim = new Paint(Paint.ANTI_ALIAS_FLAG); rim.setStyle(Paint.Style.STROKE); rim.setStrokeWidth(U.dp(c, 1f)); rim.setColor(0x40FFFFFF);
+        cv.drawPath(shape, rim);
+        if (d != null) {
+            Drawable s = d.getConstantState() != null ? d.getConstantState().newDrawable(c.getResources()).mutate() : d;
+            int inner = Math.round(px * .70f), off = (px - inner) / 2;
+            Path ic = new Path(); float ir = inner * .26f;
+            ic.addRoundRect(new RectF(off, off, off + inner, off + inner), ir, ir, Path.Direction.CW);
+            cv.save(); cv.clipPath(ic);
+            if (Build.VERSION.SDK_INT >= 26 && s instanceof android.graphics.drawable.AdaptiveIconDrawable) {
+                android.graphics.drawable.AdaptiveIconDrawable a = (android.graphics.drawable.AdaptiveIconDrawable) s;
+                int e = Math.round(inner * .25f);
+                Drawable bg = a.getBackground(), fg = a.getForeground();
+                if (bg != null) { bg.setBounds(off - e, off - e, off + inner + e, off + inner + e); bg.draw(cv); }
+                if (fg != null) { fg.setBounds(off - e, off - e, off + inner + e, off + inner + e); fg.draw(cv); }
+            } else {
+                s.setBounds(off, off, off + inner, off + inner); s.draw(cv);
+            }
+            cv.restore();
+        }
+        synchronized (CACHE) { CACHE.put(k, b); }
+        return b;
+    }
+
     /** How much of the picture is painted (0..1). */
     private static float coverage(Bitmap b) {
         int w = b.getWidth(), h = b.getHeight(), n = 0, t = 0;

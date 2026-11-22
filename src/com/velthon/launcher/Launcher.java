@@ -1735,9 +1735,11 @@ public class Launcher extends Activity {
     /** The phone's own icon in the Velthon shape: a rounded square with a thin light edge (folders keep their preview). */
     private Drawable shaped(App a, int iconDp) {
         if (a.items != null) return a.icon;
-        boolean glass = !U.prefs(this).getString("icon_style", "glass").equals("classic");
+        String st = U.prefs(this).getString("icon_style", "glass");
         return new android.graphics.drawable.BitmapDrawable(getResources(),
-                glass ? Shape.glass(this, a.key, a.icon, dp(iconDp)) : Shape.icon(this, a.key, a.icon, dp(iconDp)));
+                st.equals("classic") ? Shape.icon(this, a.key, a.icon, dp(iconDp))
+                : st.equals("colorglass") ? Shape.colorGlass(this, a.key, a.icon, dp(iconDp), false)
+                : Shape.glass(this, a.key, a.icon, dp(iconDp)));
     }
 
     /** An icon that shows a small dot when its app has a notification waiting (Settings › Notification dots). */
@@ -1825,9 +1827,11 @@ public class Launcher extends Activity {
             if (a == null) continue;
             View t = tile(a, true, 50);
             // on the home screen the tile is a deeper, smoky glass: the symbol stands out on a bright sky
-            if (a.items == null && !U.prefs(this).getString("icon_style", "glass").equals("classic")
+            String st = U.prefs(this).getString("icon_style", "glass");
+            if (a.items == null && !st.equals("classic")
                     && t instanceof LinearLayout && ((LinearLayout) t).getChildAt(0) instanceof ImageView)
-                ((ImageView) ((LinearLayout) t).getChildAt(0)).setImageDrawable(new android.graphics.drawable.BitmapDrawable(getResources(), Shape.glassDark(this, a.key, a.icon, dp(50))));
+                ((ImageView) ((LinearLayout) t).getChildAt(0)).setImageDrawable(new android.graphics.drawable.BitmapDrawable(getResources(),
+                        st.equals("colorglass") ? Shape.colorGlass(this, a.key, a.icon, dp(50), true) : Shape.glassDark(this, a.key, a.icon, dp(50))));
             if (a.items != null && a.icon instanceof FolderIcon)    // the same smoky glass, or the colour chosen for this folder
                 ((FolderIcon) a.icon).bg.setColor(folderColor(a.key, 0x99202C40));
             final int index = e.getKey();

@@ -138,7 +138,7 @@ public class SettingsActivity extends Activity {
         section(Ico.HOME, L.t("Home screen"), L.t("Apps, icons and widgets"),
                 choice(L.t("App icons"), "@velthon_icons", p().getBoolean("velthon_icons", false) ? "1" : "0",
                         new String[] {L.t("The phone's own"), L.t("Velthon line icons")}, new String[] {"0", "1"}),
-                choice(L.t("Icon style"), "icon_style", "glass", new String[] {L.t("Glass (symbol on frosted glass)"), L.t("Classic (full app icon)")}, new String[] {"glass", "classic"}),
+                choice(L.t("Icon style"), "icon_style", "glass", new String[] {L.t("Glass (symbol on frosted glass)"), L.t("Colour glass (full-colour icon inside the glass)"), L.t("Classic (full app icon)")}, new String[] {"glass", "colorglass", "classic"}),
                 choice(L.t("Columns"), "@columns", String.valueOf(p().getInt("columns", 3)), new String[] {"3 (largest icons)", "4 (bigger icons)", "5 (more apps)"}, new String[] {"3", "4", "5"}),
                 choice(L.t("Phone text size"), "@font_scale", fontScale(), new String[] {L.t("Small"), L.t("Default"), L.t("Large"), L.t("Larger"), L.t("Largest"), L.t("Huge")},
                         new String[] {"0.85", "1.0", "1.15", "1.3", "1.5", "1.8"}),

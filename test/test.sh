@@ -143,6 +143,10 @@ adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 80_text_gold
 adb shell am force-stop $P
 adb shell "run-as $P sed -i 's#<string name=\"text_theme\">gold</string>##' shared_prefs/velthon.xml"
 adb shell am start -n $P/.Launcher >/dev/null; sleep 5; shot 81_text_auto_again
+adb shell am force-stop $P
+adb shell "run-as $P sed -i 's#<string name=\"icon_style\">[a-z]*</string>##; s#</map>#<string name=\"icon_style\">colorglass</string></map>#' shared_prefs/velthon.xml"
+adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 82_icons_colorglass
+adb shell input swipe 540 1700 540 800 250; sleep 2; shot 83_drawer_colorglass; adb shell input keyevent KEYCODE_BACK; sleep 1
 adb logcat -d -s velthon-ink | tail -80 > rec/ink.txt
 adb logcat -d -b crash > rec/crash.txt
 adb logcat -d | grep -iE "velthon|AndroidRuntime" | tail -60 > rec/log.txt
