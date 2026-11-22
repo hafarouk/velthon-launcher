@@ -167,6 +167,40 @@ open('rec/p.xml','w').write(s)
 PY
 adb push rec/p.xml /data/local/tmp/p.xml >/dev/null; adb shell "cat /data/local/tmp/p.xml > $F"
 adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 84_folder_blue
+# ---------------- performance & load: start time, smoothness, memory, CPU at rest and in the background
+adb shell input keyevent KEYCODE_HOME; sleep 2
+{
+echo "== cold start (3 runs)"
+for i in 1 2 3; do adb shell am force-stop $P; sleep 2; adb shell am start -W -n $P/.Launcher | grep -E "TotalTime|WaitTime"; sleep 4; done
+echo "== warm start (home pressed from another app, 3 runs)"
+for i in 1 2 3; do adb shell am start -n com.android.settings/.Settings >/dev/null; sleep 3; adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME | grep -E "TotalTime|WaitTime"; sleep 3; done
+echo "== smoothness while using it (swipes, app list, pages, panel)"
+adb shell dumpsys gfxinfo $P reset >/dev/null
+for i in 1 2 3; do
+  adb shell input swipe 540 1700 540 700 250; sleep 1.2; adb shell input swipe 540 900 540 1700 250; sleep 1.2
+  adb shell input keyevent KEYCODE_BACK; sleep .8
+  adb shell input swipe 900 1300 200 1310 250; sleep 1.2; adb shell input swipe 200 1300 900 1310 250; sleep 1.2
+  adb shell input swipe 540 700 540 1500 250; sleep 1.2; adb shell input keyevent KEYCODE_BACK; sleep .8
+done
+adb shell dumpsys gfxinfo $P | grep -E "Total frames rendered|Janky frames|50th percentile|90th percentile|95th percentile|99th percentile|Number Slow|Number Frozen"
+echo "== memory"
+adb shell dumpsys meminfo $P | grep -E "TOTAL PSS|TOTAL RSS|Native Heap|Dalvik Heap|Graphics|TOTAL:" | head -8
+echo "== CPU at rest on the home screen (after the 1-minute rest)"
+sleep 70
+adb shell top -b -n 3 -d 5 -o PID,%CPU,RES,NAME | grep -E "velthon" 
+echo "== CPU while another app is in front (30 s)"
+adb shell am start -n com.android.settings/.Settings >/dev/null; sleep 30
+adb shell top -b -n 3 -d 5 -o PID,%CPU,RES,NAME | grep -E "velthon"
+echo "== threads"
+pid=$(adb shell pidof $P); adb shell ls /proc/$pid/task | wc -l
+echo "== alarms and wake locks held"
+adb shell dumpsys alarm | grep -c "$P"
+adb shell dumpsys power | grep -i "$P" | head -5
+echo "== app list reload under load: install-like package events x5"
+for i in 1 2 3 4 5; do adb shell am broadcast -a android.intent.action.PACKAGE_CHANGED -d package:com.android.settings >/dev/null 2>&1; done
+sleep 4; adb logcat -d | grep -c "velthon-apps"
+adb shell input keyevent KEYCODE_HOME
+} > rec/perf.txt 2>&1
 adb logcat -d -s velthon-ink | tail -80 > rec/ink.txt
 adb logcat -d -b crash > rec/crash.txt
 adb logcat -d | grep -iE "velthon|AndroidRuntime" | tail -60 > rec/log.txt
