@@ -339,7 +339,13 @@ public class SettingsActivity extends Activity {
         r.addView(col, new LinearLayout.LayoutParams(0, -2, 1f));
         if (value != null) {
             TextView v = text(13.5f, 0xFFFFC94A, U.sansBold(this));
-            v.setText(value);
+            // the row shows the short name ("Colour glass"); the explanation in brackets is for the choices sheet.
+            // It never takes more than 45% of the row, so the setting's own name always has room.
+            String shortV = value.replaceFirst("\\s*[(（].*$", "").trim();
+            v.setText(shortV.isEmpty() ? value : shortV);
+            v.setSingleLine(true);
+            v.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            v.setMaxWidth(Math.round(getResources().getDisplayMetrics().widthPixels * .45f));
             v.setPadding(dp(8), 0, dp(4), 0);
             r.addView(v);
         }

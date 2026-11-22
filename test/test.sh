@@ -149,6 +149,11 @@ adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3
 for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 1700 540 500 200; sleep .6; done; sleep 1; shot 66_settings_bottom
 adb shell input swipe 540 700 540 1500 300; sleep 1; shot 67_settings_lock
 adb shell input swipe 540 700 540 1500 300; sleep 1; shot 68_settings_lock2
+# every settings screen, long values set (colour glass icons, automatic text colour): no name may be squeezed or covered
+adb shell am force-stop $P; setpref icon_style colorglass; adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3
+for k in 0 1 2 3 4 5 6 7 8 9 10; do adb shell uiautomator dump /sdcard/st.xml >/dev/null 2>&1; adb pull /sdcard/st.xml rec/settings_$k.xml >/dev/null 2>&1; adb shell input swipe 540 1700 540 900 300; sleep .8; done
+python3 test/layout_check.py $P rec/settings_*.xml rec/home.xml rec/church.xml > rec/layout.txt 2>&1
+echo "== layout check (empty = no squeezed or overlapping text)"; cat rec/layout.txt
 adb logcat -d -s velthon-desk | tail -30 > rec/desk.txt
 # themes: gold text, colour-glass icons, a coloured folder
 adb shell input keyevent KEYCODE_HOME; sleep 1
