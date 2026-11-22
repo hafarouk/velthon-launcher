@@ -18,7 +18,10 @@ else java -cp "${DX_CP:-/home/claude/dxbuild}" com.android.dx.command.Main --dex
 mkdir -p $B/tools && javac -nowarn -cp "$APKTOOL" -d $B/tools tools/Dis.java 2>/dev/null
 java -cp "$B/tools:$APKTOOL" Dis $B/dex/classes.dex $B/smali >/dev/null 2>&1
 rm -rf app/smali && cp -r $B/smali app/smali
+# DEBUGGABLE=1 (test builds only): lets the phone test profile where the time goes
+if [ -n "$DEBUGGABLE" ]; then cp app/AndroidManifest.xml $B/manifest.bak; sed -i 's#<application #<application android:debuggable="true" #' app/AndroidManifest.xml; fi
 java -jar "$APKTOOL" b app -o $B/unsigned.apk 2>&1 | grep -v JAVA_TOOL | tail -1
+if [ -n "$DEBUGGABLE" ]; then cp $B/manifest.bak app/AndroidManifest.xml; fi
 rm -rf app/smali app/build
 if [ -n "$KEYSTORE" ]; then
   cp $B/unsigned.apk $B/s1.apk

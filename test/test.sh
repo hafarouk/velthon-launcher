@@ -183,6 +183,23 @@ for i in 1 2 3; do
   adb shell input swipe 540 700 540 1500 250; sleep 1.2; adb shell input keyevent KEYCODE_BACK; sleep .8
 done
 adb shell dumpsys gfxinfo $P | grep -E "Total frames rendered|Janky frames|50th percentile|90th percentile|95th percentile|99th percentile|Number Slow|Number Frozen"
+echo "== baseline: the phone's own Settings app scrolling on this same emulator (software graphics)"
+adb shell am start -n com.android.settings/.Settings >/dev/null; sleep 3
+adb shell dumpsys gfxinfo com.android.settings reset >/dev/null
+for i in 1 2 3 4 5 6; do adb shell input swipe 540 1600 540 600 250; sleep 1; adb shell input swipe 540 600 540 1600 250; sleep 1; done
+adb shell dumpsys gfxinfo com.android.settings | grep -E "Total frames rendered|Janky frames|50th percentile|90th percentile"
+adb shell input keyevent KEYCODE_HOME; sleep 3
+echo "== where the launcher's time goes (CPU profile while using it)"
+(adb shell simpleperf record --app $P -g --duration 14 -o /data/local/tmp/perf.data >/dev/null 2>&1 &)
+sleep 1
+for i in 1 2; do
+  adb shell input swipe 540 1700 540 700 250; sleep 1.2; adb shell input keyevent KEYCODE_BACK; sleep .8
+  adb shell input swipe 900 1300 200 1310 250; sleep 1.2; adb shell input swipe 200 1300 900 1310 250; sleep 1.2
+  adb shell input swipe 540 700 540 1500 250; sleep 1.2; adb shell input keyevent KEYCODE_BACK; sleep .8
+done
+sleep 4
+adb shell simpleperf report -i /data/local/tmp/perf.data --sort comm,symbol --percent-limit 1.5 -n 2>&1 | head -70
+adb shell simpleperf report -i /data/local/tmp/perf.data --sort symbol --percent-limit 0.8 2>&1 | grep -i "velthon" | head -40
 echo "== memory"
 adb shell dumpsys meminfo $P | grep -E "TOTAL PSS|TOTAL RSS|Native Heap|Dalvik Heap|Graphics|TOTAL:" | head -8
 echo "== CPU at rest on the home screen (after the 1-minute rest)"

@@ -18,7 +18,7 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-28" "build-tools;34.0.0" >/dev/null
           curl -sL -o apktool.jar https://github.com/iBotPeaches/Apktool/releases/download/v2.11.1/apktool_2.11.1.jar
           export PATH=$ANDROID_HOME/build-tools/34.0.0:$PATH
-          ANDROID_JAR=$ANDROID_HOME/platforms/android-28/android.jar APKTOOL=$PWD/apktool.jar D8=d8 ./build.sh test/app.apk
+          DEBUGGABLE=1 ANDROID_JAR=$ANDROID_HOME/platforms/android-28/android.jar APKTOOL=$PWD/apktool.jar D8=d8 ./build.sh test/app.apk
       - name: Phone-free checks (translations, settings, church dates)
         run: ANDROID_JAR=$ANDROID_HOME/platforms/android-28/android.jar bash test/unit.sh
       - uses: actions/upload-artifact@v4
