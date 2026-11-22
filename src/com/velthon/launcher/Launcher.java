@@ -229,10 +229,11 @@ public class Launcher extends Activity {
         ui.removeCallbacks(settleAll); ui.postDelayed(settleAll, 700);    // whatever happens, it ends in place
         if (U.anims(this) && hasWindowFocus()) {
             box.setTranslationX(dir * scene.getWidth() * .35f); box.setAlpha(0f);
-            box.animate().translationX(0).alpha(1f).setDuration(320).setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).start();
+            box.animate().translationX(0).alpha(1f).setDuration(320).setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).withLayer().start();
+            scene.pauseLiving(420);
             if (p == 0) for (View v : infoViews()) if (v != null && v.getVisibility() == View.VISIBLE) {
                 v.setAlpha(0f); v.setTranslationX(dir * dp(40));
-                v.animate().alpha(1f).translationX(0).setDuration(320).setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).start();
+                v.animate().alpha(1f).translationX(0).setDuration(320).setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).withLayer().start();
             }
         }
     }
@@ -291,13 +292,13 @@ public class Launcher extends Activity {
         quick.setVisibility(View.VISIBLE);
         scene.setLiving(false);
         quick.setAlpha(0f);
-        quick.animate().alpha(1f).setDuration(180).start();
+        quick.animate().alpha(1f).setDuration(180).withLayer().start();
         panel.setTranslationY(-dp(420));
         panel.animate().translationY(0).setDuration(300).setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).start();
     }
     private void hideQuick() {
         if (!quickShowing()) return;
-        quick.animate().alpha(0f).setDuration(180).withEndAction(new Runnable() { @Override public void run() {
+        quick.animate().alpha(0f).setDuration(180).withLayer().withEndAction(new Runnable() { @Override public void run() {
             quick.setVisibility(View.GONE); quick.setAlpha(1f); } }).start();
         if (quick.getChildCount() > 0) quick.getChildAt(0).animate().translationY(-dp(420)).setDuration(220).start();
         scene.setLiving(U.anims(this));
@@ -3333,9 +3334,9 @@ public class Launcher extends Activity {
         drawer.setVisibility(View.VISIBLE);
         sheet.setTranslationY(scene.getHeight());
         drawer.setAlpha(0f);
-        drawer.animate().alpha(1f).setDuration(180).setListener(null).start();
+        drawer.animate().alpha(1f).setDuration(180).setListener(null).withLayer().start();
         sheet.animate().translationY(0).setDuration(260).setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).setListener(null).start();
-        home.animate().alpha(0f).setDuration(180).start();
+        home.animate().alpha(0f).setDuration(180).withLayer().start();
         grid.setSelection(0);
         scene.setLiving(false);
         if (U.anims(this)) {
@@ -3373,11 +3374,11 @@ public class Launcher extends Activity {
         scene.setLiving(U.anims(this));
         hideKeyboard();
         sheet.animate().translationY(scene.getHeight()).setDuration(220).setInterpolator(new android.view.animation.AccelerateInterpolator(1.4f)).start();
-        drawer.animate().alpha(0f).setDuration(220).setListener(new AnimatorListenerAdapter() {
+        drawer.animate().alpha(0f).setDuration(220).withLayer().setListener(new AnimatorListenerAdapter() {
             @Override public void onAnimationEnd(Animator a) { drawer.setVisibility(View.GONE); drawer.setAlpha(1f); drawer.animate().setListener(null); }
             @Override public void onAnimationCancel(Animator a) { onAnimationEnd(a); }
         }).start();
-        home.animate().alpha(1f).setDuration(220).start();
+        home.animate().alpha(1f).setDuration(220).withLayer().start();
     }
     private void closeDrawerNow() {
         hideKeyboard();

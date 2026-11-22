@@ -124,6 +124,9 @@ class Scene extends FrameLayout {
      *  About 15 frames a second, and only while the home screen is showing. */
     private boolean living;
     void setLiving(boolean on) { if (living != on) { living = on; invalidate(); } }
+    private long pausedUntil;
+    /** A page swipe or a panel is moving: the slow sky waits so it doesn't take frames from it. */
+    void pauseLiving(long ms) { pausedUntil = android.os.SystemClock.uptimeMillis() + ms; }
     private WeatherFx fx;
     private String fxKind = "";
     /** A tap on the sky: the weather answers (a ring of light, a splash, a puff of snow, a burst of stars). */
@@ -258,7 +261,7 @@ class Scene extends FrameLayout {
         live = true;
         paintScene(c, w, h);
         // battery: 25 frames a second only while rain, snow or a touch is moving; the slow drift needs no more than 5
-        if (living && (U.isSky(getContext()) || !fxKind.isEmpty())) postInvalidateDelayed(fx != null && fx.busy() ? 40 : 200);
+        if (living && (U.isSky(getContext()) || !fxKind.isEmpty())) postInvalidateDelayed(Math.max(fx != null && fx.busy() ? 40 : 200, pausedUntil - android.os.SystemClock.uptimeMillis()));
     }
 
     private final int[] me = new int[2], it = new int[2];

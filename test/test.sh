@@ -190,7 +190,8 @@ for i in 1 2 3 4 5 6; do adb shell input swipe 540 1600 540 600 250; sleep 1; ad
 adb shell dumpsys gfxinfo com.android.settings | grep -E "Total frames rendered|Janky frames|50th percentile|90th percentile"
 adb shell input keyevent KEYCODE_HOME; sleep 3
 echo "== where the launcher's time goes (CPU profile while using it)"
-(adb shell simpleperf record --app $P -g --duration 14 -o /data/local/tmp/perf.data >/dev/null 2>&1 &)
+pid=$(adb shell pidof $P)
+(adb shell simpleperf record -p $pid -e cpu-clock -f 1000 -g --duration 14 -o /data/local/tmp/perf.data > rec/simpleperf_record.txt 2>&1 &)
 sleep 1
 for i in 1 2; do
   adb shell input swipe 540 1700 540 700 250; sleep 1.2; adb shell input keyevent KEYCODE_BACK; sleep .8
@@ -198,8 +199,11 @@ for i in 1 2; do
   adb shell input swipe 540 700 540 1500 250; sleep 1.2; adb shell input keyevent KEYCODE_BACK; sleep .8
 done
 sleep 4
-adb shell simpleperf report -i /data/local/tmp/perf.data --sort comm,symbol --percent-limit 1.5 -n 2>&1 | head -70
-adb shell simpleperf report -i /data/local/tmp/perf.data --sort symbol --percent-limit 0.8 2>&1 | grep -i "velthon" | head -40
+sleep 3; cat rec/simpleperf_record.txt
+adb shell simpleperf report -i /data/local/tmp/perf.data --sort comm,dso --percent-limit 2 2>&1 | head -40
+adb shell simpleperf report -i /data/local/tmp/perf.data --sort symbol --percent-limit 1 2>&1 | head -60
+echo "-- launcher's own code"
+adb shell simpleperf report -i /data/local/tmp/perf.data --sort symbol --percent-limit 0.2 2>&1 | grep -i "velthon" | head -40
 echo "== memory"
 adb shell dumpsys meminfo $P | grep -E "TOTAL PSS|TOTAL RSS|Native Heap|Dalvik Heap|Graphics|TOTAL:" | head -8
 echo "== CPU at rest on the home screen (after the 1-minute rest)"
@@ -213,9 +217,10 @@ pid=$(adb shell pidof $P); adb shell ls /proc/$pid/task | wc -l
 echo "== alarms and wake locks held"
 adb shell dumpsys alarm | grep -c "$P"
 adb shell dumpsys power | grep -i "$P" | head -5
-echo "== app list reload under load: install-like package events x5"
-for i in 1 2 3 4 5; do adb shell am broadcast -a android.intent.action.PACKAGE_CHANGED -d package:com.android.settings >/dev/null 2>&1; done
-sleep 4; adb logcat -d | grep -c "velthon-apps"
+echo "== app list reload under load: an app turned off and on 3 times (real package events)"
+for i in 1 2 3; do adb shell pm disable-user --user 0 com.android.camera2 >/dev/null 2>&1; sleep 1; adb shell pm enable com.android.camera2 >/dev/null 2>&1; sleep 1; done
+sleep 4; adb shell pidof $P >/dev/null && echo "launcher still running" || echo "LAUNCHER DIED"
+adb logcat -d | grep -E "FATAL EXCEPTION|Process: $P" | head -5
 adb shell input keyevent KEYCODE_HOME
 } > rec/perf.txt 2>&1
 adb logcat -d -s velthon-ink | tail -80 > rec/ink.txt
