@@ -384,7 +384,7 @@ public class Launcher extends Activity {
             dockWrap.animate().translationY(0).alpha(1f).setStartDelay(120).setDuration(460).setInterpolator(di).withLayer().start();
         }
     }
-    private final Runnable redot = new Runnable() { @Override public void run() { if (scene != null) invalidateAll(scene); } };
+    private final Runnable redot = new Runnable() { @Override public void run() { if (scene != null && visible) invalidateAll(scene); } };
     @Override protected void onResume() {
         visible = true;
         resumedAt = android.os.SystemClock.uptimeMillis();
@@ -1528,12 +1528,20 @@ public class Launcher extends Activity {
     private final HashMap<String, App> byKey = new HashMap<>();
 
     private final BroadcastReceiver packages = new BroadcastReceiver() {
-        @Override public void onReceive(Context c, Intent i) { loadApps(); }
+        @Override public void onReceive(Context c, Intent i) {
+            // an install or update sends several of these in a row: reload once, two seconds after the last
+            ui.removeCallbacks(reload); ui.postDelayed(reload, 2000);
+        }
     };
+    private final Runnable reload = new Runnable() { @Override public void run() { loadApps(); } };
+    private volatile boolean loading, loadAgain;
 
     private void loadApps() {
+        if (loading) { loadAgain = true; return; }
+        loading = true;
         final Context c = getApplicationContext();
-        new Thread(new Runnable() { @Override public void run() {
+        Thread th = new Thread(new Runnable() { @Override public void run() {
+          try {
             final ArrayList<App> list = new ArrayList<>();
             try {
                 LauncherApps la = (LauncherApps) c.getSystemService(Context.LAUNCHER_APPS_SERVICE);
@@ -1579,7 +1587,13 @@ public class Launcher extends Activity {
                 showDesk();
                 showDock();
             } });
-        } }, "velthon-apps").start();
+          } finally {
+            loading = false;
+            if (loadAgain) { loadAgain = false; ui.post(new Runnable() { @Override public void run() { loadApps(); } }); }
+          }
+        } }, "velthon-apps");
+        th.setPriority(Thread.MIN_PRIORITY);   // the app in front always comes first
+        th.start();
     }
 
     /** Folder order in the Folders view. */

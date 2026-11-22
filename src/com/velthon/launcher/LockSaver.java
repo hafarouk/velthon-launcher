@@ -86,6 +86,7 @@ public class LockSaver extends Activity {
                 if (Intent.ACTION_USER_PRESENT.equals(a)) { clearNote(app); return; }
                 if (!U.prefs(app).getString("lock_saver", "on").equals("on") || showing) return;
                 if (inCall(app)) return;                                   // the screen also goes off against your ear
+                if (busyAudio(app)) return;    // a voice note or video held to the ear turns the screen off too: never interrupt it
                 if (Intent.ACTION_SCREEN_ON.equals(a)) {
                     // Too late: the phone's own lock is already on screen. Opening ours now would only flash the
                     // app's icon and stack a second lock on top, so leave the phone's lock alone this time.
@@ -155,6 +156,11 @@ public class LockSaver extends Activity {
     static void clearNote(Context c) {
         try { ((NotificationManager) c.getSystemService(NOTIFICATION_SERVICE)).cancel(NOTE); } catch (Throwable ignored) { }
     }
+    /** Sound is playing through an app (a WhatsApp voice note at the ear, a video): the screen going off is
+     *  the proximity sensor, not the user locking the phone, so the Velthon lock must stay out of the way. */
+    private static boolean busyAudio(Context c) {
+        try { return ((AudioManager) c.getSystemService(AUDIO_SERVICE)).isMusicActive(); } catch (Throwable t) { return false; }
+    }
     private static boolean inCall(Context c) {
         try {
             int m = ((AudioManager) c.getSystemService(AUDIO_SERVICE)).getMode();
@@ -215,6 +221,10 @@ public class LockSaver extends Activity {
     @Override protected void onResume() {
         super.onResume(); showing = true; clearNote(this);
         if (inCall(this)) { finish(); return; }
+        // woken and the phone isn't locked (the screen only went dark for a moment): get out of the way at once
+        android.os.PowerManager pm = (android.os.PowerManager) getSystemService(POWER_SERVICE);
+        KeyguardManager kg = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+        if (pm != null && pm.isInteractive() && kg != null && !kg.isKeyguardLocked()) { log(this, "not locked: stepped aside"); finish(); return; }
         calls.removeCallbacks(callWatch); calls.postDelayed(callWatch, 300);
     }
     @Override protected void onPause() { super.onPause(); calls.removeCallbacks(callWatch); }

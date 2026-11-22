@@ -83,6 +83,13 @@ class SaverView extends View {
 
     /** Lock screen: redraw once a second only (the clock), to spare the battery. */
     boolean calm;
+    // performance: the feast of the day is worked out once a minute, not on every frame
+    private Church.Feast feastC; private long feastAt = -1;
+    private Church.Feast feastNow() {
+        long m = System.currentTimeMillis() / 60000;
+        if (m != feastAt) { feastAt = m; feastC = Church.today(getContext()); }
+        return feastC;
+    }
 
     SaverView(Context c) {
         super(c);
@@ -200,7 +207,7 @@ class SaverView extends View {
         if (text != null) text.recycle();
         text = Bitmap.createBitmap(w, Math.max(1, th + Math.round(size)), Bitmap.Config.ARGB_8888);
         textC = new Canvas(text);
-        float clockBottom = h * .07f + clockH + dateP.getTextSize() * (Church.today(getContext()) != null ? 3.6f : 2.4f);
+        float clockBottom = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f);
         float glassBottom = oy + GLASS_BOTTOM * k;
         float bottomLimit = Math.min(glassBottom, h * .9f);
         textTop = Math.max(clockBottom + h * .02f, (clockBottom + bottomLimit) / 2f - th / 2f);   // centred in the space under the clock
@@ -223,7 +230,7 @@ class SaverView extends View {
         }
         // room for the calendar events under the verse: lift the verse by half their height
         if (evCount > 0) {   // the verse right under the date, the card right under the verse
-            float clockB = h * .07f + clockH + dateP.getTextSize() * (Church.today(getContext()) != null ? 3.6f : 2.4f);
+            float clockB = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f);
             textTop = clockB + h * .01f;
         }
         // colours by what is behind each part: dark letters on the bright sun or moon, white on a dark sky
@@ -351,7 +358,7 @@ class SaverView extends View {
         c.restore();
         String d = DateFormat.format("EEE, MMM d", cal).toString();
         if (Weather.has(getContext())) d += "  ·  " + Weather.temp(getContext()) + " " + Weather.condition(getContext());
-        Church.Feast feast = Church.today(getContext());
+        Church.Feast feast = feastNow();
         float dy = top + clockH + dateP.getTextSize() * 1.9f;
         c.drawText(d, w / 2f + drift, dy, dateP);
         if (feast != null) {   // a feast day gets its own line, fitted to the width, never cut at the edges
