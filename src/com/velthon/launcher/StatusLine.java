@@ -17,8 +17,8 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.view.View;
 
-/** The lock screen's own slim status row: the network on the left (carrier and signal, or Wi-Fi), the battery on the right.
- *  It sits in the band beside the camera, where the phone's status bar would be. */
+/** Battery and network for the lock screen: one centred row under the verse, in its own soft blue, the two parts
+ *  divided by a thin bar, so it reads as the lock screen's own and not the phone's status bar. */
 final class StatusLine extends View {
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG), fill = new Paint(Paint.ANTI_ALIAS_FLAG), line = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final float d;
@@ -45,7 +45,7 @@ final class StatusLine extends View {
     private final BroadcastReceiver battery = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) { readBattery(i); }
     };
-    private final Runnable tick = new Runnable() { @Override public void run() { readNetwork(); invalidate(); postDelayed(this, 20_000); } };
+    private final Runnable tick = new Runnable() { @Override public void run() { readNetwork(); if (getParent() instanceof View) ((View) getParent()).invalidate(); postDelayed(this, 20_000); } };
 
     @Override protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -99,7 +99,7 @@ final class StatusLine extends View {
         level = l < 0 ? -1 : Math.round(l * 100f / Math.max(1, s));
         int st = i.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
         charging = st == BatteryManager.BATTERY_STATUS_CHARGING || st == BatteryManager.BATTERY_STATUS_FULL;
-        invalidate();
+        if (getParent() instanceof View) ((View) getParent()).invalidate();
     }
 
     private void readNetwork() {
@@ -129,46 +129,59 @@ final class StatusLine extends View {
         if (net.isEmpty() && bars < 0) net = L.t("No service");
     }
 
-    @Override protected void onDraw(Canvas c) {
-        float h = getHeight(), mid = h / 2f, pad = 4 * d;
-        boolean rtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
-        // the network: left (right in Arabic)
-        float x = rtl ? getWidth() - pad : pad;
-        float iw = 18 * d;
-        float ix = rtl ? x - iw : x;
-        if (wifi) drawWifi(c, ix, mid, iw); else if (bars >= 0) drawBars(c, ix, mid, iw);
-        String label = !wifi && !gen.isEmpty() ? (net.isEmpty() ? gen : gen + "  " + net) : net;
-        if (!label.isEmpty()) {
-            float tw = text.measureText(label);
-            float tx = rtl ? (bars >= 0 || wifi ? ix - 6 * d - tw : x - tw) : (bars >= 0 || wifi ? ix + iw + 6 * d : x);
-            c.drawText(label, tx, mid + text.getTextSize() * .35f, text);
+    /** The lock screen draws the row itself, under the verse; this view only keeps the readings fresh. */
+    @Override protected void onDraw(Canvas c) { }
+
+    static final int INK = 0xFFA9DBFF;   // a soft sky blue: apart from the white verse and the gold reference
+
+    float rowHeight() { return 26 * d; }
+
+    /** One centred row: network (signal, 5G, carrier)  |  battery (percent, icon). */
+    void drawRow(Canvas c, float cx, float mid, float alpha) {
+        int a = Math.round(255 * Math.max(0, Math.min(1, alpha)));
+        text.setColor(INK); text.setAlpha(a); line.setColor(INK); line.setAlpha(a); fill.setColor(INK); fill.setAlpha(a);
+        String label = wifi ? net : !gen.isEmpty() ? (net.isEmpty() ? gen : gen + "  " + net) : net;
+        boolean icon = wifi || bars >= 0;
+        float iw = 18 * d, gap = 7 * d, sepGap = 14 * d;
+        float lw = (icon ? iw + (label.isEmpty() ? 0 : gap) : 0) + (label.isEmpty() ? 0 : text.measureText(label));
+        String pct = level >= 0 ? level + "%" : "";
+        float bw = 24 * d, bh = 11 * d;
+        float rw = level >= 0 ? text.measureText(pct) + gap + bw + 3 * d : 0;
+        boolean both = lw > 0 && rw > 0;
+        float total = lw + rw + (both ? sepGap * 2 + 1.5f * d : 0);
+        float x = cx - total / 2f, base = mid + text.getTextSize() * .35f;
+        if (lw > 0) {
+            if (icon) { if (wifi) drawWifi(c, x, mid, iw); else drawBars(c, x, mid, iw); x += iw + (label.isEmpty() ? 0 : gap); }
+            if (!label.isEmpty()) { c.drawText(label, x, base, text); x += text.measureText(label); }
         }
-        // the battery: right (left in Arabic)
-        if (level < 0) return;
-        String pct = level + "%";
-        float bw = 24 * d, bh = 12 * d, tw = text.measureText(pct);
-        float bx = rtl ? pad + tw + 6 * d : getWidth() - pad - bw - 2 * d;
-        RectF body = new RectF(bx, mid - bh / 2, bx + bw, mid + bh / 2);
-        int col = charging ? 0xFF7CE38B : level <= 15 ? 0xFFFF8A80 : 0xEEFFFFFF;
-        line.setColor(0xEEFFFFFF);
-        c.drawRoundRect(body, 3 * d, 3 * d, line);
-        c.drawRoundRect(new RectF(body.right + d, mid - 3 * d, body.right + 3 * d, mid + 3 * d), d, d, fill);
-        fill.setColor(col);
-        float in = 2.2f * d;
-        c.drawRoundRect(new RectF(body.left + in, body.top + in, body.left + in + (bw - 2 * in) * level / 100f, body.bottom - in), 1.5f * d, 1.5f * d, fill);
-        fill.setColor(0xEEFFFFFF);
-        if (charging) {   // a small bolt over the battery
-            Path p = new Path();
-            float cx = body.centerX(), cy = mid;
-            p.moveTo(cx + 1.5f * d, cy - 5 * d); p.lineTo(cx - 3 * d, cy + d); p.lineTo(cx, cy + d);
-            p.lineTo(cx - 1.5f * d, cy + 5 * d); p.lineTo(cx + 3 * d, cy - d); p.lineTo(cx, cy - d); p.close();
-            Paint b = new Paint(Paint.ANTI_ALIAS_FLAG); b.setColor(0xFF1B1B1B);
-            c.drawPath(p, b);
+        if (both) {   // the thin divider
+            x += sepGap;
+            c.drawRect(x, mid - 8 * d, x + 1.5f * d, mid + 8 * d, fill);
+            x += 1.5f * d + sepGap;
         }
-        float tx = rtl ? pad : bx - 6 * d - tw;
-        text.setColor(level <= 15 && !charging ? 0xFFFF8A80 : 0xEEFFFFFF);
-        c.drawText(pct, tx, mid + text.getTextSize() * .35f, text);
-        text.setColor(0xEEFFFFFF);
+        if (rw > 0) {
+            boolean low = level <= 15 && !charging;
+            text.setColor(low ? 0xFFFF8A80 : INK); text.setAlpha(a);
+            c.drawText(pct, x, base, text);
+            x += text.measureText(pct) + gap;
+            RectF body = new RectF(x, mid - bh / 2, x + bw, mid + bh / 2);
+            line.setColor(INK); line.setAlpha(a);
+            c.drawRoundRect(body, 3 * d, 3 * d, line);
+            fill.setColor(INK); fill.setAlpha(a);
+            c.drawRoundRect(new RectF(body.right + d, mid - 2.8f * d, body.right + 3 * d, mid + 2.8f * d), d, d, fill);
+            float in = 2.2f * d;
+            fill.setColor(charging ? 0xFF7CE38B : low ? 0xFFFF8A80 : INK); fill.setAlpha(a);
+            c.drawRoundRect(new RectF(body.left + in, body.top + in, body.left + in + (bw - 2 * in) * level / 100f, body.bottom - in), 1.5f * d, 1.5f * d, fill);
+            if (charging) {
+                Path p = new Path();
+                float bx = body.centerX();
+                p.moveTo(bx + 1.5f * d, mid - 4.5f * d); p.lineTo(bx - 3 * d, mid + d); p.lineTo(bx, mid + d);
+                p.lineTo(bx - 1.5f * d, mid + 4.5f * d); p.lineTo(bx + 3 * d, mid - d); p.lineTo(bx, mid - d); p.close();
+                Paint b = new Paint(Paint.ANTI_ALIAS_FLAG); b.setColor(0xFF1B1B1B);
+                c.drawPath(p, b);
+            }
+        }
+        text.setAlpha(255); line.setAlpha(255); fill.setAlpha(255);
     }
 
     /** Signal: one solid right triangle with rounded corners, filled from the left as far as the signal reaches;
@@ -179,18 +192,17 @@ final class StatusLine extends View {
         p.moveTo(left, bottom); p.lineTo(right, top); p.lineTo(right, bottom); p.close();
         fill.setPathEffect(new android.graphics.CornerPathEffect(2.2f * d));
         fill.setShadowLayer(3 * d, 0, d, 0x66000000);
-        fill.setColor(0x47FFFFFF);
+        fill.setColor((INK & 0x00FFFFFF) | 0x47000000);
         c.drawPath(p, fill);
         fill.clearShadowLayer();
         if (bars > 0) {
             c.save();
             c.clipRect(left - d, top - d, left + sz * Math.min(4, bars) / 4f, bottom + d);
-            fill.setColor(0xF2FFFFFF);
+            fill.setColor(INK);
             c.drawPath(p, fill);
             c.restore();
         }
         fill.setPathEffect(null);
-        fill.setColor(0xEEFFFFFF);
     }
 
     /** Wi-Fi: a solid quarter fan, filled from the point up as far as the signal reaches. */
@@ -198,13 +210,12 @@ final class StatusLine extends View {
         float r = 10.5f * d, cx = x + w / 2f, cy = mid + r * .62f;
         RectF o = new RectF(cx - r, cy - r, cx + r, cy + r);
         fill.setShadowLayer(3 * d, 0, d, 0x66000000);
-        fill.setColor(0x47FFFFFF);
+        fill.setColor((INK & 0x00FFFFFF) | 0x47000000);
         c.drawArc(o, 225, 90, true, fill);
         fill.clearShadowLayer();
         int lv = Math.max(1, Math.min(3, bars + 1));   // 0..3 → a third, two thirds, full
         float rr = r * (lv == 3 ? 1f : lv == 2 ? .72f : .45f);
-        fill.setColor(0xF2FFFFFF);
+        fill.setColor(INK);
         c.drawArc(new RectF(cx - rr, cy - rr, cx + rr, cy + rr), 225, 90, true, fill);
-        fill.setColor(0xEEFFFFFF);
     }
 }

@@ -247,29 +247,16 @@ public class LockSaver extends Activity {
         root.addView(sv, new FrameLayout.LayoutParams(-1, -1));
         root.addView(unlockButton(), new FrameLayout.LayoutParams(-1, -1));
         addLockWidget(root, sv);
-        addStatus(root);
+        addStatus(root, sv);
         setContentView(root);
         unlocked = new BroadcastReceiver() { @Override public void onReceive(Context c, Intent i) { finish(); } };
         registerReceiver(unlocked, new IntentFilter(Intent.ACTION_USER_PRESENT));
     }
-    /** Battery and network in the band at the top, beside the camera, where the phone's status bar would be. */
-    private void addStatus(final FrameLayout root) {
-        final float d = getResources().getDisplayMetrics().density;
-        final StatusLine st = new StatusLine(this);
-        final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-1, Math.round(26 * d), android.view.Gravity.TOP);
-        lp.leftMargin = lp.rightMargin = Math.round(18 * d); lp.topMargin = Math.round(10 * d);
-        root.addView(st, 1, lp);
-        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-            @Override public android.view.WindowInsets onApplyWindowInsets(View v, android.view.WindowInsets in) {
-                int top = Math.round(10 * d);
-                if (Build.VERSION.SDK_INT >= 28 && in.getDisplayCutout() != null) {
-                    int cut = in.getDisplayCutout().getSafeInsetTop();
-                    if (cut > 0) top = Math.max(Math.round(4 * d), (cut - Math.round(26 * d)) / 2);   // centred on the camera's band
-                }
-                if (lp.topMargin != top) { lp.topMargin = top; st.setLayoutParams(lp); }
-                return in;
-            }
-        });
+    /** Battery and network: a centred row under the verse, drawn by the saver view; this tiny view keeps it current. */
+    private void addStatus(FrameLayout root, SaverView sv) {
+        StatusLine st = new StatusLine(this);
+        root.addView(st, 1, new FrameLayout.LayoutParams(1, 1));
+        sv.status = st;
     }
 
     // ---------------------------------------------------------------- the glucose reading (or another chosen widget)

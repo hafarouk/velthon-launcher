@@ -76,6 +76,8 @@ class SaverView extends View {
     float reserveBottom;
     /** Room under the date for something placed over the view (the glucose widget on the lock screen). */
     float reserveTop;
+    /** The lock screen's battery and network row, drawn right under the verse (null elsewhere). */
+    StatusLine status;
     /** Where the date (and feast) lines end: the room under them is free. */
     float infoBottom() { return getHeight() * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.0f : 1.9f); }
     private final TextPaint evP = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -214,7 +216,8 @@ class SaverView extends View {
         float clockBottom = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f) + reserveTop;
         float glassBottom = oy + GLASS_BOTTOM * k;
         float bottomLimit = Math.min(glassBottom, h * .9f);
-        textTop = Math.max(clockBottom + h * .02f, (clockBottom + bottomLimit) / 2f - th / 2f);   // centred in the space under the clock
+        float rowRoom = status != null ? status.rowHeight() * 1.25f : 0;   // the battery and network row under the verse
+        textTop = Math.max(clockBottom + h * .02f, (clockBottom + bottomLimit) / 2f - (th + rowRoom) / 2f);   // centred in the space under the clock
         if (U.isSky(getContext()) && picture != null) {
             // the verse sits in the heart of the sun (or the moon): the sky is placed around it
             float sillTop = sill != null ? h - sill.getHeight() * (w / (float) sill.getWidth()) : h * .9f;
@@ -335,7 +338,12 @@ class SaverView extends View {
             textBlit.setAlpha(Math.round(255 * textAlpha));
             c.drawBitmap(text, 0, textTop, textBlit);
             // the next two calendar events, under the verse, on a light frosted card
-            drawEvents(c, w, textTop + text.getHeight());
+            float under = textTop + text.getHeight();
+            if (status != null) {
+                status.drawRow(c, w / 2f, under + status.rowHeight() * .55f, textAlpha);
+                under += status.rowHeight() * 1.25f;
+            }
+            drawEvents(c, w, under);
         }
 
         // the clock moves a few pixels every minute so nothing burns into the screen
