@@ -1175,7 +1175,9 @@ public class Launcher extends Activity {
             float sum = 0; int n = 0;
             for (TextView t : row) if (t.getHeight() > 0) { sum += scene.brightness(t); n++; }
             boolean light = n > 0 && sum / n > LIGHT;
+            int theme = textTheme();
             for (TextView t : row) {
+                if (theme != 0) { t.setTextColor(theme); t.setShadowLayer(dp(2.2f), 0, dp(1), 0xE6000000); continue; }
                 t.setTextColor(light ? INK : soft);
                 if (light) t.setShadowLayer(dp(1.2f), 0, dp(.5f), 0xB3FFFFFF); else t.setShadowLayer(dp(1.5f), 0, dp(1), 0xCC000000);
             }
@@ -1188,12 +1190,30 @@ public class Launcher extends Activity {
     private boolean ink(TextView t, int dark, int light) {
         float br = t.getVisibility() == View.VISIBLE && t.getWidth() > 0 ? scene.brightness(t) : -1;
         boolean l = br >= 0 ? br > LIGHT : U.skyIsBright(this);
+        int theme = textTheme();
+        if (theme != 0 && light == Color.WHITE) {   // a chosen colour for the main text; gold, red and blue accents keep theirs
+            t.setTextColor(theme); crisp(t, false);
+            if (scene.lastMixed || l) t.setShadowLayer(dp(3.5f), 0, 0, 0xF2000000);
+            return false;
+        }
         t.setTextColor(l ? dark : light);
         crisp(t, l);
         // over light and dark at once: a soft halo in the opposite tone, so the letters read on both
         if (scene.lastMixed) t.setShadowLayer(dp(3.5f), 0, 0, l ? 0xF2FFFFFF : 0xF2000000);
         return l;
     }
+    /** Settings › Home screen › Text colour: 0 = automatic (by the sky behind it, as before). */
+    private int textTheme() {
+        switch (U.prefs(this).getString("text_theme", "auto")) {
+            case "white": return Color.WHITE;
+            case "cream": return 0xFFF6EBD2;
+            case "gold": return 0xFFF2C66B;
+            case "blue": return 0xFFBFE3FF;
+            case "rose": return 0xFFFFD6D0;
+            default: return 0;
+        }
+    }
+
     /** Sharp text: on a bright sky a thin light edge (no dark smudge); on a dark sky a tiny tight shadow. */
     private void crisp(TextView t, boolean onBright) {
         if (onBright) t.setShadowLayer(dp(1.2f), 0, dp(.5f), 0xB3FFFFFF);
@@ -1808,7 +1828,8 @@ public class Launcher extends Activity {
             if (a.items == null && !U.prefs(this).getString("icon_style", "glass").equals("classic")
                     && t instanceof LinearLayout && ((LinearLayout) t).getChildAt(0) instanceof ImageView)
                 ((ImageView) ((LinearLayout) t).getChildAt(0)).setImageDrawable(new android.graphics.drawable.BitmapDrawable(getResources(), Shape.glassDark(this, a.key, a.icon, dp(50))));
-            if (a.items != null && a.icon instanceof FolderIcon) ((FolderIcon) a.icon).bg.setColor(0x99202C40);   // the same smoky glass
+            if (a.items != null && a.icon instanceof FolderIcon)    // the same smoky glass, or the colour chosen for this folder
+                ((FolderIcon) a.icon).bg.setColor(folderColor(a.key, 0x99202C40));
             final int index = e.getKey();
             t.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { if (a.items != null) openFolder(a); else launch(a, v); } });
             t.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { startDrag(v, a, "desk", index); return true; } });
@@ -3167,6 +3188,13 @@ public class Launcher extends Activity {
         }
     };
 
+    /** Folder colours: the first (0) is the standard smoky glass; the rest are soft, see-through tints. */
+    static final int[] FOLDER_COLORS = {0, 0x99B8862E, 0x992E6FB8, 0x992E9E6B, 0x99B8463C, 0x997B4CB8, 0x99B8B8B8, 0x99101010};
+    private int folderColor(String key, int fallback) {
+        int c = key == null ? 0 : U.prefs(this).getInt("fcolor_" + key, 0);
+        return c == 0 ? fallback : c;
+    }
+
     /** A folder opens over the app list: its apps, which open or can be dragged out like any other. */
     private void openFolder(final App f) {
         final android.app.Dialog dlg = new android.app.Dialog(this, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
@@ -3184,6 +3212,26 @@ public class Launcher extends Activity {
         if (mine) t.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
             dlg.dismiss(); renameFolder(f.key.substring(7), null); } });
         box.addView(t);
+        if (mine) {   // the folder's colour: a row of swatches
+            LinearLayout sw = new LinearLayout(this); sw.setGravity(Gravity.CENTER); sw.setPadding(0, 0, 0, dp(12));
+            final int cur = folderColor(f.key, 0);
+            for (int k = 0; k < FOLDER_COLORS.length; k++) {
+                final int col = FOLDER_COLORS[k];
+                View dot = new View(this);
+                android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
+                gd.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+                gd.setColor(col == 0 ? 0x99202C40 : col | 0xFF000000);
+                gd.setStroke(dp(col == cur ? 3 : 1), col == cur ? 0xFFF2B640 : 0x66FFFFFF);
+                dot.setBackground(gd);
+                LinearLayout.LayoutParams dl = lp(dp(26), dp(26)); dl.leftMargin = dl.rightMargin = dp(5);
+                dot.setContentDescription(L.t("Folder colour"));
+                dot.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+                    U.prefs(Launcher.this).edit().putInt("fcolor_" + f.key, col).apply();
+                    dlg.dismiss(); showDesk(); filter(); } });
+                sw.addView(dot, dl);
+            }
+            box.addView(sw);
+        }
         GridView g = new GridView(this);
         final int cols = Math.min(4, Math.max(3, f.items.size() <= 4 ? f.items.size() : 4));
         g.setNumColumns(cols);

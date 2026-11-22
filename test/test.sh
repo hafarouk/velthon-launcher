@@ -64,6 +64,11 @@ adb shell input swipe 900 1300 200 1310 250; sleep 3; shot 11_back_page1
 adb shell input swipe 900 1300 200 1310 250; sleep 9; shot 12_church
 dump; cp rec/s.xml rec/church.xml
 adb shell input swipe 300 900 300 1400 300; sleep 2; shot 12b_church_scrolled
+# the calendar month view (Today | Calendar) with a calendar event in it
+c=$(center "Calendar"); [ -n "$c" ] && adb shell input tap $c; sleep 3; shot 12c_calendar_month
+adb shell pm grant $P android.permission.READ_CALENDAR 2>/dev/null; sleep 1
+dump; c=$(center "Calendar"); [ -n "$c" ] && adb shell input tap $c; sleep 3; shot 12d_calendar_month_events
+dump; c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_month
 adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1000 540 1700 250; sleep 2; shot 13_quick
 adb shell input swipe 540 1500 540 600 250; sleep 2
@@ -130,6 +135,14 @@ for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 1700 540 500 200; sleep .
 adb shell input swipe 540 700 540 1500 300; sleep 1; shot 67_settings_lock
 adb shell input swipe 540 700 540 1500 300; sleep 1; shot 68_settings_lock2
 adb logcat -d -s velthon-desk | tail -30 > rec/desk.txt
+# themes: gold text, a coloured folder
+adb shell input keyevent KEYCODE_HOME; sleep 1
+adb shell am force-stop $P
+adb shell "run-as $P sed -i 's#</map>#<string name=\"text_theme\">gold</string></map>#' shared_prefs/velthon.xml"
+adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 80_text_gold
+adb shell am force-stop $P
+adb shell "run-as $P sed -i 's#<string name=\"text_theme\">gold</string>##' shared_prefs/velthon.xml"
+adb shell am start -n $P/.Launcher >/dev/null; sleep 5; shot 81_text_auto_again
 adb logcat -d -s velthon-ink | tail -80 > rec/ink.txt
 adb logcat -d -b crash > rec/crash.txt
 adb logcat -d | grep -iE "velthon|AndroidRuntime" | tail -60 > rec/log.txt

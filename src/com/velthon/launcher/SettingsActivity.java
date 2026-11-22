@@ -142,6 +142,8 @@ public class SettingsActivity extends Activity {
                 choice(L.t("Columns"), "@columns", String.valueOf(p().getInt("columns", 3)), new String[] {"3 (largest icons)", "4 (bigger icons)", "5 (more apps)"}, new String[] {"3", "4", "5"}),
                 choice(L.t("Phone text size"), "@font_scale", fontScale(), new String[] {L.t("Small"), L.t("Default"), L.t("Large"), L.t("Larger"), L.t("Largest"), L.t("Huge")},
                         new String[] {"0.85", "1.0", "1.15", "1.3", "1.5", "1.8"}),
+                choice(L.t("Text colour"), "text_theme", "auto", new String[] {L.t("Automatic (by the sky, as now)"), L.t("White"), L.t("Cream"), L.t("Gold"), L.t("Light blue"), L.t("Rose")},
+                        new String[] {"auto", "white", "cream", "gold", "blue", "rose"}),
                 choice(L.t("Notification dots"), "dots", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
                 action(L.t("Hidden apps"), L.t("Choose apps to keep out of the app list"), new Runnable() { @Override public void run() {
                     p().edit().putBoolean("want_hidden", true).apply(); finish(); } }),
@@ -161,6 +163,7 @@ public class SettingsActivity extends Activity {
 
         section(Ico.MOON, L.t("Screensaver"), L.t("The window, while the phone rests or charges"),
                 choice(L.t("Velthon lock screen"), "lock_saver", "on", new String[] {L.t("On"), L.t("Off (the phone's own)")}, new String[] {"on", "off"}),
+                choice(L.t("Unlock with"), "lock_unlock", "phone", new String[] {L.t("The phone's fingerprint, face or PIN"), L.t("Velthon only: a tap opens the phone")}, new String[] {"phone", "velthon"}),
                 action(L.t("Set up the Velthon lock screen"), LockSaver.readyText(this), new Runnable() { @Override public void run() { LockSetup.show(SettingsActivity.this); } }),
                 choice(L.t("Next calendar events under the verse"), "lock_events", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
                 action(L.t("Make it my screensaver"), "Choose \"Velthon\" in the list", new Runnable() { @Override public void run() {
@@ -400,6 +403,14 @@ public class SettingsActivity extends Activity {
         build();
     }
     private void save(String key, String v) {
+        if (key.equals("lock_unlock") && v.equals("velthon")) {
+            new android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                    .setTitle(L.t("Velthon only"))
+                    .setMessage(L.t("For this, the phone's own screen lock must be set to \"None\" (or \"Swipe\"). Anyone can then open the phone with a tap, so only choose it if that is fine for you. While a PIN, pattern or fingerprint is set, the phone's own unlock is still used."))
+                    .setPositiveButton(L.t("Open screen lock settings"), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) {
+                        if (!open(Settings.ACTION_SECURITY_SETTINGS)) open(Settings.ACTION_SETTINGS); } })
+                    .setNegativeButton(L.t("Not now"), null).show();
+        }
         SharedPreferences.Editor e = p().edit();
         if (key.equals("@velthon_icons")) e.putBoolean("velthon_icons", v.equals("1"));
         else if (key.equals("@columns")) e.putInt("columns", Integer.parseInt(v));

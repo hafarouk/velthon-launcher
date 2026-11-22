@@ -78,6 +78,17 @@ final class Church {
         return null;
     }
 
+    /** The feast (or monthly commemoration) on any day, for the calendar view; null if none. */
+    static Feast feastOf(Context c, Calendar day) {
+        String cal = calendar(c);
+        if (cal.equals("off")) return null;
+        boolean orth = cal.equals("orthodox");
+        String id = feastOn(day, orth);
+        if (id != null) return feast(id, 0);
+        if (orth) { int d = coptic(day)[1]; if (d == 12) return feast("m_michael", 0); if (d == 21) return feast("m_mary", 0); }
+        return null;
+    }
+
     /** The feast of a given day (calendar of {@code orthodox}), or null. */
     private static String feastOn(Calendar day, boolean orthodox) {
         int year = day.get(Calendar.YEAR);

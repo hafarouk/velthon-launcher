@@ -81,6 +81,12 @@ public class LockSaver extends Activity {
         if (LockService.on != null) return true;
         return Build.VERSION.SDK_INT >= 34 && fullScreenAllowed(c);
     }
+    /** "Velthon only": the phone has no screen lock of its own (None), and the Velthon window is the lock: a tap opens. */
+    static boolean velthonOnly(Context c) {
+        if (!U.prefs(c).getString("lock_unlock", "phone").equals("velthon")) return false;
+        KeyguardManager k = (KeyguardManager) c.getSystemService(KEYGUARD_SERVICE);
+        return k == null || !k.isKeyguardSecure();   // with a PIN, fingerprint or pattern set, the phone's own unlock always applies
+    }
     static String readyText(Context c) {
         if (ready(c)) return L.t("Ready");
         return L.t("Needs a one-time setup");
@@ -113,6 +119,10 @@ public class LockSaver extends Activity {
                 if (!U.prefs(app).getString("lock_saver", "on").equals("on") || !ready(app)) return;   // not set up: the phone's own lock
                 if (inCall(app)) return;                                   // the screen also goes off against your ear
                 if (busyAudio(app)) return;    // a voice note or video held to the ear turns the screen off too: never interrupt it
+                if (Intent.ACTION_SCREEN_ON.equals(a) && velthonOnly(app)) {   // no phone lock to flash: open now if not already up
+                    if (!showing) show(app);
+                    return;
+                }
                 if (Intent.ACTION_SCREEN_ON.equals(a)) {
                     // Too late: the phone's own lock is already on screen. Opening ours now would only flash the
                     // app's icon and stack a second lock on top, so leave the phone's lock alone this time.
@@ -252,7 +262,7 @@ public class LockSaver extends Activity {
         // woken and the phone isn't locked (the screen only went dark for a moment): get out of the way at once
         android.os.PowerManager pm = (android.os.PowerManager) getSystemService(POWER_SERVICE);
         KeyguardManager kg = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-        if (pm != null && pm.isInteractive() && kg != null && !kg.isKeyguardLocked()) { log(this, "not locked: stepped aside"); finish(); return; }
+        if (pm != null && pm.isInteractive() && kg != null && !kg.isKeyguardLocked() && !velthonOnly(this)) { log(this, "not locked: stepped aside"); finish(); return; }
         calls.removeCallbacks(callWatch); calls.postDelayed(callWatch, 300);
     }
     @Override protected void onPause() { super.onPause(); calls.removeCallbacks(callWatch); }
@@ -312,7 +322,7 @@ public class LockSaver extends Activity {
         int sz = Math.round(64 * d);
         box.addView(icon, new LinearLayout.LayoutParams(sz, sz));
         TextView t = new TextView(this);
-        t.setText(kind == 2 ? L.t("Touch to unlock with your fingerprint") : kind == 1 ? L.t("Tap to unlock with your face") : L.t("Tap to unlock"));
+        t.setText(velthonOnly(this) ? L.t("Tap to open") : kind == 2 ? L.t("Touch to unlock with your fingerprint") : kind == 1 ? L.t("Tap to unlock with your face") : L.t("Tap to unlock"));
         t.setTextColor(Color.WHITE);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         t.setShadowLayer(2 * d, 0, d, 0xB3000000);

@@ -80,4 +80,41 @@ final class Events {
         return day + " " + DateFormat.getTimeFormat(c).format(at.getTime());
     }
     private static int dayIndex(Calendar c) { return c.get(Calendar.YEAR) * 400 + c.get(Calendar.DAY_OF_YEAR); }
+
+    /** Every event of a month, by day of month: {title, time or "All day"}. Empty without calendar permission. */
+    static java.util.HashMap<Integer, ArrayList<String[]>> month(Context c, int year, int month0) {
+        java.util.HashMap<Integer, ArrayList<String[]>> out = new java.util.HashMap<>();
+        if (!allowed(c)) return out;
+        Calendar from = Calendar.getInstance(); from.clear(); from.set(year, month0, 1);
+        Calendar to = (Calendar) from.clone(); to.add(Calendar.MONTH, 1);
+        Uri.Builder b = CalendarContract.Instances.CONTENT_URI.buildUpon();
+        ContentUris.appendId(b, from.getTimeInMillis() - 86_400_000L);
+        ContentUris.appendId(b, to.getTimeInMillis() + 86_400_000L);
+        String[] cols = {CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END, CalendarContract.Instances.ALL_DAY};
+        try (Cursor q = c.getContentResolver().query(b.build(), cols, CalendarContract.Instances.VISIBLE + " = 1", null, CalendarContract.Instances.BEGIN + " ASC")) {
+            if (q != null) while (q.moveToNext()) {
+                String title = q.getString(0);
+                if (title == null || title.trim().isEmpty()) title = L.t("Event");
+                long begin = q.getLong(1), end = q.getLong(2);
+                boolean allDay = q.getInt(3) == 1;
+                Calendar s = Calendar.getInstance(allDay ? java.util.TimeZone.getTimeZone("UTC") : java.util.TimeZone.getDefault());
+                s.setTimeInMillis(begin);
+                Calendar en = Calendar.getInstance(allDay ? java.util.TimeZone.getTimeZone("UTC") : java.util.TimeZone.getDefault());
+                en.setTimeInMillis(Math.max(begin, end - 1));
+                // an event over several days shows on each of them
+                Calendar d = Calendar.getInstance(); d.clear(); d.set(s.get(Calendar.YEAR), s.get(Calendar.MONTH), s.get(Calendar.DAY_OF_MONTH));
+                Calendar last = Calendar.getInstance(); last.clear(); last.set(en.get(Calendar.YEAR), en.get(Calendar.MONTH), en.get(Calendar.DAY_OF_MONTH));
+                for (int guard = 0; !d.after(last) && guard < 62; guard++) {
+                    if (d.get(Calendar.YEAR) == year && d.get(Calendar.MONTH) == month0) {
+                        String when = allDay ? L.t("All day") : DateFormat.getTimeFormat(c).format(new java.util.Date(begin));
+                        ArrayList<String[]> l = out.get(d.get(Calendar.DAY_OF_MONTH));
+                        if (l == null) { l = new ArrayList<>(); out.put(d.get(Calendar.DAY_OF_MONTH), l); }
+                        l.add(new String[] {title.trim(), when});
+                    }
+                    d.add(Calendar.DAY_OF_MONTH, 1);
+                }
+            }
+        } catch (Throwable ignored) { }
+        return out;
+    }
 }
