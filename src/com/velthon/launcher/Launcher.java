@@ -216,9 +216,10 @@ public class Launcher extends Activity {
     private String widgetsKey() { return page == 0 ? "widgets" : "widgets_p2"; }
     private View[] infoViews() { return new View[] {clockV, card, wxPill, alertLine, nextLine, churchLine}; }
     /** dir: +1 = the new page comes in from the right, -1 from the left. */
+    private long pageTurnAt;
     private void setPage(int p, final int dir) {
         if (p == page) return;
-        page = p;
+        page = p; pageTurnAt = android.os.SystemClock.uptimeMillis();
         if (p == 1) { for (View v : infoViews()) if (v != null) v.setVisibility(View.GONE); }
         else { clockV.setVisibility(View.VISIBLE); card.setVisibility(View.VISIBLE); wxPill.setVisibility(View.VISIBLE); nextLine.setVisibility(countdownOn() ? View.VISIBLE : View.GONE); showWeather(); showAlarm(); }
         if (resizing != null) endResize();
@@ -227,11 +228,15 @@ public class Launcher extends Activity {
         final View box = (View) desk.getParent();
         ui.removeCallbacks(settleAll); ui.postDelayed(settleAll, 700);    // whatever happens, it ends in place
         if (U.anims(this) && hasWindowFocus()) {
-            box.setTranslationX(dir * scene.getWidth() * .35f); box.setAlpha(0f);
-            box.animate().translationX(0).alpha(1f).setDuration(320).setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).start();
+            // the new page turns in like the next face of a cube
+            box.setCameraDistance(dp(2200));
+            box.setPivotX(dir > 0 ? 0 : box.getWidth()); box.setPivotY(box.getHeight() / 2f);
+            box.setRotationY(dir * 62f); box.setTranslationX(dir * scene.getWidth() * .18f); box.setAlpha(.15f);
+            box.animate().rotationY(0).translationX(0).alpha(1f).setDuration(460)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator(2f)).start();
             if (p == 0) for (View v : infoViews()) if (v != null && v.getVisibility() == View.VISIBLE) {
-                v.setAlpha(0f); v.setTranslationX(dir * dp(40));
-                v.animate().alpha(1f).translationX(0).setDuration(320).setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).start();
+                v.setAlpha(0f); v.setTranslationX(dir * dp(40)); v.setCameraDistance(dp(2200)); v.setRotationY(dir * 35f);
+                v.animate().alpha(1f).translationX(0).rotationY(0).setDuration(420).setInterpolator(new android.view.animation.DecelerateInterpolator(2f)).start();
             }
         }
     }
@@ -1049,17 +1054,24 @@ public class Launcher extends Activity {
             float wantX = Math.max(-max, Math.min(max, (gx - baseX) / 3f * max));
             float wantY = Math.max(-max, Math.min(max, -(gy - baseY) / 3f * max));
             tx += (wantX - tx) * .25f; ty += (wantY - ty) * .25f;
-            scene.setTilt(tx, ty);
+            if (U.isSky(Launcher.this)) scene.setTilt(tx, ty);
             // the layers in front move the other way, a little: the verse floats, the dock leans with the phone
             if (drawer.getVisibility() != View.VISIBLE) {
                 card.setTranslationX(-tx * .16f); card.setTranslationY(-ty * .1f);
+                // the apps lean a few degrees with the phone, like tiles on glass
+                View box = (View) desk.getParent();
+                if (android.os.SystemClock.uptimeMillis() - pageTurnAt > 600 && !dragging && resizing == null) {
+                    box.setCameraDistance(dp(2400)); box.setPivotX(box.getWidth() / 2f); box.setPivotY(box.getHeight() / 2f);
+                    box.setRotationY(tx / dp(26) * 5f); box.setRotationX(ty / dp(26) * 4f);
+                }
                 // the dock stays flat and still (it is the steady base of the screen)
             }
         }
         @Override public void onAccuracyChanged(android.hardware.Sensor s, int a) { }
     };
     private void startTilt() {
-        if (!U.prefs(this).getString("motion", "on").equals("on") || !U.isSky(this)) { scene.setTilt(0, 0); return; }
+        if (!U.prefs(this).getString("motion", "on").equals("on")) { scene.setTilt(0, 0); return; }
+        if (!U.isSky(this)) scene.setTilt(0, 0);
         if (sensors == null) sensors = (android.hardware.SensorManager) getSystemService(SENSOR_SERVICE);
         if (sensors == null) return;
         android.hardware.Sensor g = sensors.getDefaultSensor(android.hardware.Sensor.TYPE_GRAVITY);
@@ -1069,6 +1081,7 @@ public class Launcher extends Activity {
     private void stopTilt() {
         if (sensors != null) sensors.unregisterListener(tilt);
         card.setTranslationX(0); card.setTranslationY(0);
+        View db = (View) desk.getParent(); db.setRotationX(0); db.setRotationY(0);
         if (dockWrap != null) { dockWrap.setRotationX(0); dockWrap.setRotationY(0); }
     }
 
@@ -1627,14 +1640,33 @@ public class Launcher extends Activity {
             if (!U.anims(Launcher.this)) return false;
             View i = v instanceof ViewGroup && ((ViewGroup) v).getChildCount() > 0 ? ((ViewGroup) v).getChildAt(0) : v;
             switch (e.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN:
-                    i.animate().scaleX(.9f).scaleY(.9f).setDuration(90).setInterpolator(new android.view.animation.DecelerateInterpolator()).start(); break;
+                case MotionEvent.ACTION_DOWN: {
+                    // pressed like a real button: it sinks and leans toward the finger
+                    float fx = (e.getX() - v.getWidth() / 2f) / Math.max(1, v.getWidth() / 2f);
+                    float fy = (e.getY() - i.getHeight() / 2f) / Math.max(1, i.getHeight() / 2f);
+                    i.setCameraDistance(dp(900));
+                    i.animate().scaleX(.9f).scaleY(.9f).rotationY(Math.max(-1, Math.min(1, fx)) * 16f).rotationX(-Math.max(-1, Math.min(1, fy)) * 16f)
+                            .translationZ(-dp(2)).setDuration(110).setInterpolator(new android.view.animation.DecelerateInterpolator()).start(); break;
+                }
                 case MotionEvent.ACTION_UP: case MotionEvent.ACTION_CANCEL:
-                    i.animate().scaleX(1f).scaleY(1f).setDuration(260).setInterpolator(new android.view.animation.OvershootInterpolator(2.2f)).start(); break;
+                    i.animate().scaleX(1f).scaleY(1f).rotationX(0).rotationY(0).translationZ(0).setDuration(320)
+                            .setInterpolator(new android.view.animation.OvershootInterpolator(2.2f)).start(); break;
             }
             return false;
         }
     };
+
+    /** An item flips up from lying flat, around its own horizontal middle, in true 3D perspective. */
+    private static final class Flip3D extends android.view.animation.Animation {
+        private final float from; private final android.graphics.Camera cam = new android.graphics.Camera(); private float cx, cy;
+        Flip3D(float from) { this.from = from; }
+        @Override public void initialize(int w, int h, int pw, int ph) { super.initialize(w, h, pw, ph); cx = w / 2f; cy = h / 2f; }
+        @Override protected void applyTransformation(float t, android.view.animation.Transformation tr) {
+            android.graphics.Matrix m = tr.getMatrix();
+            cam.save(); cam.rotateX(from * (1 - t)); cam.getMatrix(m); cam.restore();
+            m.preTranslate(-cx, -cy); m.postTranslate(cx, cy);
+        }
+    }
 
     /** One app's icon with its name, as on the home screen and in the drawer. */
     private View tile(final App a, boolean label, int iconDp) {
@@ -1644,6 +1676,15 @@ public class Launcher extends Activity {
         ImageView iv = new DotIcon(this, a);
         iv.setImageDrawable(shaped(a, iconDp));
         l.addView(iv, lp(dp(iconDp), dp(iconDp)));
+        if (U.anims(this)) {
+            // raised off the glass: a soft shadow underneath makes each icon stand out in 3D
+            final float rad = dp(iconDp) * .27f;
+            iv.setOutlineProvider(new android.view.ViewOutlineProvider() { @Override public void getOutline(View v, android.graphics.Outline o) {
+                int in = Math.round(v.getWidth() * .04f);
+                o.setRoundRect(in, in, v.getWidth() - in, v.getHeight() - in, rad); o.setAlpha(.55f); } });
+            iv.setElevation(dp(5));
+            if (Build.VERSION.SDK_INT >= 28) { iv.setOutlineAmbientShadowColor(0xFF000000); iv.setOutlineSpotShadowColor(0xFF000000); }
+        }
         if (label) {
             TextView t = text(12.5f, Color.WHITE, android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
             t.setSingleLine(true); t.setEllipsize(TextUtils.TruncateAt.END);
@@ -3142,13 +3183,14 @@ public class Launcher extends Activity {
         if (U.anims(this)) {
             // the sheet rises with a slight 3D lean, the icons arrive one after another
             sheet.setCameraDistance(dp(1600)); sheet.setPivotY(0); sheet.setPivotX(scene.getWidth() / 2f);
-            sheet.setRotationX(9f);
-            sheet.animate().rotationX(0f).setDuration(380).start();
+            sheet.setRotationX(24f);
+            sheet.animate().rotationX(0f).setDuration(460).setInterpolator(new android.view.animation.DecelerateInterpolator(2f)).start();
             android.view.animation.AnimationSet in = new android.view.animation.AnimationSet(true);
             in.addAnimation(new android.view.animation.AlphaAnimation(0f, 1f));
             in.addAnimation(new android.view.animation.ScaleAnimation(.82f, 1f, .82f, 1f,
                     android.view.animation.Animation.RELATIVE_TO_SELF, .5f, android.view.animation.Animation.RELATIVE_TO_SELF, .5f));
             in.addAnimation(new android.view.animation.TranslateAnimation(0, 0, dp(18), 0));
+            in.addAnimation(new Flip3D(70f));
             in.setDuration(300);
             in.setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f));
             android.view.animation.GridLayoutAnimationController lac = new android.view.animation.GridLayoutAnimationController(in, .12f, .12f);
