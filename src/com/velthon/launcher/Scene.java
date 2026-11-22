@@ -51,7 +51,10 @@ class Scene extends FrameLayout {
 
     /** Re-reads the season and the time of day (called when the screen comes back). */
     void refresh() {
-        fxKind = U.isSky(getContext()) && U.anims(getContext()) && U.prefs(getContext()).getString("wx_fx", "on").equals("on") ? U.skyName(getContext()) : "";
+        // weather motion: on the live sky every kind; on a picture only what falls (rain, snow, storm), which suits any window
+        String k = U.anims(getContext()) && U.prefs(getContext()).getString("wx_fx", "on").equals("on") ? U.skyName(getContext()) : "";
+        if (!U.isSky(getContext()) && !(k.contains("rain") || k.contains("snow") || k.contains("storm") || k.contains("drizzle"))) k = "";
+        fxKind = k;
         float ev = U.evening(getContext());
         int s = U.season(getContext());
         Bitmap pic = U.background(getContext());
@@ -221,7 +224,7 @@ class Scene extends FrameLayout {
             else c.drawBitmap(picture, picM, pic);
         }
         else c.drawColor(0xFF1A2440);
-        if (sky && living && live && fx != null) {   // rain, snow, sun rays, stars: in the sky, behind the sill
+        if (living && live && fx != null && (sky || !fxKind.isEmpty())) {   // rain, snow, sun rays, stars: in the sky, behind the sill
             float sx = w / 2f + tiltX, sy = (focusY > 0 ? focusY : h * .4f) + tiltY;
             fx.draw(c, sx, sy, tiltX / Math.max(1f, 26 * getResources().getDisplayMetrics().density));
         }
@@ -248,14 +251,14 @@ class Scene extends FrameLayout {
             small = U.blur(b, 3);
             b.recycle();
         }
-        if (living && U.isSky(getContext())) {
+        if (living && (U.isSky(getContext()) || !fxKind.isEmpty())) {
             if (fx == null) fx = new WeatherFx(getResources().getDisplayMetrics().density);
             fx.setKind(fxKind, w, h);
         }
         live = true;
         paintScene(c, w, h);
         // battery: 25 frames a second only while rain, snow or a touch is moving; the slow drift needs no more than 5
-        if (living && U.isSky(getContext())) postInvalidateDelayed(fx != null && fx.busy() ? 40 : 200);
+        if (living && (U.isSky(getContext()) || !fxKind.isEmpty())) postInvalidateDelayed(fx != null && fx.busy() ? 40 : 200);
     }
 
     private final int[] me = new int[2], it = new int[2];

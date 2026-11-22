@@ -104,7 +104,7 @@ final class U {
         if (b.equals("candle") || b.equals("mist") || b.equals("night")) return bitmap(c, "bg/" + b + ".jpg");
         return bitmap(c, "scene.jpg");
     }
-    static boolean cornerLeaves(Context c) { return !prefs(c).getString("corner_leaves", "on").equals("off"); }
+    static boolean cornerLeaves(Context c) { return false; }   // leaves were retired: the window stays clear
 
     private static Typeface serif, sans, sansBold, sansLight;
     static Typeface serif(Context c) {

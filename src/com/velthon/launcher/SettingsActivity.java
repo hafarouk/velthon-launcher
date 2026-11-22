@@ -121,20 +121,13 @@ public class SettingsActivity extends Activity {
                 backgrounds(),
                 choice(L.t("Season theme"), "season", "auto", new String[] {L.t("Automatic (by date)"), L.t("Spring"), L.t("Summer"), L.t("Autumn"), L.t("Winter")},
                         new String[] {"auto", "spring", "summer", "fall", "winter"}),
-                choice(L.t("Motion (window depth)"), "motion", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
-                choice(L.t("Living weather (rain, snow, sun rays, stars)"), "wx_fx", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
+                
+                choice(L.t("Weather motion (rain, snow, sun rays, stars)"), "wx_fx", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
                 choice(L.t("Animations"), "anims", "on", new String[] {L.t("Light (recommended)"), L.t("Off")}, new String[] {"on", "off"}),
-                choice(L.t("Corner leaves"), "corner_leaves", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
-                choice(L.t("Wind"), "wind", "normal", new String[] {L.t("Calm"), L.t("Normal"), L.t("Strong")}, new String[] {"calm", "normal", "strong"}),
+                
+                
                 choice(L.t("Night mode"), "night_mode", "off", new String[] {L.t("Off"), "10 PM – 6 AM", "9 PM – 7 AM"}, new String[] {"off", "22", "21"}));
 
-        section(Ico.SOUND, L.t("Sound & voice"), L.t("Reading the verse aloud"),
-                choice(L.t("Reading speed"), "speech_rate", "normal", new String[] {L.t("Slow"), L.t("Normal")}, new String[] {"slow", "normal"}),
-                action(L.t("Reading voice"), L.t("Choose a natural voice for each language"), new Runnable() { @Override public void run() {
-                    try { startActivity(new Intent("com.android.settings.TTS_SETTINGS")); }
-                    catch (Throwable t) { open(Settings.ACTION_SETTINGS); } } }));
-
-        String city = p().getString("city", "");
         section(Ico.CLOUD, L.t("Weather & calendar"), L.t("Forecast, alerts and church feasts"),
                 action(L.t("Weather city"), city.isEmpty() ? L.t("Your location") : city, new Runnable() { @Override public void run() { askCity(); } }),
                 choice(L.t("Temperature"), "units", "auto", new String[] {L.t("Automatic"), L.t("Celsius (°C)"), L.t("Fahrenheit (°F)")}, new String[] {"auto", "c", "f"}),
@@ -178,10 +171,7 @@ public class SettingsActivity extends Activity {
                         } }),
                 action(L.t("Allow it over the lock screen"), Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this) ? "Needed once: \"Display over other apps\"" : L.t("Allowed"),
                         new Runnable() { @Override public void run() { askOverlay(); } }),
-                action(L.t("Lock check"), LockSaver.check(this), new Runnable() { @Override public void run() {
-                    android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                    try { cm.setPrimaryClip(android.content.ClipData.newPlainText("lock", LockSaver.check(SettingsActivity.this))); } catch (Throwable ignored) { }
-                    Toast.makeText(SettingsActivity.this, "Copied", Toast.LENGTH_SHORT).show(); } }),
+                
                 action(L.t("Make it my screensaver"), "Choose \"Velthon\" in the list", new Runnable() { @Override public void run() {
                     if (!open(Settings.ACTION_DREAM_SETTINGS)) open(Settings.ACTION_DISPLAY_SETTINGS);
                     Toast.makeText(SettingsActivity.this, "Choose \"Velthon\" as the screen saver", Toast.LENGTH_LONG).show(); } }),

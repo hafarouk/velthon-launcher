@@ -1084,7 +1084,7 @@ public class Launcher extends Activity {
         @Override public void onAccuracyChanged(android.hardware.Sensor s, int a) { }
     };
     private void startTilt() {
-        if (!U.prefs(this).getString("motion", "on").equals("on") || !U.isSky(this)) { scene.setTilt(0, 0); return; }
+        if (!U.anims(this) || !U.isSky(this)) { scene.setTilt(0, 0); return; }   // the tilt follows Animations
         if (sensors == null) sensors = (android.hardware.SensorManager) getSystemService(SENSOR_SERVICE);
         if (sensors == null) return;
         android.hardware.Sensor g = sensors.getDefaultSensor(android.hardware.Sensor.TYPE_GRAVITY);
