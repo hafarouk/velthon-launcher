@@ -1363,8 +1363,14 @@ public class Launcher extends Activity {
         } else { wxTemp.setText(""); wxText.setText(""); }
         forecastRow.setVisibility(View.GONE);
         // a weather alert for the next 24 hours, worked out from the forecast
-        String[] al = has && !U.prefs(this).getString("wx_alerts", "on").equals("off") ? Weather.alert(this) : null;
-        if (al == null) alertLine.setVisibility(View.GONE);
+        boolean alertsOn = has && !U.prefs(this).getString("wx_alerts", "on").equals("off");
+        String[] al = alertsOn ? Weather.alert(this) : null;
+        String[] off = alertsOn ? Weather.officialAlert(this) : null;
+        if (off != null) {   // the weather service's own warning comes first: its exact name (e.g. "Snowfall warning")
+            alertLine.setText("⚠ " + off[0]);
+            alertLine.setVisibility(View.VISIBLE);
+        }
+        else if (al == null) alertLine.setVisibility(View.GONE);
         else {
             String k = al[0];
             String[] n;

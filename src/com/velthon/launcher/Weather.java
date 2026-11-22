@@ -43,7 +43,7 @@ final class Weather {
         final SharedPreferences p = U.prefs(c);
         if (busy) return;
         long now = System.currentTimeMillis();
-        if (!force && now - p.getLong("wx_at", 0) < EVERY && p.contains("wx_alert")) return;
+        if (!force && now - p.getLong("wx_at", 0) < EVERY && p.contains("wx_alert") && p.contains("wx_official")) return;
         if (!force && now - p.getLong("wx_fail", 0) < 3 * 60 * 1000L) return;
         busy = true;
         new Thread(new Runnable() { @Override public void run() {
@@ -114,6 +114,7 @@ final class Weather {
                         }
                     }
                     p.edit().putString("wx_alert", alert).apply();
+                    p.edit().putString("wx_official", official(lat, lon)).apply();
                     for (int s = 3; s <= 15; s += 3) {
                         int i = start + s;
                         if (i >= ht.length()) break;
@@ -169,6 +170,62 @@ final class Weather {
             while ((n = in.read(b)) > 0) bo.write(b, 0, n);
             return new JSONObject(bo.toString("UTF-8"));
         } finally { h.disconnect(); }
+    }
+
+    /** The national weather service's own warnings for this spot (Environment Canada, or the US National Weather
+     *  Service): "name|level|expires-millis", the most serious one; "" when there is none or no service covers it. */
+    private static String official(double lat, double lon) {
+        try {
+            long now = System.currentTimeMillis(); String best = ""; int bestRank = 0;
+            boolean fr = L.lang().equals("fr");
+            if (lat > 41.6 && lat < 84 && lon > -142 && lon < -52) {   // Canada
+                JSONObject j = get(String.format(Locale.US,
+                        "https://api.weather.gc.ca/collections/weather-alerts/items?f=json&limit=50&bbox=%.3f,%.3f,%.3f,%.3f",
+                        lon - .01, lat - .01, lon + .01, lat + .01));
+                org.json.JSONArray fs = j.optJSONArray("features");
+                for (int i = 0; fs != null && i < fs.length(); i++) {
+                    JSONObject q = fs.getJSONObject(i).optJSONObject("properties"); if (q == null) continue;
+                    long exp = iso(q.optString("expiration_datetime", "")); if (exp > 0 && exp < now) continue;
+                    String st = (q.optString("status_en", "") + q.optString("display_status", "")).toLowerCase(Locale.US);
+                    if (st.contains("ended") || st.contains("cancel")) continue;
+                    String type = q.optString("alert_type", "").toLowerCase(Locale.US);
+                    int r = type.contains("warning") ? 4 : type.contains("watch") ? 3 : type.contains("advisory") ? 2 : 1;
+                    String name = q.optString(fr ? "alert_name_fr" : "alert_name_en", q.optString("alert_name_en", ""));
+                    if (name.isEmpty() || r <= bestRank) continue;
+                    bestRank = r; best = cap(name) + "|" + r + "|" + exp;
+                }
+            } else if (lat > 17 && lat < 72 && lon > -180 && lon < -64) {   // United States
+                JSONObject j = get(String.format(Locale.US, "https://api.weather.gov/alerts/active?point=%.4f,%.4f", lat, lon));
+                org.json.JSONArray fs = j.optJSONArray("features");
+                for (int i = 0; fs != null && i < fs.length(); i++) {
+                    JSONObject q = fs.getJSONObject(i).optJSONObject("properties"); if (q == null) continue;
+                    String sev = q.optString("severity", "");
+                    int r = sev.equals("Extreme") ? 5 : sev.equals("Severe") ? 4 : sev.equals("Moderate") ? 3 : 2;
+                    String name = q.optString("event", "");
+                    if (name.isEmpty() || r <= bestRank) continue;
+                    bestRank = r; best = name + "|" + r + "|" + iso(q.optString("ends", q.optString("expires", "")));
+                }
+            }
+            return best;
+        } catch (Throwable t) { return ""; }
+    }
+    private static String cap(String s) { return s.isEmpty() ? s : Character.toUpperCase(s.charAt(0)) + s.substring(1); }
+    private static long iso(String s) {
+        if (s == null || s.length() < 19) return 0;
+        try {
+            String z = s.replace("Z", "+00:00");
+            if (z.length() > 19 && z.charAt(19) == '.') { int k = 20; while (k < z.length() && Character.isDigit(z.charAt(k))) k++; z = z.substring(0, 19) + z.substring(k); }
+            if (z.length() == 19) z += "+00:00";
+            z = z.substring(0, 22) + z.substring(23);   // +hh:mm -> +hhmm
+            return new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US).parse(z).getTime();
+        } catch (Throwable t) { return 0; }
+    }
+    /** An official warning in force here: {name, level 1-5}, or null. */
+    static String[] officialAlert(Context c) {
+        String[] f = U.prefs(c).getString("wx_official", "").split("\\|");
+        if (f.length < 3 || f[0].isEmpty()) return null;
+        try { long e = Long.parseLong(f[2]); if (e > 0 && e < System.currentTimeMillis()) return null; } catch (NumberFormatException ignored) { }
+        return f;
     }
 
     // ---------- what to show ----------
