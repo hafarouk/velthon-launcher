@@ -128,6 +128,7 @@ public class SettingsActivity extends Activity {
                 
                 choice(L.t("Night mode"), "night_mode", "off", new String[] {L.t("Off"), "10 PM – 6 AM", "9 PM – 7 AM"}, new String[] {"off", "22", "21"}));
 
+        String city = p().getString("city", "");
         section(Ico.CLOUD, L.t("Weather & calendar"), L.t("Forecast, alerts and church feasts"),
                 action(L.t("Weather city"), city.isEmpty() ? L.t("Your location") : city, new Runnable() { @Override public void run() { askCity(); } }),
                 choice(L.t("Temperature"), "units", "auto", new String[] {L.t("Automatic"), L.t("Celsius (°C)"), L.t("Fahrenheit (°F)")}, new String[] {"auto", "c", "f"}),
