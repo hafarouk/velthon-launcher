@@ -41,7 +41,8 @@ import android.widget.TextView;
  * over the lock screen; a direct start is tried as well, where the phone still permits it.
  */
 public class LockSaver extends Activity {
-    private static boolean watching, showing;
+    private static boolean watching;
+    static boolean showing;
     private static final int NOTE = 77;
     private static final String CHANNEL = "velthon_lock";
 
@@ -245,10 +246,48 @@ public class LockSaver extends Activity {
         sv.reserveBottom = 120 * getResources().getDisplayMetrics().density;
         root.addView(sv, new FrameLayout.LayoutParams(-1, -1));
         root.addView(unlockButton(), new FrameLayout.LayoutParams(-1, -1));
+        addLockWidget(root, sv);
         setContentView(root);
         unlocked = new BroadcastReceiver() { @Override public void onReceive(Context c, Intent i) { finish(); } };
         registerReceiver(unlocked, new IntentFilter(Intent.ACTION_USER_PRESENT));
     }
+    // ---------------------------------------------------------------- the glucose reading (or another chosen widget)
+    private Widgets.Host wHost;
+    private final Runnable listen = new Runnable() { @Override public void run() {
+        try { if (wHost != null) wHost.startListening(); } catch (Throwable ignored) { }
+    } };
+    /** The widget picked for the lock screen, live, right under the date. A touch on it goes to the lock as usual. */
+    private void addLockWidget(FrameLayout root, final SaverView sv) {
+        final int id = Widgets.lockWidget(this);
+        if (id == 0) return;
+        try {
+            android.appwidget.AppWidgetProviderInfo info = android.appwidget.AppWidgetManager.getInstance(this).getAppWidgetInfo(id);
+            if (info == null) return;
+            wHost = new Widgets.Host(getApplicationContext(), Widgets.HOST);
+            wHost.startListening();
+            final android.appwidget.AppWidgetHostView v = wHost.createView(getApplicationContext(), id, info);
+            if (v instanceof Widgets.HoldView) {
+                ((Widgets.HoldView) v).passive = true;
+                ((Widgets.HoldView) v).bare = !U.prefs(this).getBoolean("wbg_" + id, false);
+            }
+            final float d = getResources().getDisplayMetrics().density;
+            final int h = Math.round(96 * d);
+            sv.reserveTop = h + 10 * d;
+            final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.round(getResources().getDisplayMetrics().widthPixels * .62f), h,
+                    android.view.Gravity.TOP | android.view.Gravity.CENTER_HORIZONTAL);
+            root.addView(v, 1, lp);   // over the picture, under the unlock layer
+            v.setVisibility(View.INVISIBLE);
+            sv.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override public void onLayoutChange(View x, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                    if (b - t <= 0) return;
+                    int top = Math.round(sv.infoBottom() + 4 * d);
+                    if (lp.topMargin != top) { lp.topMargin = top; v.setLayoutParams(lp); }
+                    v.setVisibility(View.VISIBLE);
+                }
+            });
+        } catch (Throwable t) { log(this, "lock widget: " + t); }
+    }
+
     @Override protected void onNewIntent(Intent i) { super.onNewIntent(i); clearNote(this); }
     /** A phone call always comes first: the moment it rings (or one is going on), step aside for the call screen. */
     private final Handler calls = new Handler(Looper.getMainLooper());
@@ -264,6 +303,8 @@ public class LockSaver extends Activity {
         KeyguardManager kg = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
         if (pm != null && pm.isInteractive() && kg != null && !kg.isKeyguardLocked() && !velthonOnly(this)) { log(this, "not locked: stepped aside"); finish(); return; }
         calls.removeCallbacks(callWatch); calls.postDelayed(callWatch, 300);
+        // the home screen stops listening a moment after we open: take the widget's updates back, now and once more
+        if (wHost != null) { calls.removeCallbacks(listen); calls.post(listen); calls.postDelayed(listen, 1500); }
     }
     @Override protected void onPause() { super.onPause(); calls.removeCallbacks(callWatch); }
     @Override protected void onStart() { super.onStart(); showing = true; }

@@ -74,6 +74,10 @@ class SaverView extends View {
     private long shownSlot = -1;
     /** Room kept free at the bottom (the lock screen's unlock button). */
     float reserveBottom;
+    /** Room under the date for something placed over the view (the glucose widget on the lock screen). */
+    float reserveTop;
+    /** Where the date (and feast) lines end: the room under them is free. */
+    float infoBottom() { return getHeight() * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.0f : 1.9f); }
     private final TextPaint evP = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
     private static final class Leaf { float x, y, vy, size, rot, vr, sway, phase, flip; int sprite; boolean snow; }
@@ -207,7 +211,7 @@ class SaverView extends View {
         if (text != null) text.recycle();
         text = Bitmap.createBitmap(w, Math.max(1, th + Math.round(size)), Bitmap.Config.ARGB_8888);
         textC = new Canvas(text);
-        float clockBottom = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f);
+        float clockBottom = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f) + reserveTop;
         float glassBottom = oy + GLASS_BOTTOM * k;
         float bottomLimit = Math.min(glassBottom, h * .9f);
         textTop = Math.max(clockBottom + h * .02f, (clockBottom + bottomLimit) / 2f - th / 2f);   // centred in the space under the clock
@@ -230,7 +234,7 @@ class SaverView extends View {
         }
         // room for the calendar events under the verse: lift the verse by half their height
         if (evCount > 0) {   // the verse right under the date, the card right under the verse
-            float clockB = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f);
+            float clockB = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f) + reserveTop;
             textTop = clockB + h * .01f;
         }
         // colours by what is behind each part: dark letters on the bright sun or moon, white on a dark sky

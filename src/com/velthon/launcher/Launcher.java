@@ -159,7 +159,7 @@ public class Launcher extends Activity {
         textScale = Math.max(.9f, Math.min(1.5f, getResources().getConfiguration().fontScale));   // follows the phone's text size
 
         widgetManager = AppWidgetManager.getInstance(this);
-        widgetHost = new Widgets.Host(this, 0x7e10);
+        widgetHost = new Widgets.Host(this, Widgets.HOST);
 
         scene = new Scene(this);
         buildHome();
@@ -201,7 +201,8 @@ public class Launcher extends Activity {
         if (drawer != null && drawer.getVisibility() == View.VISIBLE) closeDrawerNow();
         if (quick != null && quick.getVisibility() == View.VISIBLE) { quick.animate().cancel(); quick.setVisibility(View.GONE); quick.setAlpha(1f); }
         if (home != null) { home.animate().cancel(); home.setAlpha(1f); }
-        try { widgetHost.stopListening(); } catch (Throwable ignored) { }
+        // the lock screen shows a widget too (the glucose reading) and is listening for its updates now: leave it so
+        if (!LockSaver.showing) try { widgetHost.stopListening(); } catch (Throwable ignored) { }
     }
 
     private Boolean iconsOn;
@@ -2509,13 +2510,18 @@ public class Launcher extends Activity {
         m.getMenu().add(0, 7, 1, bgOn ? L.t("Hide widget background") : L.t("Show widget background"));
         if (pos > 0) m.getMenu().add(0, 3, 2, L.t("Move up"));
         if (pos >= 0 && pos < ids.size() - 1) m.getMenu().add(0, 4, 3, L.t("Move down"));
-        m.getMenu().add(0, 5, 4, L.t("Remove widget"));
+        final boolean onLock = Widgets.lockWidget(this) == id;
+        m.getMenu().add(0, 8, 4, onLock ? L.t("Remove from lock screen") : L.t("Show on lock screen"));
+        m.getMenu().add(0, 5, 5, L.t("Remove widget"));
         m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override public boolean onMenuItemClick(android.view.MenuItem it) {
                 int k = it.getItemId();
                 if (k == 1) {
                     try { widgetHost.startAppWidgetConfigureActivityForResult(Launcher.this, id, 0, REQ_RECONFIG, null); }
                     catch (Throwable t) { Toast.makeText(Launcher.this, L.t("This widget has no settings"), Toast.LENGTH_SHORT).show(); }
+                } else if (k == 8) {
+                    U.prefs(Launcher.this).edit().putInt("lock_widget", onLock ? -1 : id).apply();
+                    Toast.makeText(Launcher.this, onLock ? L.t("Removed from the lock screen") : L.t("It will show on the lock screen"), Toast.LENGTH_SHORT).show();
                 } else if (k == 6) {
                     startResize(id, info);
                 } else if (k == 15) {
