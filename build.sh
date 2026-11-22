@@ -11,7 +11,8 @@ OUT=$(realpath -m "${1:-velthon-launcher.apk}")
 ANDROID_JAR=${ANDROID_JAR:-/home/claude/ap/android-28/android.jar}
 APKTOOL=${APKTOOL:-/home/claude/build141/tools/apktool.jar}
 B=build; rm -rf $B && mkdir -p $B/classes $B/dex
-javac -nowarn -source 8 -target 8 -encoding UTF-8 -bootclasspath "$ANDROID_JAR" -d $B/classes src/com/velthon/launcher/*.java > $B/javac.log 2>&1 \
+mkdir -p $B/stubs && javac -nowarn -source 8 -target 8 -bootclasspath "$ANDROID_JAR" -d $B/stubs $(find stubs -name "*.java") > $B/javac.log 2>&1 || { cat $B/javac.log; exit 1; }
+javac -nowarn -source 8 -target 8 -encoding UTF-8 -bootclasspath "$ANDROID_JAR" -cp $B/stubs -d $B/classes src/com/velthon/launcher/*.java > $B/javac.log 2>&1 \
   || { grep -v "^Note\|JAVA_TOOL" $B/javac.log; exit 1; }
 if [ -n "$D8" ]; then "$D8" --min-api 23 --lib "$ANDROID_JAR" --output $B/dex $(find $B/classes -name '*.class')
 else java -cp "${DX_CP:-/home/claude/dxbuild}" com.android.dx.command.Main --dex --min-sdk-version=23 --output=$B/dex/classes.dex $B/classes; fi

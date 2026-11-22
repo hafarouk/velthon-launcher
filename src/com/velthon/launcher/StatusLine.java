@@ -27,6 +27,9 @@ final class StatusLine extends View {
     private String net = "";
     private int bars = -1;        // 0..4, -1 = none
     private boolean wifi;
+    private String gen = "";      // 5G, LTE, LTE+, 3G... (needs the phone permission)
+    private int override = 0;     // Android 11+: what the status bar shows (5G on LTE anchor, LTE+)
+    private android.telephony.PhoneStateListener psl;
 
     StatusLine(Context c) {
         super(c);
@@ -48,11 +51,46 @@ final class StatusLine extends View {
         super.onAttachedToWindow();
         try { readBattery(getContext().registerReceiver(battery, new IntentFilter(Intent.ACTION_BATTERY_CHANGED))); } catch (Throwable ignored) { }
         post(tick);
+        if (Build.VERSION.SDK_INT >= 30 && phoneAllowed()) try {
+            psl = new android.telephony.PhoneStateListener() {
+                // Android 11+ only; this API-28 build doesn't know the method, the phone calls it all the same
+                public void onDisplayInfoChanged(android.telephony.TelephonyDisplayInfo i) {
+                    override = i.getOverrideNetworkType(); readNetwork(); invalidate();
+                }
+            };
+            ((TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE)).listen(psl, 0x00100000 /* LISTEN_DISPLAY_INFO_CHANGED */);
+        } catch (Throwable t) { psl = null; }
+    }
+
+    private boolean phoneAllowed() {
+        return Build.VERSION.SDK_INT < 23 || getContext().checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+    }
+
+    /** The label the phone's own status bar would show. */
+    private String generation(TelephonyManager tm) {
+        if (!phoneAllowed()) return "";
+        int t;
+        try { t = tm.getDataNetworkType(); } catch (Throwable e) { return ""; }
+        if (t == 0) try { t = tm.getVoiceNetworkType(); } catch (Throwable ignored) { }
+        if (override == 3 || override == 4 || override == 5) return "5G";
+        switch (t) {
+            case 20: return "5G";
+            case TelephonyManager.NETWORK_TYPE_LTE: case 19 /* LTE_CA */: return override == 1 || override == 2 || t == 19 ? "LTE+" : "LTE";
+            case TelephonyManager.NETWORK_TYPE_HSPAP: return "H+";
+            case TelephonyManager.NETWORK_TYPE_HSPA: case TelephonyManager.NETWORK_TYPE_HSDPA: case TelephonyManager.NETWORK_TYPE_HSUPA: return "H";
+            case TelephonyManager.NETWORK_TYPE_UMTS: case TelephonyManager.NETWORK_TYPE_EVDO_0: case TelephonyManager.NETWORK_TYPE_EVDO_A:
+            case TelephonyManager.NETWORK_TYPE_EVDO_B: case TelephonyManager.NETWORK_TYPE_EHRPD: case 17 /* TD_SCDMA */: return "3G";
+            case TelephonyManager.NETWORK_TYPE_EDGE: return "E";
+            case TelephonyManager.NETWORK_TYPE_GPRS: case TelephonyManager.NETWORK_TYPE_CDMA: case TelephonyManager.NETWORK_TYPE_1xRTT: return "G";
+            default: return "";
+        }
     }
     @Override protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         try { getContext().unregisterReceiver(battery); } catch (Throwable ignored) { }
         removeCallbacks(tick);
+        if (psl != null) try { ((TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE)).listen(psl, 0); } catch (Throwable ignored) { }
+        psl = null;
     }
 
     private void readBattery(Intent i) {
@@ -66,7 +104,7 @@ final class StatusLine extends View {
 
     private void readNetwork() {
         Context c = getContext();
-        wifi = false; bars = -1; net = "";
+        wifi = false; bars = -1; net = ""; gen = "";
         try {
             ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
             Network n = cm.getActiveNetwork();
@@ -85,6 +123,7 @@ final class StatusLine extends View {
             String op = tm.getNetworkOperatorName();
             net = op == null ? "" : op.trim();
             if (Build.VERSION.SDK_INT >= 28 && tm.getSignalStrength() != null) bars = tm.getSignalStrength().getLevel();
+            gen = generation(tm);
             if (tm.getSimState() != TelephonyManager.SIM_STATE_READY && net.isEmpty()) { net = L.t("No SIM"); bars = -1; }
         } catch (Throwable ignored) { }
         if (net.isEmpty() && bars < 0) net = L.t("No service");
@@ -98,10 +137,11 @@ final class StatusLine extends View {
         float iw = 18 * d;
         float ix = rtl ? x - iw : x;
         if (wifi) drawWifi(c, ix, mid, iw); else if (bars >= 0) drawBars(c, ix, mid, iw);
-        if (!net.isEmpty()) {
-            float tw = text.measureText(net);
+        String label = !wifi && !gen.isEmpty() ? (net.isEmpty() ? gen : gen + "  " + net) : net;
+        if (!label.isEmpty()) {
+            float tw = text.measureText(label);
             float tx = rtl ? (bars >= 0 || wifi ? ix - 6 * d - tw : x - tw) : (bars >= 0 || wifi ? ix + iw + 6 * d : x);
-            c.drawText(net, tx, mid + text.getTextSize() * .35f, text);
+            c.drawText(label, tx, mid + text.getTextSize() * .35f, text);
         }
         // the battery: right (left in Arabic)
         if (level < 0) return;

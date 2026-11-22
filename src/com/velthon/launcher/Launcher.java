@@ -397,14 +397,22 @@ public class Launcher extends Activity {
         visible = true;
         resumedAt = android.os.SystemClock.uptimeMillis();
         // once: ask to read the calendar, for the next events on the lock screen
+        boolean askedNow = false;   // one permission question at a time
         if (Build.VERSION.SDK_INT >= 23 && !Events.allowed(this) && !U.prefs(this).getBoolean("cal_asked", false)
                 && U.prefs(this).getString("lock_events", "on").equals("on")) {
             U.prefs(this).edit().putBoolean("cal_asked", true).apply();
             try { requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 41); } catch (Throwable ignored) { }
+            askedNow = true;
         }
         LockSaver.watch(this);
         if (LockSaver.ENABLED && U.prefs(this).getString("lock_saver", "on").equals("on")) {
             LockSaver.prepare(this);
+            // the lock screen shows 5G / LTE beside the carrier, as the phone's status bar does: that needs the phone permission (asked once)
+            if (!askedNow && LockSaver.ready(this) && Build.VERSION.SDK_INT >= 23 && !U.prefs(this).getBoolean("phone_asked", false)
+                    && checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                U.prefs(this).edit().putBoolean("phone_asked", true).apply();
+                requestPermissions(new String[] {android.Manifest.permission.READ_PHONE_STATE}, 61);
+            } else
             if (!LockSaver.ready(this) && !U.prefs(this).getBoolean("lock_setup_asked", false)) {
                 U.prefs(this).edit().putBoolean("lock_setup_asked", true).apply();
                 ui.postDelayed(new Runnable() { @Override public void run() { LockSetup.show(Launcher.this); } }, 1500);
