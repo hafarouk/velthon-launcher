@@ -81,6 +81,9 @@ class SaverView extends View {
     private int spawned, toSpawn;
     private long lastSpawn;
 
+    /** Lock screen: redraw once a second only (the clock), to spare the battery. */
+    boolean calm;
+
     SaverView(Context c) {
         super(c);
         picture = U.background(c);
@@ -365,7 +368,8 @@ class SaverView extends View {
             if (hr >= nightFrom || hr < nightTo) c.drawRect(0, 0, w, h, night);
         }
 
-        if (isShown()) postInvalidateDelayed(sky ? 1000 : Math.max(8, 33 - (SystemClock.uptimeMillis() - now)));
+        // battery: on the lock screen nothing moves faster than the clock, so once a second is enough
+        if (isShown()) postInvalidateDelayed(sky || calm ? 1000 : Math.max(8, 33 - (SystemClock.uptimeMillis() - now)));
     }
 
     private void step(long now) {

@@ -197,6 +197,7 @@ public class LockSaver extends Activity {
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         FrameLayout root = new FrameLayout(this);
         SaverView sv = new SaverView(this);
+        sv.calm = true;
         sv.reserveBottom = 120 * getResources().getDisplayMetrics().density;
         root.addView(sv, new FrameLayout.LayoutParams(-1, -1));
         root.addView(unlockButton(), new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));

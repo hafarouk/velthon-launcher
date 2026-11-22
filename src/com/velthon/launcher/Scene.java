@@ -254,7 +254,8 @@ class Scene extends FrameLayout {
         }
         live = true;
         paintScene(c, w, h);
-        if (living && U.isSky(getContext())) postInvalidateDelayed(fx != null && fx.busy() ? 33 : 66);
+        // battery: 25 frames a second only while rain, snow or a touch is moving; the slow drift needs no more than 5
+        if (living && U.isSky(getContext())) postInvalidateDelayed(fx != null && fx.busy() ? 40 : 200);
     }
 
     private final int[] me = new int[2], it = new int[2];

@@ -473,6 +473,8 @@ public class Launcher extends Activity {
         }
         ui.removeCallbacks(countdown); countdown.run();
         startTilt();
+        resting = false; ui.removeCallbacks(rest); ui.postDelayed(rest, 60_000);
+        if (wxFloat != null && wxFloat.isPaused()) wxFloat.resume();
         ui.postDelayed(new Runnable() { @Override public void run() { sinkDock(); } }, 180);
     }
 
@@ -482,8 +484,27 @@ public class Launcher extends Activity {
     } };
     private final Runnable wxRetry = new Runnable() { @Override public void run() { Weather.refresh(Launcher.this, false, wxDone); } };
 
+    /** Battery: the moving sky, the weather particles and the tilt sensor run for a minute after the home screen is
+     *  shown or touched, then rest (a still picture) until the next touch. */
+    private final Runnable rest = new Runnable() { @Override public void run() {
+        scene.setLiving(false); stopTilt(); resting = true;
+        if (wxFloat != null && wxFloat.isRunning()) wxFloat.pause();
+    } };
+    private boolean resting;
+    private void awake() {
+        ui.removeCallbacks(rest); ui.postDelayed(rest, 60_000);
+        if (resting && visible) {
+            resting = false;
+            scene.setLiving(U.anims(this) && drawer.getVisibility() != View.VISIBLE);
+            startTilt();
+            if (wxFloat != null && wxFloat.isPaused()) wxFloat.resume();
+        }
+    }
+
     @Override protected void onPause() {
         visible = false;
+        ui.removeCallbacks(rest); resting = true;
+        if (wxFloat != null && wxFloat.isRunning()) wxFloat.pause();   // never animate out of sight
         ui.removeCallbacks(settleAll);
         settle();
         scene.setLiving(false);
@@ -687,7 +708,7 @@ public class Launcher extends Activity {
         shadow(wxText, 4);
         LinearLayout.LayoutParams wtl = lp(-1, -2); wtl.topMargin = dp(3);
         wxPill.addView(wxText, wtl);
-        wxPill.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openWeatherApp(); Weather.refresh(Launcher.this, true, wxDone); } });
+        wxPill.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { weatherSheet(); Weather.refresh(Launcher.this, true, wxDone); } });
         LinearLayout.LayoutParams wl = lp(-1, -2); wl.topMargin = 0; wl.leftMargin = wl.rightMargin = dp(18);
         home.addView(wxPill, wl);
         enter.add(wxPill);
@@ -695,7 +716,7 @@ public class Launcher extends Activity {
         forecastRow.setVisibility(View.GONE);
         alertLine = text(13, 0xFFFF8A80, U.sansBold(this));
         alertLine.setGravity(Gravity.CENTER);
-        alertLine.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openWeatherApp(); } });
+        alertLine.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { weatherSheet(); } });
         alertLine.setSingleLine(true); alertLine.setEllipsize(TextUtils.TruncateAt.END);
         shadow(alertLine, 5);
         LinearLayout.LayoutParams all = lp(-1, -2); all.topMargin = dp(2); all.leftMargin = all.rightMargin = dp(20);
@@ -815,6 +836,7 @@ public class Launcher extends Activity {
      *  slow drag counts as well as a fast flick. */
     private float gx0, gy0; private long gt0; private boolean gDone, gTrack, gInList, gOnStrip;
     @Override public boolean dispatchTouchEvent(MotionEvent e) {
+        if (e.getActionMasked() == MotionEvent.ACTION_DOWN) awake();
         if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
             dragging = false;                                   // a finger coming down means no drag is going on
             if (resizing != null && resizing.getParent() == null) resizing = null;
@@ -916,7 +938,7 @@ public class Launcher extends Activity {
             case "quick_settings": try { Object sb = getSystemService("statusbar"); sb.getClass().getMethod("expandSettingsPanel").invoke(sb); } catch (Throwable t) { expandNotifications(); } break;
             case "verses": startActivity(new Intent(this, VersesActivity.class)); overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); break;
             case "saver": startActivity(new Intent(this, PreviewActivity.class)); break;
-            case "weather": openWeatherApp(); break;
+            case "weather": weatherSheet(); break;
             case "phone_settings": try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Throwable ignored) { } break;
             case "settings": openSettings(); break;
             case "lock": lockScreen(); break;
@@ -1030,6 +1052,9 @@ public class Launcher extends Activity {
             long ms = (k.get(java.util.Calendar.HOUR_OF_DAY) * 3600000L + k.get(java.util.Calendar.MINUTE) * 60000L + k.get(java.util.Calendar.SECOND) * 1000L + k.get(java.util.Calendar.MILLISECOND));
             long left = period - ms % period;
             if (U.verseSlot(Launcher.this) != verseSlotShown) showVerse();
+            if (nextLine.getVisibility() != View.VISIBLE) {   // countdown hidden: no need to wake every second
+                ui.postDelayed(this, Math.min(left, 60_000 - System.currentTimeMillis() % 60_000) + 50); return;
+            }
             long sec = left / 1000;
             String t = sec >= 3600 ? String.format(Locale.US, "%d:%02d:%02d", sec / 3600, sec / 60 % 60, sec % 60) : String.format(Locale.US, "%02d:%02d", sec / 60, sec % 60);
             nextLine.setText(L.t("Next verse in ") + t);
@@ -1064,7 +1089,7 @@ public class Launcher extends Activity {
         if (sensors == null) return;
         android.hardware.Sensor g = sensors.getDefaultSensor(android.hardware.Sensor.TYPE_GRAVITY);
         if (g == null) g = sensors.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER);
-        if (g != null) sensors.registerListener(tilt, g, android.hardware.SensorManager.SENSOR_DELAY_UI);
+        if (g != null) sensors.registerListener(tilt, g, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);   // 5 a second: smooth enough, far lighter
     }
     private void stopTilt() {
         if (sensors != null) sensors.unregisterListener(tilt);
@@ -1207,6 +1232,50 @@ public class Launcher extends Activity {
             try { startActivity(Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_CALENDAR).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Throwable ignored) { }
         }
     }
+    /** Tapping the weather: Velthon's own forecast card first (it never crashes), with the way on to a full weather app
+     *  and to the weather service's official warnings. Some phones' own weather apps refuse to open on their own. */
+    private void weatherSheet() {
+        final android.app.Dialog dl = new android.app.Dialog(this, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
+        LinearLayout p = new LinearLayout(this); p.setOrientation(LinearLayout.VERTICAL);
+        p.setPadding(dp(24), dp(22), dp(24), dp(16));
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(0xF2161C28); bg.setCornerRadius(dp(26)); bg.setStroke(dp(1), 0x33FFFFFF); p.setBackground(bg);
+        TextView city = text(22, Color.WHITE, U.sansBold(this)); city.setText(wxTemp.getText()); p.addView(city);
+        TextView now = text(15, 0xE6FFFFFF, U.sans(this)); now.setText(wxText.getText()); now.setPadding(0, dp(4), 0, dp(4)); p.addView(now);
+        if (alertLine.getVisibility() == View.VISIBLE) {
+            TextView a = text(16, 0xFFFF8A80, U.sansBold(this)); a.setText(alertLine.getText()); a.setPadding(0, dp(10), 0, 0); p.addView(a);
+        }
+        String[] off = Weather.officialAlert(this);
+        final double lat = Double.longBitsToDouble(U.prefs(this).getLong("lat", 0)), lon = Double.longBitsToDouble(U.prefs(this).getLong("lon", 0));
+        final String warnUrl = lat > 41.6 && lat < 84 && lon > -142 && lon < -52
+                ? String.format(Locale.US, "https://weather.gc.ca/en/location/index.html?coords=%.3f,%.3f", lat, lon)
+                : lat > 17 && lat < 72 && lon > -180 && lon < -64
+                ? String.format(Locale.US, "https://forecast.weather.gov/MapClick.php?lat=%.4f&lon=%.4f", lat, lon)
+                : "https://www.google.com/search?q=weather";
+        LinearLayout btns = new LinearLayout(this); btns.setOrientation(LinearLayout.VERTICAL); btns.setPadding(0, dp(16), 0, 0);
+        btns.addView(sheetButton(off != null ? L.t("Official warnings") : L.t("Full forecast"), 0xFFF2B640, new Runnable() { @Override public void run() {
+            dl.dismiss();
+            try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(warnUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Throwable ignored) { } } }));
+        btns.addView(sheetButton(L.t("Open weather app"), Color.WHITE, new Runnable() { @Override public void run() { dl.dismiss(); openWeatherApp(); } }));
+        p.addView(btns);
+        dl.setContentView(p);
+        dl.setCanceledOnTouchOutside(true);
+        if (dl.getWindow() != null) {
+            dl.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+            dl.getWindow().setLayout(Math.min(dp(380), getResources().getDisplayMetrics().widthPixels - dp(32)), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        dl.show();
+    }
+    private View sheetButton(String label, int color, final Runnable r) {
+        TextView b = text(16, color, U.sansBold(this)); b.setText(label); b.setGravity(Gravity.CENTER);
+        b.setPadding(dp(12), dp(13), dp(12), dp(13));
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setColor(0x1FFFFFFF); g.setCornerRadius(dp(18)); b.setBackground(g);
+        LinearLayout.LayoutParams l = lp(-1, -2); l.topMargin = dp(8); b.setLayoutParams(l);
+        b.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { r.run(); } });
+        return b;
+    }
+
     private void openWeatherApp() {
         String[] known = {"com.google.android.apps.weather", "com.sec.android.daemonapp", "com.miui.weather2", "com.oneplus.weather",
                 "com.huawei.android.totemweather", "com.motorola.timeweatherwidget", "com.coloros.weather2", "com.oplus.weather",
