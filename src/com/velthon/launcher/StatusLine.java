@@ -156,7 +156,9 @@ final class StatusLine extends View {
         }
         if (both) {   // the thin divider
             x += sepGap;
-            c.drawRect(x, mid - 8 * d, x + 1.5f * d, mid + 8 * d, fill);
+            fill.setColor(0xFFF2B640); fill.setAlpha(a);   // gold, like the verse's reference above it
+            c.drawRoundRect(new RectF(x, mid - 8 * d, x + 1.5f * d, mid + 8 * d), d, d, fill);
+            fill.setColor(INK); fill.setAlpha(a);
             x += 1.5f * d + sepGap;
         }
         if (rw > 0) {
