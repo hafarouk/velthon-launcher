@@ -314,6 +314,24 @@ final class U {
     }
 
     /** Light motion (Settings › Atmosphere › Animations), and never when the phone's own animations are off. */
+    /** True when the phone is driven by swipe gestures (no Back button on screen). Without them, every panel gets an X. */
+    static boolean gestureNav(android.content.Context c) {
+        try { return android.provider.Settings.Secure.getInt(c.getContentResolver(), "navigation_mode", 0) == 2; } catch (Throwable t) { return false; }
+    }
+    /** A small round X that closes a panel (shown when the phone is not on gesture navigation). */
+    static android.view.View closeX(android.content.Context c, final Runnable close) {
+        android.widget.ImageView x = new android.widget.ImageView(c);
+        x.setImageDrawable(new Ico(Ico.CLOSE, 0xFFFFFFFF));
+        int p = Math.round(dp(c, 9)); x.setPadding(p, p, p, p);
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setShape(android.graphics.drawable.GradientDrawable.OVAL); g.setColor(0x40FFFFFF); g.setStroke(Math.round(dp(c, 1)), 0x55FFFFFF);
+        x.setBackground(g);
+        x.setContentDescription("Close");
+        x.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { close.run(); } });
+        x.setLayoutParams(new android.widget.LinearLayout.LayoutParams(Math.round(dp(c, 36)), Math.round(dp(c, 36))));
+        return x;
+    }
+
     static boolean anims(android.content.Context c) {
         if (!prefs(c).getString("anims", "on").equals("on")) return false;
         if (android.os.Build.VERSION.SDK_INT >= 26) { try { return android.animation.ValueAnimator.areAnimatorsEnabled(); } catch (Throwable ignored) { } }

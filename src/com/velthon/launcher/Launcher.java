@@ -265,6 +265,11 @@ public class Launcher extends Activity {
         try { topIn = getWindow().getDecorView().getRootWindowInsets().getSystemWindowInsetTop(); } catch (Throwable ignored) { }
         panel.setPadding(dp(16), topIn + dp(30) + dp(10), dp(16), dp(18));   // clear of the status bar
         int cols = 4;
+        if (!U.gestureNav(this)) {   // no gestures on this phone: a clear X to close
+            LinearLayout xr = new LinearLayout(this); xr.setGravity(Gravity.END);
+            xr.addView(U.closeX(this, new Runnable() { @Override public void run() { hideQuick(); } }));
+            panel.addView(xr);
+        }
         // recently used
         ArrayList<App> rec = new ArrayList<>();
         for (String k : U.prefs(this).getString("recent", "").split("\\|")) { App a = byKey.get(k); if (a != null && !hidden(a)) rec.add(a); if (rec.size() >= 8) break; }
@@ -1259,7 +1264,14 @@ public class Launcher extends Activity {
         p.setPadding(dp(24), dp(22), dp(24), dp(16));
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
         bg.setColor(0xF2161C28); bg.setCornerRadius(dp(26)); bg.setStroke(dp(1), 0x33FFFFFF); p.setBackground(bg);
-        TextView city = text(22, Color.WHITE, U.sansBold(this)); city.setText(wxTemp.getText()); p.addView(city);
+        TextView city = text(22, Color.WHITE, U.sansBold(this)); city.setText(wxTemp.getText());
+        if (U.gestureNav(this)) p.addView(city);
+        else {
+            FrameLayout ch = new FrameLayout(this);
+            ch.addView(city, new FrameLayout.LayoutParams(-1, -2, Gravity.CENTER_VERTICAL));
+            ch.addView(U.closeX(this, new Runnable() { @Override public void run() { dl.dismiss(); } }), new FrameLayout.LayoutParams(dp(36), dp(36), Gravity.END | Gravity.CENTER_VERTICAL));
+            p.addView(ch);
+        }
         TextView now = text(15, 0xE6FFFFFF, U.sans(this)); now.setText(wxText.getText()); now.setPadding(0, dp(4), 0, dp(4)); p.addView(now);
         if (alertLine.getVisibility() == View.VISIBLE) {
             TextView a = text(16, 0xFFFF8A80, U.sansBold(this)); a.setText(alertLine.getText()); a.setPadding(0, dp(10), 0, 0); p.addView(a);
@@ -2737,7 +2749,15 @@ public class Launcher extends Activity {
         gd.setColor(0x73FFFFFF); gd.setCornerRadius(dp(3));
         grab.setBackground(gd);
         LinearLayout.LayoutParams gl = lp(dp(40), dp(4)); gl.gravity = Gravity.CENTER_HORIZONTAL; gl.bottomMargin = dp(12);
-        sheet.addView(grab, gl);
+        if (U.gestureNav(this)) sheet.addView(grab, gl);
+        else {
+            FrameLayout gr = new FrameLayout(this);
+            gr.addView(grab, new FrameLayout.LayoutParams(dp(40), dp(4), Gravity.CENTER));
+            View x = U.closeX(this, new Runnable() { @Override public void run() { closeDrawer(); } });
+            gr.addView(x, new FrameLayout.LayoutParams(dp(36), dp(36), Gravity.END | Gravity.CENTER_VERTICAL));
+            LinearLayout.LayoutParams grl = lp(-1, dp(40)); grl.bottomMargin = dp(4);
+            sheet.addView(gr, grl);
+        }
 
         Glass sbox = new Glass(this, 999, Glass.GOLD_EDGE);
         sbox.blur = false;
@@ -3215,7 +3235,13 @@ public class Launcher extends Activity {
         t.setPadding(0, 0, 0, dp(10));
         if (mine) t.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
             dlg.dismiss(); renameFolder(f.key.substring(7), null); } });
-        box.addView(t);
+        if (U.gestureNav(this)) box.addView(t);
+        else {
+            FrameLayout th = new FrameLayout(this);
+            th.addView(t, new FrameLayout.LayoutParams(-1, -2, Gravity.CENTER));
+            th.addView(U.closeX(this, new Runnable() { @Override public void run() { dlg.dismiss(); } }), new FrameLayout.LayoutParams(dp(36), dp(36), Gravity.END | Gravity.TOP));
+            box.addView(th);
+        }
         if (mine) {   // the folder's colour: a row of swatches
             LinearLayout sw = new LinearLayout(this); sw.setGravity(Gravity.CENTER); sw.setPadding(0, 0, 0, dp(12));
             final int cur = folderColor(f.key, 0);

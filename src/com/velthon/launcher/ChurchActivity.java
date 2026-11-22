@@ -56,10 +56,16 @@ public class ChurchActivity extends Activity {
         list.setPadding(dp(20), dp(12), dp(20), dp(40));
         sv.addView(list, new FrameLayout.LayoutParams(-1, -2));
         scene.addView(sv, new FrameLayout.LayoutParams(-1, -1));
+        final View closeBtn = U.gestureNav(this) ? null : U.closeX(this, new Runnable() { @Override public void run() { finish(); } });
+        if (closeBtn != null) scene.addView(closeBtn, new FrameLayout.LayoutParams(dp(40), dp(40), Gravity.TOP | Gravity.END));
         setContentView(scene);
         scene.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @Override public WindowInsets onApplyWindowInsets(View v, WindowInsets in) {
                 list.setPadding(dp(20), in.getSystemWindowInsetTop() + dp(14), dp(20), in.getSystemWindowInsetBottom() + dp(40));
+                if (closeBtn != null) {   // the X sits just under the status bar, top right
+                    FrameLayout.LayoutParams xl = (FrameLayout.LayoutParams) closeBtn.getLayoutParams();
+                    xl.topMargin = in.getSystemWindowInsetTop() + dp(10); xl.rightMargin = dp(14); closeBtn.setLayoutParams(xl);
+                }
                 return in;
             }
         });
