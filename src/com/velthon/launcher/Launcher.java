@@ -1540,7 +1540,11 @@ public class Launcher extends Activity {
         if (loading) { loadAgain = true; return; }
         loading = true;
         final Context c = getApplicationContext();
+        final boolean first = apps.isEmpty();
         Thread th = new Thread(new Runnable() { @Override public void run() {
+          // the first load (after unlocking, or when Android restarted the launcher) must be fast: the home screen
+          // waits for it. Later reloads (an app installed or updated) run quietly in the background.
+          try { Process.setThreadPriority(first ? Process.THREAD_PRIORITY_DISPLAY : Process.THREAD_PRIORITY_BACKGROUND); } catch (Throwable ignored) { }
           try {
             final ArrayList<App> list = new ArrayList<>();
             try {
@@ -1550,6 +1554,7 @@ public class Launcher extends Activity {
                 int density = c.getResources().getDisplayMetrics().densityDpi;
                 for (UserHandle u : la.getProfiles()) {
                     for (LauncherActivityInfo i : la.getActivityList(null, u)) {
+                      try {   // one odd app (being updated, half installed) must never stop the rest from loading
                         if (i.getComponentName().getPackageName().equals(c.getPackageName())
                                 && !i.getComponentName().getClassName().endsWith("SettingsEntry")) continue;   // "Velthon Settings" stays in the list
                         App a = new App();
@@ -1560,15 +1565,17 @@ public class Launcher extends Activity {
                         a.key = a.cn.flattenToString() + (a.mine ? "" : "#" + um.getSerialNumberForUser(u));
                         String own = U.prefs(c).getString("label_" + a.key, null);   // a name the user gave it
                         if (own != null && !own.trim().isEmpty()) a.label = own.trim();
-                        try { a.icon = i.getBadgedIcon(density); } catch (Throwable t) { a.icon = i.getIcon(density); }
-                        a.cat = category(i);
-                        a.group = group(i, a.cat);
+                        try { a.icon = i.getBadgedIcon(density); } catch (Throwable t) { try { a.icon = i.getIcon(density); } catch (Throwable t2) { a.icon = null; } }
+                        if (a.icon == null) a.icon = c.getPackageManager().getDefaultActivityIcon();
+                        try { a.cat = category(i); } catch (Throwable t) { a.cat = "other"; }
+                        try { a.group = group(i, a.cat); } catch (Throwable t) { a.group = "Tools"; }
                         list.add(a);
+                      } catch (Throwable skipOne) { android.util.Log.w("Velthon", "app skipped: " + skipOne); }
                     }
                 }
             } catch (Throwable ignored) { }
-            if (U.prefs(c).getBoolean("velthon_icons", false)) VIcons.apply(c, list);
-            Shape.clear();
+            try { if (U.prefs(c).getBoolean("velthon_icons", false)) VIcons.apply(c, list); } catch (Throwable ignored) { }
+            try { Shape.clear(); } catch (Throwable ignored) { }
             App v = new App();     // Velthon's own Verses
             v.label = "Verses"; v.cat = "faith"; v.group = "Faith"; v.verses = true; v.mine = true;
             v.cn = new ComponentName(c, VersesActivity.class); v.user = Process.myUserHandle(); v.key = "velthon:verses";
@@ -1592,7 +1599,6 @@ public class Launcher extends Activity {
             if (loadAgain) { loadAgain = false; ui.post(new Runnable() { @Override public void run() { loadApps(); } }); }
           }
         } }, "velthon-apps");
-        th.setPriority(Thread.MIN_PRIORITY);   // the app in front always comes first
         th.start();
     }
 
