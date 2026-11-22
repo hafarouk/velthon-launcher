@@ -112,7 +112,7 @@ final class Widgets {
         // The widget always lays itself out at one steady size: its real box, but never smaller than the size its
         // app designed for. When the box is smaller, the whole widget is scaled down to fit, so it never switches
         // to a cramped tiny layout (the glucose number that was sometimes big, sometimes tiny).
-        private int wantW, wantH, toldW, toldH;
+        private int wantW, wantH, toldW, toldH, savedW, savedH;
         private void want(int w, int h) {
             AppWidgetProviderInfo i = getAppWidgetInfo();
             int mw = i != null ? Math.max(i.minWidth, i.minResizeWidth) : 0, mh = i != null ? Math.max(i.minHeight, i.minResizeHeight) : 0;
@@ -130,6 +130,11 @@ final class Widgets {
             super.onMeasure(ws, hs);
             int w = getMeasuredWidth(), h = getMeasuredHeight();
             if (w <= 0 || h <= 0 || getChildCount() == 0) return;
+            // remember the home screen size, so the lock screen shows it the same size
+            if (!passive && getAppWidgetId() > 0 && (w != savedW || h != savedH)) {
+                savedW = w; savedH = h;
+                U.prefs(getContext()).edit().putString("wsize_" + getAppWidgetId(), w + "x" + h).apply();
+            }
             want(w, h);
             getChildAt(0).measure(MeasureSpec.makeMeasureSpec(wantW, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(wantH, MeasureSpec.EXACTLY));
         }

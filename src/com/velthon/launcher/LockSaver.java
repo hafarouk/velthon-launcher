@@ -271,9 +271,14 @@ public class LockSaver extends Activity {
                 ((Widgets.HoldView) v).bare = !U.prefs(this).getBoolean("wbg_" + id, false);
             }
             final float d = getResources().getDisplayMetrics().density;
-            final int h = Math.round(96 * d);
-            sv.reserveTop = h + 10 * d;
-            final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.round(getResources().getDisplayMetrics().widthPixels * .62f), h,
+            // the same size as on the home screen
+            int w = Math.round(80 * d), h = Math.round(96 * d);
+            try {
+                String[] wh = U.prefs(this).getString("wsize_" + id, "").split("x");
+                if (wh.length == 2) { w = Integer.parseInt(wh[0]); h = Integer.parseInt(wh[1]); }
+            } catch (Throwable ignored) { }
+            sv.reserveTop = h + 6 * d;
+            final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h,
                     android.view.Gravity.TOP | android.view.Gravity.CENTER_HORIZONTAL);
             root.addView(v, 1, lp);   // over the picture, under the unlock layer
             log(this, "lock widget: " + info.provider.getPackageName());
