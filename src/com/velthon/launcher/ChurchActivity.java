@@ -58,6 +58,18 @@ public class ChurchActivity extends Activity {
         scene.addView(sv, new FrameLayout.LayoutParams(-1, -1));
         final View closeBtn = U.gestureNav(this) ? null : U.closeX(this, new Runnable() { @Override public void run() { finish(); } });
         if (closeBtn != null) scene.addView(closeBtn, new FrameLayout.LayoutParams(dp(40), dp(40), Gravity.TOP | Gravity.END));
+        // the X only shows at the top of the page: further down it would sit on top of what scrolls under it
+        // (the month's › arrow); the phone's back button still closes the page from anywhere
+        if (closeBtn != null && Build.VERSION.SDK_INT >= 23) sv.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            @Override public void onScrollChange(View v, int x, int y, int ox, int oy) {
+                boolean show = y < dp(24);
+                if (show != (closeBtn.getVisibility() == View.VISIBLE)) {
+                    closeBtn.animate().cancel();
+                    if (show) { closeBtn.setVisibility(View.VISIBLE); closeBtn.animate().alpha(1f).setDuration(150).start(); }
+                    else closeBtn.animate().alpha(0f).setDuration(150).withEndAction(new Runnable() { @Override public void run() { closeBtn.setVisibility(View.GONE); } }).start();
+                }
+            }
+        });
         setContentView(scene);
         scene.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @Override public WindowInsets onApplyWindowInsets(View v, WindowInsets in) {
