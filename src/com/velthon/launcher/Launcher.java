@@ -102,8 +102,9 @@ public class Launcher extends Activity {
         String when = at.get(java.util.Calendar.DAY_OF_YEAR) == now.get(java.util.Calendar.DAY_OF_YEAR) ? L.t("Today")
                 : days < 1 || at.get(java.util.Calendar.DAY_OF_YEAR) == now.get(java.util.Calendar.DAY_OF_YEAR) + 1 ? L.t("Tomorrow")
                 : new java.text.SimpleDateFormat("EEE", java.util.Locale.getDefault()).format(at.getTime());
-        alarmLine.setText("   ·   ⏰ " + time + (when.equals(L.t("Today")) ? "" : " " + when));
+        alarmLine.setText("  ·  ⏰ " + time + (when.equals(L.t("Today")) ? "" : " " + when));
         alarmLine.setVisibility(View.VISIBLE);
+        if (dateMidV != null) ui.post(new Runnable() { @Override public void run() { fitDateRow(dateMidV); } });
     }
     private final BroadcastReceiver alarmChanged = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) { showAlarm(); } };
@@ -612,23 +613,30 @@ public class Launcher extends Activity {
         shadow(dateView, 5);
         dateView.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openCalendar(); } });
         // the date, with Settings and the Screensaver as two small icons on either side (no extra room taken)
-        FrameLayout dateRow = new FrameLayout(this);
-        LinearLayout dateMid = new LinearLayout(this);
-        dateMid.setGravity(Gravity.CENTER_VERTICAL);
+        // one row: [settings] [date · alarm, centred in the space left] [screensaver]. Nothing overlaps: the date
+        // and alarm shrink to fit between the two icons, whatever the phone's text size.
+        LinearLayout dateRow = new LinearLayout(this);
+        dateRow.setGravity(Gravity.CENTER_VERTICAL);
+        final LinearLayout dateMid = new LinearLayout(this);
+        dateMidV = dateMid;
+        dateMid.setGravity(Gravity.CENTER);
         dateMid.addView(dateView);
         alarmLine = text(13, Color.WHITE, android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         alarmLine.setSingleLine(true);
         alarmLine.setVisibility(View.GONE);
         alarmLine.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openAlarms(); } });
         dateMid.addView(alarmLine);
-        dateRow.addView(dateMid, new FrameLayout.LayoutParams(-2, -2, Gravity.CENTER));
         settingsLink = link(Ico.GEAR, null, new View.OnClickListener() { @Override public void onClick(View v) { openSettings(); } });
         settingsLink.setContentDescription(L.t("Launcher settings"));
-        dateRow.addView(settingsLink, new FrameLayout.LayoutParams(dp(44), dp(44), Gravity.START | Gravity.CENTER_VERTICAL));
+        dateRow.addView(settingsLink, lp(dp(40), dp(44)));
+        LinearLayout.LayoutParams ml = new LinearLayout.LayoutParams(0, -2, 1f); ml.leftMargin = ml.rightMargin = dp(4);
+        dateRow.addView(dateMid, ml);
         saverLink = link(Ico.MOON, null, new View.OnClickListener() { @Override public void onClick(View v) {
             startActivity(new Intent(Launcher.this, PreviewActivity.class)); } });
         saverLink.setContentDescription(L.t("Screensaver"));
-        dateRow.addView(saverLink, new FrameLayout.LayoutParams(dp(44), dp(44), Gravity.END | Gravity.CENTER_VERTICAL));
+        dateRow.addView(saverLink, lp(dp(40), dp(44)));
+        dateMid.addOnLayoutChangeListener(new View.OnLayoutChangeListener() { @Override public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+            if (r - l != or - ol) ui.post(new Runnable() { @Override public void run() { fitDateRow(dateMid); } }); } });
         LinearLayout.LayoutParams dl = lp(-1, -2); dl.topMargin = dp(2); dl.leftMargin = dl.rightMargin = dp(14);
         home.addView(dateRow, dl);
         enter.add(dateRow);
@@ -996,7 +1004,24 @@ public class Launcher extends Activity {
         } catch (Throwable ignored) { }
     }
 
-    private LinearLayout settingsLink, saverLink;
+    private LinearLayout settingsLink, saverLink, dateMidV;
+    /** Shrinks the date and the alarm together until both fit on the line between the two icons. */
+    private void fitDateRow(LinearLayout mid) {
+        if (mid.getWidth() == 0) return;
+        float base = 14.5f * textScale, alarmBase = 13f * textScale;
+        float k = 1f;
+        dateView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, base); alarmLine.setTextSize(TypedValue.COMPLEX_UNIT_DIP, alarmBase);
+        for (int i = 0; i < 12; i++) {
+            float need = dateView.getPaint().measureText(String.valueOf(dateView.getText())) + dateView.getPaddingLeft() + dateView.getPaddingRight();
+            if (alarmLine.getVisibility() == View.VISIBLE)
+                need += alarmLine.getPaint().measureText(String.valueOf(alarmLine.getText())) + alarmLine.getPaddingLeft() + alarmLine.getPaddingRight()
+                        + ((LinearLayout.LayoutParams) alarmLine.getLayoutParams()).leftMargin;
+            if (need <= mid.getWidth() - dp(2) || k < .62f) break;
+            k *= .94f;
+            dateView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, base * k); alarmLine.setTextSize(TypedValue.COMPLEX_UNIT_DIP, alarmBase * k);
+        }
+    }
+
     private LinearLayout link(int icon, String label, View.OnClickListener l) {
         LinearLayout r = new LinearLayout(this);
         r.setGravity(Gravity.CENTER_VERTICAL);
@@ -1160,7 +1185,7 @@ public class Launcher extends Activity {
         boolean paleTop = sk.equals("snow") || sk.equals("fog") || sk.equals("cloudy");
         boolean topLight = ink(dateView, INK, Color.WHITE);
         ink(alarmLine, INK, Color.WHITE);
-        tintChip(settingsLink, topLight ? INK : Color.WHITE, 0x66000000); tintChip(saverLink, topLight ? INK : Color.WHITE, 0x66000000);
+        tintChip(settingsLink, topLight ? 0xFF8A5212 : 0xFFF2B640, 0x66000000); tintChip(saverLink, topLight ? 0xFF8A5212 : 0xFFF2B640, 0x66000000);
         // app names: each row together, dark letters if what is behind the row is light, white if dark
         java.util.TreeMap<Integer, ArrayList<TextView>> rows = new java.util.TreeMap<>();
         for (int i = 0; i < desk.getChildCount(); i++) {
