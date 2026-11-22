@@ -338,6 +338,8 @@ final class L {
         {"Open screen lock settings", "فتح إعدادات قفل الشاشة", "Ouvrir les réglages de verrouillage", "Abrir ajustes de bloqueo", "Displaysperre öffnen", "Abrir definições de bloqueio"},
         {"Tap to open", "المس للفتح", "Touchez pour ouvrir", "Toca para abrir", "Tippen zum Öffnen", "Toque para abrir"},
         {"Colour glass (full-colour icon inside the glass)", "زجاج ملوّن (الأيقونة بألوانها داخل الزجاج)", "Verre couleur (icône en couleur dans le verre)", "Cristal en color (icono a color dentro del cristal)", "Farbglas (farbiges Symbol im Glas)", "Vidro a cores (ícone a cores dentro do vidro)"},
+        {"Touch the power button to unlock", "المس زر التشغيل لفتح القفل", "Touchez le bouton marche pour déverrouiller", "Toca el botón de encendido para desbloquear", "Ein-/Aus-Taste berühren zum Entsperren", "Toque no botão ligar para desbloquear"},
+        {"Touch the sensor on the back to unlock", "المس المستشعر في الخلف لفتح القفل", "Touchez le capteur au dos pour déverrouiller", "Toca el sensor trasero para desbloquear", "Sensor auf der Rückseite berühren", "Toque no sensor traseiro para desbloquear"},
         {"All day", "طوال اليوم", "Toute la journée", "Todo el día", "Ganztägig", "Todo o dia"},
         {"until ", "حتى ", "jusqu'à ", "hasta ", "bis ", "até "},
         {"Size  ·  ", "الحجم  ·  ", "Taille  ·  ", "Tamaño  ·  ", "Größe  ·  ", "Tamanho  ·  "},

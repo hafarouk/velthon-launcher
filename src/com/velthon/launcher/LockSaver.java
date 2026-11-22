@@ -244,7 +244,7 @@ public class LockSaver extends Activity {
         sv.calm = true;
         sv.reserveBottom = 120 * getResources().getDisplayMetrics().density;
         root.addView(sv, new FrameLayout.LayoutParams(-1, -1));
-        root.addView(unlockButton(), new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
+        root.addView(unlockButton(), new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
         unlocked = new BroadcastReceiver() { @Override public void onReceive(Context c, Intent i) { finish(); } };
         registerReceiver(unlocked, new IntentFilter(Intent.ACTION_USER_PRESENT));
@@ -285,53 +285,97 @@ public class LockSaver extends Activity {
     @Override public void onBackPressed() { }   // the lock screen does not go away with Back
 
     /** The phone's own way in, at the bottom: a fingerprint, a face or a lock, with a word under it. */
+    /** The way in, drawn where the phone's own sensor is: on the sensor under the screen, beside the power button
+     *  when the fingerprint is in it, or at the bottom for face, PIN or a sensor on the back. No circle around it. */
     private View unlockButton() {
         final int kind = unlockKind(this);
-        float d = getResources().getDisplayMetrics().density;
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setGravity(Gravity.CENTER_HORIZONTAL);
-        box.setPadding(0, 0, 0, Math.round(26 * d));
+        final float d = getResources().getDisplayMetrics().density;
+        final FpSensor fs = kind == 2 ? FpSensor.of(this) : null;
+        FrameLayout layer = new FrameLayout(this);
+        final boolean side = fs != null && fs.type == FpSensor.SIDE;
         View icon = new View(this) {
             final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
             @Override protected void onDraw(Canvas c) {
                 float w = getWidth(), h = getHeight(), cx = w / 2f, cy = h / 2f, r = Math.min(w, h) / 2f;
-                p.setStyle(Paint.Style.FILL); p.setColor(0x38FFFFFF); c.drawCircle(cx, cy, r, p);
-                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(Math.max(1, r * .03f)); p.setColor(0x59FFFFFF); c.drawCircle(cx, cy, r - p.getStrokeWidth(), p);
-                p.setColor(Color.WHITE); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeWidth(r * .07f);
+                p.setStyle(Paint.Style.STROKE); p.setColor(Color.WHITE); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeWidth(Math.max(2f, r * .09f));
+                p.setShadowLayer(r * .12f, 0, r * .03f, 0x99000000);
                 if (kind == 2) {          // a fingerprint: arcs, one inside the other
                     for (int i = 0; i < 4; i++) {
-                        float rr = r * (.18f + i * .14f);
+                        float rr = r * (.22f + i * .19f);
                         c.drawArc(new RectF(cx - rr, cy - rr * 1.12f, cx + rr, cy + rr * 1.12f), 200 - i * 6, 220 - i * 18, false, p);
                     }
-                    c.drawLine(cx, cy - r * .08f, cx, cy + r * .14f, p);
+                    c.drawLine(cx, cy - r * .1f, cx, cy + r * .2f, p);
                 } else if (kind == 1) {   // a face
-                    float s = r * .48f;
+                    float s = r * .7f;
                     c.drawRoundRect(new RectF(cx - s, cy - s, cx + s, cy + s), s * .45f, s * .45f, p);
                     p.setStyle(Paint.Style.FILL);
-                    c.drawCircle(cx - s * .38f, cy - s * .2f, r * .05f, p); c.drawCircle(cx + s * .38f, cy - s * .2f, r * .05f, p);
+                    c.drawCircle(cx - s * .38f, cy - s * .2f, r * .07f, p); c.drawCircle(cx + s * .38f, cy - s * .2f, r * .07f, p);
                     p.setStyle(Paint.Style.STROKE);
                     c.drawArc(new RectF(cx - s * .4f, cy - s * .1f, cx + s * .4f, cy + s * .5f), 20, 140, false, p);
                 } else {                  // a lock
-                    float bw = r * .62f, bh = r * .5f;
-                    c.drawRoundRect(new RectF(cx - bw / 2, cy - bh * .15f, cx + bw / 2, cy + bh * .85f), r * .1f, r * .1f, p);
+                    float bw = r * .9f, bh = r * .72f;
+                    c.drawRoundRect(new RectF(cx - bw / 2, cy - bh * .15f, cx + bw / 2, cy + bh * .85f), r * .14f, r * .14f, p);
                     c.drawArc(new RectF(cx - bw * .32f, cy - bh * .9f, cx + bw * .32f, cy + bh * .2f), 180, 180, false, p);
                 }
             }
         };
-        int sz = Math.round(64 * d);
-        box.addView(icon, new LinearLayout.LayoutParams(sz, sz));
         TextView t = new TextView(this);
-        t.setText(velthonOnly(this) ? L.t("Tap to open") : kind == 2 ? L.t("Touch to unlock with your fingerprint") : kind == 1 ? L.t("Tap to unlock with your face") : L.t("Tap to unlock"));
+        t.setText(velthonOnly(this) ? L.t("Tap to open")
+                : kind == 2 && side ? L.t("Touch the power button to unlock")
+                : kind == 2 && fs != null && fs.type == FpSensor.BACK ? L.t("Touch the sensor on the back to unlock")
+                : kind == 2 ? L.t("Touch to unlock with your fingerprint") : kind == 1 ? L.t("Tap to unlock with your face") : L.t("Tap to unlock"));
         t.setTextColor(Color.WHITE);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        t.setShadowLayer(2 * d, 0, d, 0xB3000000);
-        t.setPadding(0, Math.round(10 * d), 0, 0);
+        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        t.setShadowLayer(3 * d, 0, d, 0xCC000000);
         t.setSingleLine(true);
         t.setGravity(Gravity.CENTER);
-        box.addView(t, new LinearLayout.LayoutParams(-2, -2));
-        box.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { unlock(); } });
-        return box;
+        int[] scr = new int[2];
+        android.util.DisplayMetrics dm = new android.util.DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        if (kind == 2 && fs != null && fs.type == FpSensor.UNDER_SCREEN && fs.x > 0 && fs.y > 0) {
+            // right on the sensor: the icon is the size of the sensor, the words just above it
+            int sz = Math.max(Math.round(44 * d), Math.round(fs.r * 2));
+            FrameLayout.LayoutParams il = new FrameLayout.LayoutParams(sz, sz, Gravity.TOP | Gravity.LEFT);
+            il.leftMargin = Math.round(fs.x - sz / 2f); il.topMargin = Math.round(fs.y - sz / 2f);
+            layer.addView(icon, il);
+            FrameLayout.LayoutParams tl = new FrameLayout.LayoutParams(-1, -2, Gravity.TOP);
+            tl.topMargin = Math.round(fs.y - sz / 2f - 40 * d);
+            layer.addView(t, tl);
+        } else if (side) {
+            // the fingerprint is in the power button: a soft gold mark against the right edge, level with the button,
+            // the fingerprint beside it, and the words at the bottom
+            float y = fs.sideY > 0 ? fs.sideY : dm.heightPixels * .36f;
+            View edge = new View(this);
+            android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable(
+                    android.graphics.drawable.GradientDrawable.Orientation.RIGHT_LEFT, new int[] {0xCCF2B640, 0x00F2B640});
+            g.setCornerRadii(new float[] {0, 0, 0, 0, 0, 0, 0, 0});
+            edge.setBackground(g);
+            FrameLayout.LayoutParams el = new FrameLayout.LayoutParams(Math.round(26 * d), Math.round(84 * d), Gravity.TOP | Gravity.RIGHT);
+            el.topMargin = Math.round(y - 42 * d);
+            layer.addView(edge, el);
+            int sz = Math.round(36 * d);
+            FrameLayout.LayoutParams il = new FrameLayout.LayoutParams(sz, sz, Gravity.TOP | Gravity.RIGHT);
+            il.topMargin = Math.round(y - sz / 2f); il.rightMargin = Math.round(30 * d);
+            layer.addView(icon, il);
+            FrameLayout.LayoutParams tl = new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM);
+            tl.bottomMargin = Math.round(34 * d);
+            layer.addView(t, tl);
+            if (U.anims(this)) {   // a gentle pulse toward the button
+                icon.animate().translationX(6 * d).setDuration(900).setInterpolator(new android.view.animation.CycleInterpolator(2)).start();
+            }
+        } else {
+            // face, PIN, a sensor on the back, or unknown: the icon and the words at the bottom, no circle
+            LinearLayout box = new LinearLayout(this);
+            box.setOrientation(LinearLayout.VERTICAL); box.setGravity(Gravity.CENTER_HORIZONTAL);
+            box.setPadding(0, 0, 0, Math.round(30 * d));
+            int sz = Math.round(48 * d);
+            box.addView(icon, new LinearLayout.LayoutParams(sz, sz));
+            t.setPadding(0, Math.round(8 * d), 0, 0);
+            box.addView(t, new LinearLayout.LayoutParams(-2, -2));
+            layer.addView(box, new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
+        }
+        icon.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { unlock(); } });
+        return layer;
     }
 
     @Override public boolean dispatchTouchEvent(MotionEvent e) {
