@@ -12,8 +12,8 @@ packageInfo:
   forcedPackageId: 127
   renameManifestPackage: null
 versionInfo:
-  versionCode: '54'
-  versionName: '3.31'
+  versionCode: '55'
+  versionName: '3.32'
 sharedLibrary: false
 sparseResources: false
 compactEntries: false

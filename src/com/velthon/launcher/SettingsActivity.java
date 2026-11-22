@@ -197,9 +197,20 @@ public class SettingsActivity extends Activity {
                     Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
                     try { startActivityForResult(i, LOAD_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } }),
                 action(L.t("Uninstall Velthon"), L.t("Removes the launcher and everything it saved on this phone"), new Runnable() { @Override public void run() {
-                    confirm(L.t("Uninstall Velthon"), L.t("Velthon will be removed and the phone goes back to its own home screen. Back up first to keep your set-up."), new Runnable() { @Override public void run() {
-                        try { startActivity(new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + getPackageName()))); }
-                        catch (Throwable t) { open(Settings.ACTION_APPLICATION_SETTINGS); } } }); } }));
+                    // uninstalling is where the clean-up happens: Velthon's own data is wiped first, so nothing is left behind
+                    new android.app.AlertDialog.Builder(SettingsActivity.this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                            .setTitle(L.t("Uninstall Velthon"))
+                            .setMessage(L.t("Velthon will be removed and its saved data cleaned up, so nothing is left on the phone. Your backup files stay where you saved them."))
+                            .setPositiveButton(L.t("Uninstall and clean up"), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) {
+                                Backup.cleanUp(SettingsActivity.this);
+                                Backup.resetAll(SettingsActivity.this);
+                                try { startActivity(new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + getPackageName()))); }
+                                catch (Throwable t) { open(Settings.ACTION_APPLICATION_SETTINGS); } } })
+                            .setNeutralButton(L.t("Back up first"), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) {
+                                Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json")
+                                        .putExtra(Intent.EXTRA_TITLE, "Velthon-backup-" + new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date()) + ".json");
+                                try { startActivityForResult(i, SAVE_BACKUP); } catch (Throwable ignored) { } } })
+                            .setNegativeButton(L.t("Cancel"), null).show(); } }));
 
         footer();
     }
