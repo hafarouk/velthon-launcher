@@ -73,7 +73,8 @@ final class StatusLine extends View {
             NetworkCapabilities nc = n != null ? cm.getNetworkCapabilities(n) : null;
             if (nc != null && nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
                 wifi = true; net = "Wi-Fi";
-                int rssi = Build.VERSION.SDK_INT >= 29 ? nc.getSignalStrength() : Integer.MIN_VALUE;
+                int rssi = Integer.MIN_VALUE;
+                if (Build.VERSION.SDK_INT >= 29) try { rssi = (Integer) NetworkCapabilities.class.getMethod("getSignalStrength").invoke(nc); } catch (Throwable ignored) { }
                 bars = rssi == Integer.MIN_VALUE ? 3 : rssi >= -55 ? 3 : rssi >= -67 ? 2 : rssi >= -78 ? 1 : 0;
                 return;
             }
