@@ -1256,7 +1256,14 @@ public class Launcher extends Activity {
         btns.addView(sheetButton(off != null ? L.t("Official warnings") : L.t("Full forecast"), 0xFFF2B640, new Runnable() { @Override public void run() {
             dl.dismiss();
             try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(warnUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Throwable ignored) { } } }));
-        btns.addView(sheetButton(L.t("Open weather app"), Color.WHITE, new Runnable() { @Override public void run() { dl.dismiss(); openWeatherApp(); } }));
+        App wa = byKey.get(U.prefs(this).getString("wx_app", ""));
+        btns.addView(sheetButton(wa != null ? L.t("Open") + " " + wa.label : L.t("Open weather app"), Color.WHITE, new Runnable() { @Override public void run() { dl.dismiss(); openWeatherApp(); } }));
+        if (wa != null) {
+            TextView ch = text(13, 0x99FFFFFF, U.sans(this)); ch.setText(L.t("Choose another weather app")); ch.setGravity(Gravity.CENTER);
+            ch.setPadding(0, dp(12), 0, dp(2));
+            ch.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { dl.dismiss(); pickWeatherApp(); } });
+            btns.addView(ch);
+        }
         p.addView(btns);
         dl.setContentView(p);
         dl.setCanceledOnTouchOutside(true);
@@ -1276,16 +1283,36 @@ public class Launcher extends Activity {
         return b;
     }
 
+    /** Opens the weather app the user picked. The first time (or if that app is gone) it asks which one: some
+     *  phones' built-in weather apps crash when opened from another app, so Velthon never guesses silently. */
     private void openWeatherApp() {
-        String[] known = {"com.google.android.apps.weather", "com.sec.android.daemonapp", "com.miui.weather2", "com.oneplus.weather",
-                "com.huawei.android.totemweather", "com.motorola.timeweatherwidget", "com.coloros.weather2", "com.oplus.weather",
-                "com.weather.Weather", "com.accuweather.android", "ca.gc.meteo"};
-        if (openApp(known, "weather")) return;
-        // no weather app: Google shows the local weather for a "weather" search
-        try { startActivity(new Intent(Intent.ACTION_WEB_SEARCH).putExtra(android.app.SearchManager.QUERY, "weather").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
-        catch (Throwable t) {
-            try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=weather"))); } catch (Throwable ignored) { }
+        App a = byKey.get(U.prefs(this).getString("wx_app", ""));
+        if (a != null) { launch(a, null); return; }
+        pickWeatherApp();
+    }
+    private void pickWeatherApp() {
+        final ArrayList<App> list = new ArrayList<>();
+        String[] words = {"weather", "météo", "meteo", "tiempo", "wetter", "tempo", "طقس", "forecast", "accu", "radar"};
+        for (App a : apps) {
+            if (a.cn == null || a.label == null || a.cn.getPackageName().equals(getPackageName())) continue;
+            String l = a.label.toLowerCase(Locale.ROOT);
+            for (String w : words) if (l.contains(w)) { list.add(a); break; }
         }
+        ArrayList<App> rest = new ArrayList<>();
+        for (App a : apps) if (a.cn != null && a.label != null && !list.contains(a) && !a.cn.getPackageName().equals(getPackageName())) rest.add(a);
+        java.util.Collections.sort(rest, new java.util.Comparator<App>() { @Override public int compare(App x, App y) { return x.label.compareToIgnoreCase(y.label); } });
+        final int nWeather = list.size();
+        list.addAll(rest);
+        String[] names = new String[list.size()];
+        for (int k = 0; k < list.size(); k++) names[k] = (k < nWeather ? "☀  " : "") + list.get(k).label;
+        new android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(L.t("Which app shows the weather?"))
+                .setItems(names, new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) {
+                    App a = list.get(w);
+                    U.prefs(Launcher.this).edit().putString("wx_app", a.key).apply();
+                    launch(a, null);
+                } })
+                .setNegativeButton(L.t("Cancel"), null).show();
     }
     private void openChurch() {
         // straight to today's page of the Synaxarium (CopticChurch.net), not a front page

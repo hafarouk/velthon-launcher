@@ -280,6 +280,8 @@ final class L {
         {"Official warnings", "التحذيرات الرسمية", "Alertes officielles", "Avisos oficiales", "Amtliche Warnungen", "Avisos oficiais"},
         {"Full forecast", "التوقعات الكاملة", "Prévisions complètes", "Pronóstico completo", "Ganze Vorhersage", "Previsão completa"},
         {"Open weather app", "فتح تطبيق الطقس", "Ouvrir l'appli météo", "Abrir app del tiempo", "Wetter-App öffnen", "Abrir app do tempo"},
+        {"Which app shows the weather?", "أي تطبيق يعرض الطقس؟", "Quelle appli affiche la météo ?", "¿Qué app muestra el tiempo?", "Welche App zeigt das Wetter?", "Que app mostra o tempo?"},
+        {"Choose another weather app", "اختر تطبيق طقس آخر", "Choisir une autre appli météo", "Elegir otra app del tiempo", "Andere Wetter-App wählen", "Escolher outra app do tempo"},
         {"All day", "طوال اليوم", "Toute la journée", "Todo el día", "Ganztägig", "Todo o dia"},
         {"until ", "حتى ", "jusqu'à ", "hasta ", "bis ", "até "},
         {"Size  ·  ", "الحجم  ·  ", "Taille  ·  ", "Tamaño  ·  ", "Größe  ·  ", "Tamanho  ·  "},
