@@ -81,7 +81,7 @@ dump; cp rec/s.xml rec/church.xml
 adb shell input swipe 300 900 300 1400 300; sleep 2; shot 12b_church_scrolled
 # one page: the church day, then your next events, then the month with feasts and events
 adb shell input swipe 540 1700 540 500 300; sleep 2; shot 12c_church_events
-adb shell input swipe 540 1700 540 500 300; sleep 2; shot 12d_calendar_month_events
+for k in 1 2 3 4 5 6; do adb shell input swipe 540 1700 540 500 250; sleep .8; done; sleep 1; shot 12d_calendar_month_events
 dump; grep -c "Next on your calendar" rec/s.xml > rec/next_events.txt
 c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_month
 adb shell input keyevent KEYCODE_BACK; sleep 2
@@ -152,7 +152,7 @@ adb shell input swipe 540 700 540 1500 300; sleep 1; shot 68_settings_lock2
 # every settings screen, long values set (colour glass icons, automatic text colour): no name may be squeezed or covered
 adb shell am force-stop $P; setpref icon_style colorglass; adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3
 for k in 0 1 2 3 4 5 6 7 8 9 10; do adb shell uiautomator dump /sdcard/st.xml >/dev/null 2>&1; adb pull /sdcard/st.xml rec/settings_$k.xml >/dev/null 2>&1; adb shell input swipe 540 1700 540 900 300; sleep .8; done
-python3 test/layout_check.py $P rec/settings_*.xml rec/home.xml rec/church.xml > rec/layout.txt 2>&1
+python3 "$(dirname "$0")/layout_check.py" $P rec/settings_*.xml rec/home.xml rec/church.xml > rec/layout.txt 2>&1
 echo "== layout check (empty = no squeezed or overlapping text)"; cat rec/layout.txt
 adb logcat -d -s velthon-desk | tail -30 > rec/desk.txt
 # themes: gold text, colour-glass icons, a coloured folder

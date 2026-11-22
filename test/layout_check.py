@@ -10,8 +10,10 @@ for f in files:
     for m in re.finditer(r'<node [^>]*>', xml):
         n = m.group(0)
         if 'package="%s"' % pkg not in n or 'class="android.widget.TextView"' not in n: continue
-        t = re.search(r' text="([^"]*)"', n).group(1).strip()
+        tm = re.search(r'\btext="([^"]*)"', n)
         b = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n)
+        if not tm: continue
+        t = tm.group(1).strip()
         if not t or not b: continue
         x1, y1, x2, y2 = map(int, b.groups())
         nodes.append((t, x1, y1, x2, y2))
