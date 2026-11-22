@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   phone:
     runs-on: ubuntu-latest
@@ -38,3 +40,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: phone-test-screens, path: test/rec }
+      - name: Keep the screens on the test-results branch
+        if: always()
+        run: |
+          cd test/rec
+          git init -q -b test-results && git add -A
+          git -c user.name=ci -c user.email=ci@velthon commit -qm "screens ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" test-results
