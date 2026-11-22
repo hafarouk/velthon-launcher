@@ -32,7 +32,7 @@
         <activity android:name="com.velthon.launcher.ChurchActivity" android:exported="false" android:label="Coptic calendar"
             android:screenOrientation="portrait" android:excludeFromRecents="true"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar.TranslucentDecor"/>
-        <activity android:name="com.velthon.launcher.SettingsActivity" android:exported="true" android:label="Velthon Settings"
+        <activity android:name="com.velthon.launcher.SettingsActivity" android:exported="true" android:label="Velthon 3D Settings"
             android:screenOrientation="portrait" android:excludeFromRecents="true"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar.TranslucentDecor">
             <intent-filter>
@@ -42,7 +42,7 @@
         </activity>
         <!-- "Velthon Settings" in the app list -->
         <activity-alias android:name="com.velthon.launcher.SettingsEntry" android:targetActivity="com.velthon.launcher.SettingsActivity"
-            android:exported="true" android:label="Velthon Settings" android:icon="@drawable/ic_launcher">
+            android:exported="true" android:label="Velthon 3D Settings" android:icon="@drawable/ic_launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

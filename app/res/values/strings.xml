@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Velthon Launcher</string>
-    <string name="dream_name">Velthon</string>
+    <string name="app_name">Velthon Launcher 3D</string>
+    <string name="dream_name">Velthon 3D</string>
     <string name="verses_name">Verses</string>
     <string name="lock_desc">Lets a double tap on the Velthon home screen lock the phone. Velthon reads nothing on your screen.</string>
     <string name="lock_name">Velthon double-tap lock</string>

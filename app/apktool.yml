@@ -10,10 +10,10 @@ sdkInfo:
   targetSdkVersion: 28
 packageInfo:
   forcedPackageId: 127
-  renameManifestPackage: null
+  renameManifestPackage: com.velthon.launcher3d
 versionInfo:
   versionCode: '49'
-  versionName: '3.26'
+  versionName: '3D-1.0'
 sharedLibrary: false
 sparseResources: false
 compactEntries: false
