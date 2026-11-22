@@ -188,7 +188,7 @@ public class SettingsActivity extends Activity {
                 action(L.t("Preview"), null, new Runnable() { @Override public void run() {
                     startActivity(new Intent(SettingsActivity.this, PreviewActivity.class)); } }));
 
-        section(Ico.GEAR, L.t("Backup & clean up"), L.t("Save your set-up, bring it back, tidy up or remove Velthon"),
+        section(Ico.GEAR, L.t("Backup & uninstall"), L.t("Save your set-up, bring it back or remove Velthon"),
                 action(L.t("Back up settings"), L.t("Save your layout, folders, VIP and choices to a file on the phone"), new Runnable() { @Override public void run() {
                     Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json")
                             .putExtra(Intent.EXTRA_TITLE, "Velthon-backup-" + new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date()) + ".json");
@@ -196,14 +196,7 @@ public class SettingsActivity extends Activity {
                 action(L.t("Restore settings"), L.t("Bring back a saved set-up"), new Runnable() { @Override public void run() {
                     Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
                     try { startActivityForResult(i, LOAD_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } }),
-                action(L.t("Clean up"), L.t("Clear saved pictures, weather and leftovers that Velthon fetches again") + "  ·  " + android.text.format.Formatter.formatShortFileSize(this, Backup.size(this)), new Runnable() { @Override public void run() {
-                    long n = Backup.cleanUp(SettingsActivity.this);
-                    Toast.makeText(SettingsActivity.this, L.t("Cleaned up") + ": " + android.text.format.Formatter.formatShortFileSize(SettingsActivity.this, n), Toast.LENGTH_LONG).show();
-                    recreate(); } }),
-                action(L.t("Reset Velthon"), L.t("Back to how it was on the first start (your apps are not touched)"), new Runnable() { @Override public void run() {
-                    confirm(L.t("Reset Velthon"), L.t("All Velthon settings, folders and layout go back to the start. Back up first if you may want them again."), new Runnable() { @Override public void run() {
-                        Backup.resetAll(SettingsActivity.this); restartLauncher(); } }); } }),
-                action(L.t("Uninstall Velthon"), L.t("Remove the launcher from this phone"), new Runnable() { @Override public void run() {
+                action(L.t("Uninstall Velthon"), L.t("Removes the launcher and everything it saved on this phone"), new Runnable() { @Override public void run() {
                     confirm(L.t("Uninstall Velthon"), L.t("Velthon will be removed and the phone goes back to its own home screen. Back up first to keep your set-up."), new Runnable() { @Override public void run() {
                         try { startActivity(new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + getPackageName()))); }
                         catch (Throwable t) { open(Settings.ACTION_APPLICATION_SETTINGS); } } }); } }));
