@@ -70,7 +70,19 @@ public class LockSaver extends Activity {
         return b.toString();
     }
 
+    /** Retired (v3.37): on this phone Android keeps putting its own lock screen first, so the Velthon lock only
+     *  appeared after a touch. The phone's own lock screen is used; the window stays as the screensaver. */
+    static final boolean ENABLED = false;
+
     static void watch(Context c) {
+        if (!ENABLED) {   // tidy up what earlier versions left: the lock notification and its channel
+            try {
+                NotificationManager nm = (NotificationManager) c.getSystemService(NOTIFICATION_SERVICE);
+                nm.cancel(77);
+                if (Build.VERSION.SDK_INT >= 26) nm.deleteNotificationChannel(CHANNEL);
+            } catch (Throwable ignored) { }
+            return;
+        }
         if (watching) return;
         watching = true;
         final Context app = c.getApplicationContext();

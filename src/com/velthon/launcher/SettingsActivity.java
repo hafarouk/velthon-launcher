@@ -160,19 +160,7 @@ public class SettingsActivity extends Activity {
                 choice(L.t("Double tap"), "double_tap", "lock", new String[] {L.t("Lock the phone"), L.t("Screensaver"), L.t("All apps"), L.t("Nothing")}, new String[] {"lock", "saver", "apps", "none"}));
 
         section(Ico.MOON, L.t("Screensaver"), L.t("The window, while the phone rests or charges"),
-                choice(L.t("On the lock screen"), "lock_saver", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
                 choice(L.t("Next calendar events under the verse"), "lock_events", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
-                action(L.t("Allow full-screen notifications"), LockSaver.fullScreenAllowed(this) ? L.t("Allowed") : L.t("Needed so the window opens on the lock screen by itself"),
-                        new Runnable() { @Override public void run() {
-                            try { startActivity(new Intent("android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT", android.net.Uri.parse("package:" + getPackageName()))); }
-                            catch (Throwable t) {
-                                try { startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())); }
-                                catch (Throwable t2) { open(Settings.ACTION_SETTINGS); }
-                            }
-                        } }),
-                action(L.t("Allow it over the lock screen"), Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this) ? "Needed once: \"Display over other apps\"" : L.t("Allowed"),
-                        new Runnable() { @Override public void run() { askOverlay(); } }),
-                
                 action(L.t("Make it my screensaver"), "Choose \"Velthon\" in the list", new Runnable() { @Override public void run() {
                     if (!open(Settings.ACTION_DREAM_SETTINGS)) open(Settings.ACTION_DISPLAY_SETTINGS);
                     Toast.makeText(SettingsActivity.this, "Choose \"Velthon\" as the screen saver", Toast.LENGTH_LONG).show(); } }),
@@ -416,7 +404,7 @@ public class SettingsActivity extends Activity {
         else if (key.equals("@font_scale")) { setFontScale(v); return; }
         else e.putString(key, v);
         if (key.equals("units")) e.putLong("wx_at", 0);
-        if (key.equals("lock_saver") && v.equals("on")) askOverlay();
+        
         if (key.equals("dots") && v.equals("on")) askDots();
         if (key.equals("lock_events") && v.equals("on") && Build.VERSION.SDK_INT >= 23 && !Events.allowed(this))
             requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 41);

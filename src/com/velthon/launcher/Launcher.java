@@ -396,7 +396,7 @@ public class Launcher extends Activity {
             try { requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 41); } catch (Throwable ignored) { }
         }
         LockSaver.watch(this);
-        if (U.prefs(this).getString("lock_saver", "on").equals("on")) {
+        if (LockSaver.ENABLED && U.prefs(this).getString("lock_saver", "on").equals("on")) {
             LockSaver.prepare(this);
             // without this permission (Android 14+) the window can only appear after the phone's own lock screen
             if (!LockSaver.fullScreenAllowed(this) && !U.prefs(this).getBoolean("fsi_asked", false)) {
