@@ -370,7 +370,7 @@ class SaverView extends View {
             dateP.setColor(col); dateP.setTextSize(sz);
         }
         // night mode: the whole window dims late at night
-        if (nightFrom >= 0) {
+        if (nightFrom >= 0 && !calm) {   // the lock screen is seen for a moment: keep it clear and readable
             int hr = cal.get(Calendar.HOUR_OF_DAY);
             if (hr >= nightFrom || hr < nightTo) c.drawRect(0, 0, w, h, night);
         }
