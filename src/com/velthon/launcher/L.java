@@ -66,6 +66,8 @@ final class L {
         {"Weather alerts", "تنبيهات الطقس", "Alertes météo", "Alertas del tiempo", "Wetterwarnungen", "Alertas meteorológicos"},
         {"Church calendar", "التقويم الكنسي", "Calendrier liturgique", "Calendario litúrgico", "Kirchenkalender", "Calendário litúrgico"},
         {"App icons", "أيقونات التطبيقات", "Icônes des applis", "Iconos de apps", "App-Symbole", "Ícones das apps"},
+        {"Dock icons", "أيقونات الشريط السفلي", "Icônes du dock", "Iconos del dock", "Dock-Symbole", "Ícones da barra"},
+        {"Same as the apps", "مثل التطبيقات", "Comme les applis", "Igual que las apps", "Wie die Apps", "Igual aos apps"},
         {"Icon style", "نمط الأيقونات", "Style des icônes", "Estilo de iconos", "Symbolstil", "Estilo dos ícones"},
         {"Columns", "الأعمدة", "Colonnes", "Columnas", "Spalten", "Colunas"},
         {"Phone text size", "حجم خط الهاتف", "Taille du texte du téléphone", "Tamaño de texto del teléfono", "Textgröße des Telefons", "Tamanho do texto do telefone"},

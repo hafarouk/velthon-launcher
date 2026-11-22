@@ -2002,7 +2002,9 @@ public class Launcher extends Activity {
             View t = tile(a, false, 46);   // a little smaller, so each icon has room around it
             // the dock follows the chosen icon style (glass symbol, colour icon in glass, or the app's own icon)
             if (t instanceof LinearLayout && ((LinearLayout) t).getChildAt(0) instanceof ImageView) {
-                String st = U.prefs(this).getString("icon_style", "glass");
+                // the dock can have its own style (Settings, Dock icons), or follow the apps
+                String st = U.prefs(this).getString("dock_icon_style", "same");
+                if (st.equals("same")) st = U.prefs(this).getString("icon_style", "glass");
                 android.graphics.Bitmap ib = st.equals("classic") ? Shape.icon(this, a.key, a.icon, dp(46))
                         : st.equals("colorglass") ? Shape.colorGlass(this, a.key, a.icon, dp(46), false)
                         : Shape.glass(this, a.key, a.icon, dp(46));
