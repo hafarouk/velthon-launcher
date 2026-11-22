@@ -30,6 +30,20 @@ adb emu sensor set acceleration 0:9.81:0; sleep 1
 dump() { adb shell uiautomator dump /sdcard/s.xml >/dev/null 2>&1; adb pull /sdcard/s.xml rec/s.xml >/dev/null 2>&1; }
 centerp() { grep -o "text=\"[^\"]*$1[^\"]*\"[^>]*bounds=\"[^\"]*\"" rec/s.xml | head -1 | sed 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]"/\1 \2 \3 \4/' | awk '{print int(($1+$3)/2), int(($2+$4)/2)}'; }
 center() { grep -o "text=\"$1\"[^>]*bounds=\"[^\"]*\"" rec/s.xml | head -1 | sed 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]"/\1 \2 \3 \4/' | awk '{print int(($1+$3)/2), int(($2+$4)/2)}'; }
+# set one saved setting (as root; "cat >" keeps the file's owner so the app can still read it)
+setpref() {
+  adb shell am force-stop $P; sleep 1
+  adb shell cat $F > rec/p.xml
+  python3 - "$1" "$2" <<'PY'
+import re, sys
+k, v = sys.argv[1], sys.argv[2]
+s = open('rec/p.xml').read()
+s = re.sub(r'\s*<string name="%s">[^<]*</string>' % re.escape(k), '', s)
+if v != '-': s = s.replace('</map>', '<string name="%s">%s</string>\n</map>' % (k, v))
+open('rec/p.xml', 'w').write(s)
+PY
+  adb push rec/p.xml /data/local/tmp/p.xml >/dev/null; adb shell "cat /data/local/tmp/p.xml > $F"
+}
 # put Clock, Calculator and a folder (Settings + Contacts + Files) on the home screen via the saved settings
 adb root >/dev/null 2>&1; sleep 3
 F=/data/data/$P/shared_prefs/velthon.xml
@@ -135,18 +149,24 @@ for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 1700 540 500 200; sleep .
 adb shell input swipe 540 700 540 1500 300; sleep 1; shot 67_settings_lock
 adb shell input swipe 540 700 540 1500 300; sleep 1; shot 68_settings_lock2
 adb logcat -d -s velthon-desk | tail -30 > rec/desk.txt
-# themes: gold text, a coloured folder
+# themes: gold text, colour-glass icons, a coloured folder
 adb shell input keyevent KEYCODE_HOME; sleep 1
-adb shell am force-stop $P
-adb shell "run-as $P sed -i 's#</map>#<string name=\"text_theme\">gold</string></map>#' shared_prefs/velthon.xml"
-adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 80_text_gold
-adb shell am force-stop $P
-adb shell "run-as $P sed -i 's#<string name=\"text_theme\">gold</string>##' shared_prefs/velthon.xml"
-adb shell am start -n $P/.Launcher >/dev/null; sleep 5; shot 81_text_auto_again
-adb shell am force-stop $P
-adb shell "run-as $P sed -i 's#<string name=\"icon_style\">[a-z]*</string>##; s#</map>#<string name=\"icon_style\">colorglass</string></map>#' shared_prefs/velthon.xml"
+setpref text_theme gold; adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 80_text_gold
+setpref text_theme -; setpref icon_style colorglass
 adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 82_icons_colorglass
 adb shell input swipe 540 1700 540 800 250; sleep 2; shot 83_drawer_colorglass; adb shell input keyevent KEYCODE_BACK; sleep 1
+setpref icon_style -
+adb shell "cat $F" | grep -o 'fcolor[^<]*' > rec/fcolor.txt
+folderkey=$(adb shell "cat $F" | grep -o 'folder:[0-9]*' | head -1)
+adb shell am force-stop $P; sleep 1; adb shell cat $F > rec/p.xml
+python3 - "$folderkey" <<'PY'
+import sys
+s=open('rec/p.xml').read(); k=sys.argv[1]
+if k: s=s.replace('</map>','<int name="fcolor_%s" value="-1725009992" />\n</map>' % k)
+open('rec/p.xml','w').write(s)
+PY
+adb push rec/p.xml /data/local/tmp/p.xml >/dev/null; adb shell "cat /data/local/tmp/p.xml > $F"
+adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 84_folder_blue
 adb logcat -d -s velthon-ink | tail -80 > rec/ink.txt
 adb logcat -d -b crash > rec/crash.txt
 adb logcat -d | grep -iE "velthon|AndroidRuntime" | tail -60 > rec/log.txt
