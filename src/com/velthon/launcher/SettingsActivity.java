@@ -160,6 +160,8 @@ public class SettingsActivity extends Activity {
                 choice(L.t("Double tap"), "double_tap", "lock", new String[] {L.t("Lock the phone"), L.t("Screensaver"), L.t("All apps"), L.t("Nothing")}, new String[] {"lock", "saver", "apps", "none"}));
 
         section(Ico.MOON, L.t("Screensaver"), L.t("The window, while the phone rests or charges"),
+                choice(L.t("Velthon lock screen"), "lock_saver", "on", new String[] {L.t("On"), L.t("Off (the phone's own)")}, new String[] {"on", "off"}),
+                action(L.t("Set up the Velthon lock screen"), LockSaver.readyText(this), new Runnable() { @Override public void run() { LockSetup.show(SettingsActivity.this); } }),
                 choice(L.t("Next calendar events under the verse"), "lock_events", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
                 action(L.t("Make it my screensaver"), "Choose \"Velthon\" in the list", new Runnable() { @Override public void run() {
                     if (!open(Settings.ACTION_DREAM_SETTINGS)) open(Settings.ACTION_DISPLAY_SETTINGS);

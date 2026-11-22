@@ -398,35 +398,9 @@ public class Launcher extends Activity {
         LockSaver.watch(this);
         if (LockSaver.ENABLED && U.prefs(this).getString("lock_saver", "on").equals("on")) {
             LockSaver.prepare(this);
-            // without this permission (Android 14+) the window can only appear after the phone's own lock screen
-            if (!LockSaver.fullScreenAllowed(this) && !U.prefs(this).getBoolean("fsi_asked", false)) {
-                U.prefs(this).edit().putBoolean("fsi_asked", true).apply();
-                ui.postDelayed(new Runnable() { @Override public void run() {
-                    new android.app.AlertDialog.Builder(Launcher.this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                            .setTitle("Show Velthon instantly on the lock screen")
-                            .setMessage("So the window appears the moment you wake the phone (instead of the phone's own lock screen first), allow Velthon to use full-screen notifications.")
-                            .setPositiveButton(L.t("Allow"), new android.content.DialogInterface.OnClickListener() {
-                                @Override public void onClick(android.content.DialogInterface d, int w) {
-                                    try { startActivity(new Intent("android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT", Uri.parse("package:" + getPackageName()))); }
-                                    catch (Throwable t) { try { startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())); } catch (Throwable ignored) { } }
-                                } })
-                            .setNegativeButton(L.t("Not now"), null).show();
-                } }, 1500);
-            }
-            // "Display over other apps" lets Android open Velthon the moment the screen goes off, whatever app was open
-            else if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this) && !U.prefs(this).getBoolean("ovl_asked", false)) {
-                U.prefs(this).edit().putBoolean("ovl_asked", true).apply();
-                ui.postDelayed(new Runnable() { @Override public void run() {
-                    new android.app.AlertDialog.Builder(Launcher.this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                            .setTitle(L.t("Allow it over the lock screen"))
-                            .setMessage("So the Velthon lock opens before the phone's own one, even when another app was open, turn on \"Display over other apps\" for Velthon.")
-                            .setPositiveButton(L.t("Allow"), new android.content.DialogInterface.OnClickListener() {
-                                @Override public void onClick(android.content.DialogInterface d, int w) {
-                                    try { startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()))); }
-                                    catch (Throwable t) { try { startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)); } catch (Throwable ignored) { } }
-                                } })
-                            .setNegativeButton(L.t("Not now"), null).show();
-                } }, 1500);
+            if (!LockSaver.ready(this) && !U.prefs(this).getBoolean("lock_setup_asked", false)) {
+                U.prefs(this).edit().putBoolean("lock_setup_asked", true).apply();
+                ui.postDelayed(new Runnable() { @Override public void run() { LockSetup.show(Launcher.this); } }, 1500);
             }
         }
         showAlarm();

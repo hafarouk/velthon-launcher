@@ -70,12 +70,24 @@ public class LockSaver extends Activity {
         return b.toString();
     }
 
-    /** Retired (v3.37): on this phone Android keeps putting its own lock screen first, so the Velthon lock only
-     *  appeared after a touch. The phone's own lock screen is used; the window stays as the screensaver. */
-    static final boolean ENABLED = false;
+    static final boolean ENABLED = true;
+
+    /** Android only lets Velthon open its window at the moment the screen goes off (before the phone's own lock)
+     *  with one of these, each switched on once by the user: "Display over other apps", Velthon in Accessibility,
+     *  or (Android 14+) full-screen notifications. Without any, Velthon stays out of the way: no double lock. */
+    static boolean ready(Context c) {
+        if (Build.VERSION.SDK_INT < 23) return true;
+        if (android.provider.Settings.canDrawOverlays(c)) return true;
+        if (LockService.on != null) return true;
+        return Build.VERSION.SDK_INT >= 34 && fullScreenAllowed(c);
+    }
+    static String readyText(Context c) {
+        if (ready(c)) return L.t("Ready");
+        return L.t("Needs a one-time setup");
+    }
 
     static void watch(Context c) {
-        if (!ENABLED) {   // tidy up what earlier versions left: the lock notification and its channel
+        if (!ENABLED || !U.prefs(c).getString("lock_saver", "on").equals("on")) {   // off: nothing left behind
             try {
                 NotificationManager nm = (NotificationManager) c.getSystemService(NOTIFICATION_SERVICE);
                 nm.cancel(77);
@@ -83,6 +95,7 @@ public class LockSaver extends Activity {
             } catch (Throwable ignored) { }
             return;
         }
+        clearNote(c.getApplicationContext());
         if (watching) return;
         watching = true;
         final Context app = c.getApplicationContext();
@@ -97,6 +110,7 @@ public class LockSaver extends Activity {
                         + (kg != null && kg.isKeyguardLocked() ? " L" : "") + (showing ? " shown" : "") + (inCall(app) ? " call" : ""));
                 if (Intent.ACTION_USER_PRESENT.equals(a)) { clearNote(app); return; }
                 if (!U.prefs(app).getString("lock_saver", "on").equals("on") || showing) return;
+                if (!U.prefs(app).getString("lock_saver", "on").equals("on") || !ready(app)) return;   // not set up: the phone's own lock
                 if (inCall(app)) return;                                   // the screen also goes off against your ear
                 if (busyAudio(app)) return;    // a voice note or video held to the ear turns the screen off too: never interrupt it
                 if (Intent.ACTION_SCREEN_ON.equals(a)) {
@@ -134,10 +148,12 @@ public class LockSaver extends Activity {
     private static void show(Context app) {
         Intent open = new Intent(app, LockSaver.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        // 1) straight away, where the phone still allows it
-        try { app.startActivity(open); } catch (Throwable t) { log(app, "start failed " + t.getClass().getSimpleName()); }
-        // 2) a full-screen notification (as alarm and call apps do): the phone opens it over the lock screen
-        if (Build.VERSION.SDK_INT >= 26) {
+        // 1) straight away. Started from Velthon's accessibility service when it is on: Android always allows that.
+        Context from = LockService.on != null ? LockService.on : app;
+        try { from.startActivity(open); } catch (Throwable t) { log(app, "start failed " + t.getClass().getSimpleName()); }
+        // 2) a full-screen notification (as alarm apps do), only where the phone really allows it: otherwise it would
+        //    just sit on the phone's lock screen and open Velthon after a touch (the "second lock")
+        if (Build.VERSION.SDK_INT >= 26 && Build.VERSION.SDK_INT >= 34 && fullScreenAllowed(app)) {
             try {
                 NotificationManager nm = (NotificationManager) app.getSystemService(NOTIFICATION_SERVICE);
                 if (nm.getNotificationChannel(CHANNEL) == null) {
