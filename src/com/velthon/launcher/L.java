@@ -188,6 +188,8 @@ final class L {
         {"Move down", "نقل لأسفل", "Descendre", "Bajar", "Nach unten", "Mover para baixo"},
         {"Next on your calendar", "التالي في تقويمك", "À venir dans votre agenda", "Próximo en tu calendario", "Als Nächstes im Kalender", "Próximo no seu calendário"},
         {"Nothing coming up.", "لا شيء قادم.", "Rien à venir.", "Nada próximo.", "Nichts geplant.", "Nada por vir."},
+        {"No SIM", "لا توجد شريحة", "Pas de SIM", "Sin SIM", "Keine SIM", "Sem SIM"},
+        {"No service", "لا توجد خدمة", "Aucun service", "Sin servicio", "Kein Netz", "Sem serviço"},
         {"Remove widget", "إزالة الأداة", "Retirer le widget", "Quitar widget", "Widget entfernen", "Remover widget"},
         {"Show on lock screen", "إظهار على شاشة القفل", "Afficher sur l'écran de verrouillage", "Mostrar en la pantalla de bloqueo", "Auf dem Sperrbildschirm zeigen", "Mostrar na tela de bloqueio"},
         {"Remove from lock screen", "إزالة من شاشة القفل", "Retirer de l'écran de verrouillage", "Quitar de la pantalla de bloqueo", "Vom Sperrbildschirm entfernen", "Remover da tela de bloqueio"},
