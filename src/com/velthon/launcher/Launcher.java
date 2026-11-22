@@ -693,7 +693,7 @@ public class Launcher extends Activity {
         enter.add(wxPill);
         forecastRow = new LinearLayout(this);
         forecastRow.setVisibility(View.GONE);
-        alertLine = text(13, 0xFFF2B640, U.sansBold(this));
+        alertLine = text(13, 0xFFFF8A80, U.sansBold(this));
         alertLine.setGravity(Gravity.CENTER);
         alertLine.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openWeatherApp(); } });
         alertLine.setSingleLine(true); alertLine.setEllipsize(TextUtils.TruncateAt.END);
@@ -1129,7 +1129,7 @@ public class Launcher extends Activity {
         ink(wxText, 0xFF2A3B53, Color.WHITE);
         ink(nextLine, 0xFF2A3B53, Color.WHITE);
         if (page == 0) nextLine.setVisibility(countdownOn() ? View.VISIBLE : View.GONE);
-        ink(alertLine, 0xFFA8481A, 0xFFF5B53F);
+        ink(alertLine, 0xFFB3261E, 0xFFFF8A80);   // light red on dark skies, deep red on bright ones: a warning stands apart from the gold
         // the top row: white on the deep blue of a sunny sky, navy on a pale sky (snow, fog, cloud)
         String sk = U.isSky(this) ? U.skyName(this) : "";
         boolean paleTop = sk.equals("snow") || sk.equals("fog") || sk.equals("cloudy");
