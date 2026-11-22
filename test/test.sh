@@ -75,14 +75,15 @@ adb exec-out screencap -p > rec/70_home_items.png; adb shell uiautomator dump /s
 shot() { adb exec-out screencap -p > rec/$1.png; }
 adb shell input swipe 200 1300 900 1310 250; sleep 3; shot 10_page2
 adb shell input swipe 900 1300 200 1310 250; sleep 3; shot 11_back_page1
+adb shell pm grant $P android.permission.READ_CALENDAR 2>/dev/null
 adb shell input swipe 900 1300 200 1310 250; sleep 9; shot 12_church
 dump; cp rec/s.xml rec/church.xml
 adb shell input swipe 300 900 300 1400 300; sleep 2; shot 12b_church_scrolled
-# the calendar month view (Today | Calendar) with a calendar event in it
-c=$(center "Calendar"); [ -n "$c" ] && adb shell input tap $c; sleep 3; shot 12c_calendar_month
-adb shell pm grant $P android.permission.READ_CALENDAR 2>/dev/null; sleep 1
-dump; c=$(center "Calendar"); [ -n "$c" ] && adb shell input tap $c; sleep 3; shot 12d_calendar_month_events
-dump; c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_month
+# one page: the church day, then your next events, then the month with feasts and events
+adb shell input swipe 540 1700 540 500 300; sleep 2; shot 12c_church_events
+adb shell input swipe 540 1700 540 500 300; sleep 2; shot 12d_calendar_month_events
+dump; grep -c "Next on your calendar" rec/s.xml > rec/next_events.txt
+c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_month
 adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1000 540 1700 250; sleep 2; shot 13_quick
 adb shell input swipe 540 1500 540 600 250; sleep 2

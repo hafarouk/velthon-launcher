@@ -259,7 +259,7 @@ public class LockSaver extends Activity {
     /** The widget picked for the lock screen, live, right under the date. A touch on it goes to the lock as usual. */
     private void addLockWidget(FrameLayout root, final SaverView sv) {
         final int id = Widgets.lockWidget(this);
-        if (id == 0) return;
+        if (id == 0) { log(this, "lock widget: none found"); return; }
         try {
             android.appwidget.AppWidgetProviderInfo info = android.appwidget.AppWidgetManager.getInstance(this).getAppWidgetInfo(id);
             if (info == null) return;
@@ -276,6 +276,7 @@ public class LockSaver extends Activity {
             final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.round(getResources().getDisplayMetrics().widthPixels * .62f), h,
                     android.view.Gravity.TOP | android.view.Gravity.CENTER_HORIZONTAL);
             root.addView(v, 1, lp);   // over the picture, under the unlock layer
+            log(this, "lock widget: " + info.provider.getPackageName());
             v.setVisibility(View.INVISIBLE);
             sv.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                 @Override public void onLayoutChange(View x, int l, int t, int r, int b, int ol, int ot, int or, int ob) {

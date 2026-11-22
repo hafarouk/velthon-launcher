@@ -26,14 +26,18 @@ final class Widgets {
                 try {
                     int id = Integer.parseInt(s.trim());
                     AppWidgetProviderInfo i = m.getAppWidgetInfo(id);
-                    if (i != null && glucose(i.provider.getPackageName())) return id;
+                    if (i == null) continue;
+                    String label = "";
+                    try { label = i.loadLabel(c.getPackageManager()); } catch (Throwable ignored) { }
+                    if (glucose(i.provider.getPackageName()) || glucose(i.provider.getClassName()) || glucose(label)) return id;
                 } catch (Throwable ignored) { }
             }
         return 0;
     }
     static boolean glucose(String pkg) {
+        if (pkg == null) return false;
         String q = pkg.toLowerCase(java.util.Locale.ROOT);
-        for (String k : new String[] {"libre", "dexcom", "glucose", "xdrip", "juggluco", "diabox", "glimp", "medtronic", "guardian", "eversense", "gluroo", "sugarmate", "diabetes"})
+        for (String k : new String[] {"gluco", "glyc", "libre", "freestyle", "abbott", "dexcom", "cgm", "xdrip", "juggluco", "diabox", "glimp", "medtronic", "minimed", "guardian", "eversense", "gluroo", "sugar", "diabet", "nightscout", "androidaps", "aaps", "bg reading", "blood"})
             if (q.contains(k)) return true;
         return false;
     }

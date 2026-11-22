@@ -29,9 +29,19 @@ final class Events {
         if (now - cachedAt < 60_000L) return cached;
         ArrayList<String[]> out = new ArrayList<>();
         if (!allowed(c) || !U.prefs(c).getString("lock_events", "on").equals("on")) { cached = out; cachedAt = now; return out; }
+        out = upcoming(c, n, 14);
+        cached = out; cachedAt = now;
+        return out;
+    }
+
+    /** Up to {@code n} of your own events that have not ended, within {@code days} days (no cache, any setting). */
+    static ArrayList<String[]> upcoming(Context c, int n, int days) {
+        long now = System.currentTimeMillis();
+        ArrayList<String[]> out = new ArrayList<>();
+        if (!allowed(c)) return out;
         Uri.Builder b = CalendarContract.Instances.CONTENT_URI.buildUpon();
         ContentUris.appendId(b, now - 3 * 86_400_000L);     // far enough back to catch long and all-day events still going
-        ContentUris.appendId(b, now + 14 * 86_400_000L);
+        ContentUris.appendId(b, now + days * 86_400_000L);
         String[] cols = {CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END,
                 CalendarContract.Instances.ALL_DAY};
         boolean ar = U.langs(c).equals("ar");
@@ -66,7 +76,6 @@ final class Events {
             out.addAll(live); out.addAll(coming);
             while (out.size() > n) out.remove(out.size() - 1);
         } catch (Throwable ignored) { }
-        cached = out; cachedAt = now;
         return out;
     }
 

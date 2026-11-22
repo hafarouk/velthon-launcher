@@ -70,6 +70,11 @@ public class ChurchActivity extends Activity {
             }
         });
         build();
+        // your own events show on this page: ask for the calendar once
+        if (!Events.allowed(this) && Build.VERSION.SDK_INT >= 23 && !U.prefs(this).getBoolean("cal_asked", false)) {
+            U.prefs(this).edit().putBoolean("cal_asked", true).apply();
+            requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5);
+        }
         Synax.load(this, new Runnable() { @Override public void run() {
             runOnUiThread(new Runnable() { @Override public void run() { build(); } }); } });
         if (U.anims(this)) {
@@ -79,33 +84,9 @@ public class ChurchActivity extends Activity {
         }
     }
 
-    private boolean monthMode;
     private final Calendar shown = Calendar.getInstance();
     private int selDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
-    /** "Today" (the church day) and "Calendar" (the month: feasts and your own events), side by side at the top. */
-    private View modes() {
-        LinearLayout r = new LinearLayout(this);
-        r.setPadding(0, dp(12), 0, dp(4));
-        String[] names = {L.t("Today"), L.t("Calendar")};
-        for (int i = 0; i < 2; i++) {
-            final boolean month = i == 1;
-            TextView t = text(14, month == monthMode ? 0xFF1A1206 : Color.WHITE, Typeface.DEFAULT_BOLD);
-            t.setText(names[i]); t.setGravity(Gravity.CENTER);
-            t.setPadding(dp(18), dp(8), dp(18), dp(8));
-            android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
-            g.setCornerRadius(dp(20)); g.setColor(month == monthMode ? 0xFFF2B640 : 0x26FFFFFF);
-            t.setBackground(g);
-            t.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
-                monthMode = month;
-                if (month && !Events.allowed(ChurchActivity.this) && Build.VERSION.SDK_INT >= 23)
-                    requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5);
-                build(); } });
-            LinearLayout.LayoutParams l = new LinearLayout.LayoutParams(-2, -2); l.rightMargin = dp(8);
-            r.addView(t, l);
-        }
-        return r;
-    }
     @Override public void onRequestPermissionsResult(int req, String[] p, int[] g) { build(); }
 
     private void buildMonth() {
@@ -198,9 +179,46 @@ public class ChurchActivity extends Activity {
     }
 
     private void build() {
+        // a tap on a day or a month arrow rebuilds the page: keep it where it was
+        final View sc = (View) list.getParent();
+        final int y = sc != null ? sc.getScrollY() : 0;
         list.removeAllViews();
-        list.addView(modes());
-        if (monthMode) { buildMonth(); return; }
+        buildDay();
+        if (sc != null && y > 0) sc.post(new Runnable() { @Override public void run() { sc.scrollTo(0, y); } });
+    }
+
+    /** Your next events, from the phone's calendar: the next five, within two months. */
+    private void nextEvents() {
+        LinearLayout card = card();
+        TextView h = text(12.5f, 0xFF8FD0FF, Typeface.DEFAULT_BOLD);
+        h.setText(L.t("Next on your calendar")); h.setLetterSpacing(.06f);
+        card.addView(h);
+        if (!Events.allowed(this)) {
+            TextView t = text(14, 0xCCFFFFFF, Typeface.DEFAULT);
+            t.setText(L.t("Allow the calendar to see your own events here.")); t.setPadding(0, dp(6), 0, 0);
+            card.addView(t);
+            card.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= 23) requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5); } });
+        } else {
+            java.util.ArrayList<String[]> ev = Events.upcoming(this, 5, 60);
+            if (ev.isEmpty()) {
+                TextView t = text(14, 0x99FFFFFF, Typeface.DEFAULT);
+                t.setText(L.t("Nothing coming up.")); t.setPadding(0, dp(6), 0, 0);
+                card.addView(t);
+            } else for (int i = 0; i < ev.size(); i++) {
+                String[] e = ev.get(i);
+                TextView t = text(i == 0 ? 17 : 15, Color.WHITE, i == 0 ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                t.setText(e[0]); t.setPadding(0, dp(i == 0 ? 8 : 10), 0, 0);
+                card.addView(t);
+                TextView w = text(13, e.length > 2 ? 0xFFFF8A80 : 0xFF8FD0FF, Typeface.DEFAULT);
+                w.setText(e[1]);
+                card.addView(w);
+            }
+        }
+        add(card);
+    }
+
+    private void buildDay() {
         boolean orthodox = Church.calendar(this).equals("orthodox");
         Calendar now = Calendar.getInstance();
         // the date
@@ -318,6 +336,9 @@ public class ChurchActivity extends Activity {
             }
             add(card);
         }
+        // your own calendar, on the same page: the next events, then the month with feasts and events
+        nextEvents();
+        buildMonth();
         if (orthodox) {
             LinearLayout card = card();
             TextView h = text(12.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
