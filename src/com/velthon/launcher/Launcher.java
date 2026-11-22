@@ -1992,9 +1992,14 @@ public class Launcher extends Activity {
             final int index = dockApps.size();
             dockApps.add(a);
             View t = tile(a, false, 46);   // a little smaller, so each icon has room around it
-            // the dock's own look: clear inside a thin outline, the app's symbol in the middle
-            if (t instanceof LinearLayout && ((LinearLayout) t).getChildAt(0) instanceof ImageView)
-                ((ImageView) ((LinearLayout) t).getChildAt(0)).setImageDrawable(new android.graphics.drawable.BitmapDrawable(getResources(), Shape.glass(this, a.key, a.icon, dp(46))));
+            // the dock follows the chosen icon style (glass symbol, colour icon in glass, or the app's own icon)
+            if (t instanceof LinearLayout && ((LinearLayout) t).getChildAt(0) instanceof ImageView) {
+                String st = U.prefs(this).getString("icon_style", "glass");
+                android.graphics.Bitmap ib = st.equals("classic") ? Shape.icon(this, a.key, a.icon, dp(46))
+                        : st.equals("colorglass") ? Shape.colorGlass(this, a.key, a.icon, dp(46), false)
+                        : Shape.glass(this, a.key, a.icon, dp(46));
+                ((ImageView) ((LinearLayout) t).getChildAt(0)).setImageDrawable(new android.graphics.drawable.BitmapDrawable(getResources(), ib));
+            }
             t.setOnClickListener(new View.OnClickListener() { @Override public void onClick(final View v) { pressDock(index, v); } });
             t.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { startDrag(v, a, "dock", index); return true; } });
             dockRow.addView(t, new LinearLayout.LayoutParams(0, -1, 1f));
