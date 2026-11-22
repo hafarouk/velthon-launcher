@@ -171,24 +171,40 @@ final class StatusLine extends View {
         text.setColor(0xEEFFFFFF);
     }
 
+    /** Signal: one solid right triangle with rounded corners, filled from the left as far as the signal reaches;
+     *  the rest stays a soft glass shade. */
     private void drawBars(Canvas c, float x, float mid, float w) {
-        float gap = 2 * d, bw = (w - 3 * gap) / 4f, top = mid - 7 * d, bottom = mid + 7 * d;
-        for (int i = 0; i < 4; i++) {
-            float bh = (bottom - top) * (i + 1) / 4f;
-            fill.setColor(i < Math.max(1, bars) && bars > 0 ? 0xEEFFFFFF : 0x55FFFFFF);
-            c.drawRoundRect(new RectF(x + i * (bw + gap), bottom - bh, x + i * (bw + gap) + bw, bottom), d, d, fill);
+        float sz = 15 * d, left = x + (w - sz) / 2f, bottom = mid + sz / 2f, top = mid - sz / 2f, right = left + sz;
+        Path p = new Path();
+        p.moveTo(left, bottom); p.lineTo(right, top); p.lineTo(right, bottom); p.close();
+        fill.setPathEffect(new android.graphics.CornerPathEffect(2.2f * d));
+        fill.setShadowLayer(3 * d, 0, d, 0x66000000);
+        fill.setColor(0x47FFFFFF);
+        c.drawPath(p, fill);
+        fill.clearShadowLayer();
+        if (bars > 0) {
+            c.save();
+            c.clipRect(left - d, top - d, left + sz * Math.min(4, bars) / 4f, bottom + d);
+            fill.setColor(0xF2FFFFFF);
+            c.drawPath(p, fill);
+            c.restore();
         }
+        fill.setPathEffect(null);
         fill.setColor(0xEEFFFFFF);
     }
 
+    /** Wi-Fi: a solid quarter fan, filled from the point up as far as the signal reaches. */
     private void drawWifi(Canvas c, float x, float mid, float w) {
-        float cx = x + w / 2f, cy = mid + 6 * d;
-        for (int i = 0; i < 3; i++) {
-            float r = (5 + i * 4.5f) * d;
-            line.setColor(i <= bars - 1 || (i == 0 && bars >= 0) ? 0xEEFFFFFF : 0x55FFFFFF);
-            c.drawArc(new RectF(cx - r, cy - r, cx + r, cy + r), 225, 90, false, line);
-        }
-        line.setColor(0xEEFFFFFF);
-        c.drawCircle(cx, cy - d, 1.6f * d, fill);
+        float r = 10.5f * d, cx = x + w / 2f, cy = mid + r * .62f;
+        RectF o = new RectF(cx - r, cy - r, cx + r, cy + r);
+        fill.setShadowLayer(3 * d, 0, d, 0x66000000);
+        fill.setColor(0x47FFFFFF);
+        c.drawArc(o, 225, 90, true, fill);
+        fill.clearShadowLayer();
+        int lv = Math.max(1, Math.min(3, bars + 1));   // 0..3 → a third, two thirds, full
+        float rr = r * (lv == 3 ? 1f : lv == 2 ? .72f : .45f);
+        fill.setColor(0xF2FFFFFF);
+        c.drawArc(new RectF(cx - rr, cy - rr, cx + rr, cy + rr), 225, 90, true, fill);
+        fill.setColor(0xEEFFFFFF);
     }
 }
