@@ -4,6 +4,11 @@ P=com.velthon.launcher
 adb wait-for-device
 until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do sleep 2; done
 adb shell settings put global package_verifier_enable 0
+# a real morning: 7:40 am in Virginia (12:40 UTC), so the sky is the true sunrise sky
+adb root >/dev/null 2>&1; sleep 3
+adb shell settings put global auto_time 0; adb shell settings put global auto_time_zone 0
+adb shell service call alarm 3 s16 America/New_York >/dev/null
+adb shell "date -u 112312402026.00"; adb shell date
 adb install -r -g app.apk > rec/install.txt 2>&1
 adb logcat -c
 adb shell am start -a android.intent.action.SET_ALARM --ei android.intent.extra.alarm.HOUR 6 --ei android.intent.extra.alarm.MINUTES 45 --ez android.intent.extra.alarm.SKIP_UI true; sleep 3
@@ -77,25 +82,30 @@ shot() { adb exec-out screencap -p > rec/$1.png; }
 grab() { shot "$1"; adb shell uiautomator dump /sdcard/m.xml >/dev/null 2>&1; adb pull /sdcard/m.xml "rec/$1.xml" >/dev/null 2>&1; cp "rec/$1.xml" rec/s.xml; }
 tapc() { local c; c=$(center "$1"); [ -z "$c" ] && c=$(centerp "$1"); [ -n "$c" ] && adb shell input tap $c; }
 findrow() {   # scroll Settings until a row with this text is on screen
-  for k in 1 2 3 4 5 6 7 8 9 10 11 12; do dump; c=$(center "$1"); [ -n "$c" ] && { set -- $c; [ "$2" -gt 300 ] && [ "$2" -lt 1900 ] && return 0; }; adb shell input swipe 540 1600 540 1100 300; sleep .8; done; return 1; }
+  local want="$1" k c y
+  for k in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do dump; c=$(center "$want")
+    if [ -n "$c" ]; then y=${c#* }; [ "$y" -gt 300 ] && [ "$y" -lt 1900 ] && return 0; fi
+    adb shell input swipe 540 1600 540 1100 300; sleep .8; done; return 1; }
 adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME; sleep 4
 grab m00_home
 # the weather: tap it for warnings and the full forecast
-c=$(centerp "°"); [ -n "$c" ] && adb shell input tap $c; sleep 2; grab m01_weather_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1
+c=$(centerp "°F"); [ -n "$c" ] && adb shell input tap $c; sleep 3; grab m01_weather_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1
 # swipe right: the Coptic page
 adb shell input swipe 900 1300 200 1310 250; sleep 6; grab m02_coptic; adb shell input keyevent KEYCODE_BACK; sleep 2
 # swipe up: the app list; long-press an app: its menu (Add to VIP)
-adb shell input swipe 540 1700 540 800 250; sleep 3; adb shell input keyevent KEYCODE_BACK; sleep 1; grab m03_drawer
-c=$(center "Clock"); if [ -n "$c" ]; then set -- $c; adb shell input motionevent DOWN $1 $2; sleep 1.3; adb shell input motionevent UP $1 $2; sleep 2; grab m04_app_menu
+adb shell input swipe 540 1500 540 600 250; sleep 2; adb shell input swipe 540 1700 540 800 250; sleep 3; adb shell input keyevent KEYCODE_BACK; sleep 2; grab m03_drawer
+c=$(center "Calculator"); [ -z "$c" ] && c=$(center "Clock"); [ -z "$c" ] && c=$(center "Contacts"); if [ -n "$c" ]; then set -- $c; adb shell input motionevent DOWN $1 $2; sleep 1.3; adb shell input motionevent UP $1 $2; sleep 2; grab m04_app_menu
   tapc "Add to VIP"; sleep 2; fi
 adb shell input keyevent KEYCODE_HOME; sleep 2
 adb shell input swipe 540 1000 540 1700 250; sleep 2; grab m05_vip_panel; adb shell input keyevent KEYCODE_BACK; sleep 1
 # Settings: verse language, icon style, dock icons, text colour, the lock screen
 adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3; grab m10_settings_top
-findrow "Verse language" && { grab m11_verse_language_row; tapc "Verse language"; sleep 2; grab m12_language_sheet; tapc "French"; sleep 2; grab m13_language_chosen; }
 findrow "Icon style" && { grab m14_icon_style_row; tapc "Icon style"; sleep 2; grab m15_icon_style_sheet; tapc "Colour glass (full-colour icon inside the glass)"; sleep 2; grab m16_icon_style_chosen; }
 findrow "Dock icons" && { tapc "Dock icons"; sleep 2; grab m17_dock_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1; }
 findrow "Text colour" && { tapc "Text colour"; sleep 2; grab m18_text_colour_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1; }
 findrow "Velthon lock screen" && { grab m19_lock_row; tapc "Velthon lock screen"; sleep 2; grab m20_lock_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1; }
-adb shell input keyevent KEYCODE_HOME; sleep 3; grab m21_home_french_colour
+adb shell am force-stop $P; adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3
+findrow "Verse language" && { grab m11_verse_language_row; tapc "Verse language"; sleep 2; grab m12_language_sheet; tapc "French"; sleep 2; grab m13_language_chosen; }
+adb shell input keyevent KEYCODE_HOME; sleep 5; grab m21_home_french_colour
+adb shell input swipe 900 1300 200 1310 250; sleep 6; grab m23_coptic_french; adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input keyevent KEYCODE_POWER; sleep 3; adb shell input keyevent KEYCODE_WAKEUP; sleep 4; grab m22_lock
