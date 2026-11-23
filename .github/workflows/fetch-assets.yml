@@ -1,0 +1,33 @@
+name: fetch-assets
+# Downloads media for the launcher's commercial (generated scenes, licensed stock) into the ad-assets branch,
+# so they can be edited where direct downloads are not possible.
+on:
+  workflow_dispatch:
+    inputs:
+      list:
+        description: "One per line: <file name> <url>"
+        required: true
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download
+        env:
+          LIST: ${{ github.event.inputs.list }}
+        run: |
+          mkdir -p out
+          printf '%s\n' "$LIST" | while read -r name url; do
+            [ -z "$name" ] && continue
+            case "$name" in */*|..*) echo "bad name $name"; continue;; esac
+            curl -sSL --retry 3 -m 600 -o "out/$name" "$url" && ls -la "out/$name"
+          done
+      - name: Publish to ad-assets
+        run: |
+          cd out
+          git init -q
+          git config user.name "velthon-bot"; git config user.email "noreply@github.com"
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          if git fetch -q --depth 1 origin ad-assets; then git checkout -q -b ad-assets FETCH_HEAD; git checkout -q FETCH_HEAD -- . 2>/dev/null || true; else git checkout -q -b ad-assets; fi
+          git add -A && git commit -qm "assets $(date -u +%FT%TZ)" && git push -q origin HEAD:ad-assets
