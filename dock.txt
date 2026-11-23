@@ -1,0 +1,1 @@
+com.android.dialer/com.android.dialer.main.impl.MainActivity|com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity|com.android.contacts/com.android.contacts.activities.PeopleActivity|com.google.android.documentsui/com.android.documentsui.LauncherActivity|com.google.android.deskclock/com.android.deskclock.DeskClock

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="wx_alert"></string>
+    <string name="syn_day">3_14</string>
+    <string name="wx_official"></string>
+    <long name="lon" value="-4588085523825101583" />
+    <string name="syn_all">The Departure of St. Martinus (Martin) Bishop of Tours (Thrace)</string>
+    <boolean name="asked_loc" value="true" />
+    <int name="wx_temp" value="38" />
+    <long name="syn_at" value="1795457335288" />
+    <long name="wx_at" value="1795457336991" />
+    <string name="wx_cc">US</string>
+    <string name="wx_city">Boardman</string>
+    <string name="syn_name">The Departure of St. Martinus (Martin) Bishop of Tours (Thrace)</string>
+    <long name="lat" value="4631340459036172196" />
+    <boolean name="wx_f" value="true" />
+    <int name="wx_code" value="3" />
+    <string name="wx_fc">13,41,3,1;16,40,3,1;19,37,1,0;22,39,3,0;01,38,3,0;</string>
+<string name="desk">0=folder:77;1=com.google.android.deskclock/com.android.deskclock.DeskClock;2=com.android.settings/com.android.settings.Settings;3=com.android.contacts/com.android.contacts.activities.PeopleActivity;4=com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+<string name="hfolders">77Toolscom.android.contacts/com.android.contacts.activities.PeopleActivity,com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+<string name="dock">com.android.dialer/com.android.dialer.main.impl.MainActivity|com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity|com.android.contacts/com.android.contacts.activities.PeopleActivity|com.google.android.documentsui/com.android.documentsui.LauncherActivity|com.google.android.deskclock/com.android.deskclock.DeskClock</string>
+<string name="city">Toronto</string>
+<string name="langs">en</string>
+<string name="verse_every">1440</string>
+    <int name="verse_shift" value="-810354" />
+</map>
