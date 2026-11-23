@@ -142,8 +142,14 @@ final class U {
         }
     }
     private static ArrayList<Verse> verses;
+    private static String versesLang;
+    /** The verses in the chosen language. French and Spanish fill the Latin-script side ("en"), with their own references;
+     *  the Arabic side stays Arabic. */
     static synchronized ArrayList<Verse> verses(Context c) {
-        if (verses != null) return verses;
+        String lg = langs(c);
+        String latin = lg.equals("fr") || lg.equals("es") ? lg : "en";
+        if (verses != null && latin.equals(versesLang)) return verses;
+        versesLang = latin;
         verses = new ArrayList<>();
         try (InputStream in = c.getAssets().open("bible_verses.json")) {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -152,8 +158,9 @@ final class U {
             JSONArray a = new JSONArray(bo.toString("UTF-8"));
             for (int i = 0; i < a.length(); i++) {
                 JSONObject o = a.getJSONObject(i);
-                Verse v = new Verse(i, o.optString("en"), o.optString("ar"),
-                        o.optString("ref_en", o.optString("ref")), o.optString("ref_ar"));
+                String tx = o.optString(latin, ""), rf = o.optString("ref_" + latin, "");
+                if (tx.isEmpty()) { tx = o.optString("en"); rf = o.optString("ref_en", o.optString("ref")); }
+                Verse v = new Verse(i, tx, o.optString("ar"), rf, o.optString("ref_ar"));
                 v.ref = o.optString("ref");
                 verses.add(v);
             }
@@ -187,11 +194,18 @@ final class U {
         return minutes / Math.max(1, versePeriod(c));
     }
 
-    /** Which languages to show: "both", "en" or "ar". */
+    /** The verse and church language: "en", "ar", "fr" or "es" (one language; by default the phone's, if it is one of them). */
     static String langs(Context c) {
         String l = prefs(c).getString("langs", "");
-        if (l.equals("en") || l.equals("ar")) return l;
-        return java.util.Locale.getDefault().getLanguage().equals("ar") ? "ar" : "en";   // one language only
+        if (l.equals("en") || l.equals("ar") || l.equals("fr") || l.equals("es")) return l;
+        String p = java.util.Locale.getDefault().getLanguage();
+        return p.equals("ar") || p.equals("fr") || p.equals("es") ? p : "en";
+    }
+    /** The locale for dates and month names in the chosen language. */
+    static java.util.Locale langLocale(Context c) {
+        String l = langs(c);
+        if (l.equals("ar")) return new java.util.Locale("ar", "EG");
+        return l.equals("en") ? java.util.Locale.getDefault().getLanguage().equals("en") ? java.util.Locale.getDefault() : java.util.Locale.US : new java.util.Locale(l);
     }
 
     static java.util.LinkedHashSet<Integer> saved(Context c) {

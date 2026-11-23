@@ -174,7 +174,7 @@ class SaverView extends View {
         if (w == 0) return;
         String langs = U.langs(getContext());
         int tw = Math.round(w * .86f);
-        int len = (langs.equals("ar") ? 0 : verse.en.length()) + (langs.equals("en") ? 0 : verse.ar.length());
+        int len = (langs.equals("ar") ? 0 : verse.en.length()) + (!langs.equals("ar") ? 0 : verse.ar.length());
         float size = w * (len > 260 ? .052f : len > 180 ? .058f : .064f);
         size *= 1.35f;                                  // big and easy to read on the lock screen
         int evCount = Events.next(getContext(), 2).size();
@@ -374,7 +374,7 @@ class SaverView extends View {
         float dy = top + clockH + dateP.getTextSize() * 1.9f;
         c.drawText(d, w / 2f + drift, dy, dateP);
         if (feast != null) {   // a feast day gets its own line, fitted to the width, never cut at the edges
-            String f = "✦ " + (U.langs(getContext()).equals("ar") ? feast.ar : feast.en);
+            String f = "✦ " + feast.in(U.langs(getContext()));
             float sz = dateP.getTextSize(), max = w * .9f;
             while (dateP.measureText(f) > max && dateP.getTextSize() > sz * .7f) dateP.setTextSize(dateP.getTextSize() * .94f);
             int col = dateP.getColor(); dateP.setColor(Color.red(col) < 128 ? 0xFF8A5212 : 0xFFF2B640);   // deep amber on a bright sky

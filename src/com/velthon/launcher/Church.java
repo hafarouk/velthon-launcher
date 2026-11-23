@@ -14,67 +14,80 @@ final class Church {
 
     static final class Feast {
         final String id, en, ar; final int days;
+        String fr, es;
         Feast(String id, String en, String ar, int days) { this.id = id; this.en = en; this.ar = ar; this.days = days; }
+        /** The name in the chosen language: "en", "ar", "fr" or "es". */
+        String in(String lang) {
+            if (lang.equals("ar")) return ar;
+            if (lang.equals("fr") && fr != null) return fr;
+            if (lang.equals("es") && es != null) return es;
+            return en;
+        }
+        String in(Context c) { return in(U.langs(c)); }
     }
 
     /** "orthodox", "catholic" or "off". */
     static String calendar(Context c) { return U.prefs(c).getString("church", "orthodox"); }
 
     private static final String[][] NAMES = {
-            {"nativity", "Nativity", "عيد الميلاد"},
-            {"theophany", "Theophany", "عيد الغطاس"},
-            {"annunciation", "Annunciation", "عيد البشارة"},
-            {"lent", "Great Lent begins", "بداية الصوم الكبير"},
-            {"palm", "Palm Sunday", "أحد الشعانين"},
-            {"thursday", "Covenant Thursday", "خميس العهد"},
-            {"cross", "Good Friday", "الجمعة العظيمة"},
-            {"resurrection", "Feast of the Resurrection", "عيد القيامة"},
-            {"ascension", "Ascension", "عيد الصعود"},
-            {"pentecost", "Pentecost", "عيد العنصرة"},
+            {"nativity", "Nativity", "عيد الميلاد", "Nativité", "Natividad"},
+            {"theophany", "Theophany", "عيد الغطاس", "Théophanie", "Teofanía"},
+            {"annunciation", "Annunciation", "عيد البشارة", "Annonciation", "Anunciación"},
+            {"lent", "Great Lent begins", "بداية الصوم الكبير", "Début du Grand Carême", "Comienza la Gran Cuaresma"},
+            {"palm", "Palm Sunday", "أحد الشعانين", "Dimanche des Rameaux", "Domingo de Ramos"},
+            {"thursday", "Covenant Thursday", "خميس العهد", "Jeudi de l'Alliance", "Jueves de la Alianza"},
+            {"cross", "Good Friday", "الجمعة العظيمة", "Vendredi saint", "Viernes Santo"},
+            {"resurrection", "Feast of the Resurrection", "عيد القيامة", "Fête de la Résurrection", "Fiesta de la Resurrección"},
+            {"ascension", "Ascension", "عيد الصعود", "Ascension", "Ascensión"},
+            {"pentecost", "Pentecost", "عيد العنصرة", "Pentecôte", "Pentecostés"},
             // Coptic Orthodox feasts and fasts across the year
-            {"jonah", "Jonah's Fast begins", "بداية صوم يونان"},
-            {"jonah_end", "Jonah's Passover", "فصح يونان"},
-            {"lazarus", "Lazarus Saturday", "سبت لعازر"},
-            {"bright_sat", "Bright Saturday", "سبت الفرح"},
-            {"thomas", "Thomas Sunday", "أحد توما"},
-            {"apostles_fast", "Apostles' Fast begins", "بداية صوم الرسل"},
-            {"circumcision", "Feast of the Circumcision", "عيد الختان"},
-            {"cana", "Wedding at Cana", "عرس قانا الجليل"},
-            {"temple", "Entry into the Temple", "دخول المسيح الهيكل"},
-            {"egypt", "Entry of the Lord into Egypt", "دخول المسيح أرض مصر"},
-            {"apostles", "Feast of the Apostles", "عيد الرسل"},
-            {"mary_fast", "St. Mary's Fast begins", "بداية صوم العذراء"},
-            {"transfiguration", "Transfiguration", "عيد التجلي"},
-            {"assumption", "Assumption of St. Mary", "صعود جسد العذراء"},
-            {"nayrouz", "Nayrouz, Coptic New Year", "عيد النيروز"},
-            {"holycross", "Feast of the Cross", "عيد الصليب"},
-            {"nativity_fast", "Nativity Fast begins", "بداية صوم الميلاد"},
-            {"kiahk", "Month of Kiahk begins", "بداية شهر كيهك"},
-            {"baptist", "Martyrdom of St. John the Baptist", "استشهاد القديس يوحنا المعمدان"},
-            {"beasts", "The Four Incorporeal Beasts", "الأربعة الحيوانات غير المتجسدين"},
-            {"michael", "Feast of Archangel Michael", "عيد رئيس الملائكة ميخائيل"},
-            {"mina", "Martyrdom of St. Mina", "استشهاد مار مينا العجايبي"},
-            {"priests", "The 24 Priests", "الأربعة والعشرون قسيسًا"},
-            {"mary_temple", "Presentation of St. Mary into the Temple", "دخول السيدة العذراء الهيكل"},
-            {"gabriel", "Archangel Gabriel", "رئيس الملائكة غبريال"},
-            {"mary_dormition", "Dormition of St. Mary", "نياحة السيدة العذراء"},
-            {"antony", "Departure of St. Antony the Great", "نياحة الأنبا أنطونيوس"},
-            {"george", "Martyrdom of St. George", "استشهاد مار جرجس"},
-            {"mark", "Martyrdom of St. Mark the Apostle", "استشهاد مار مرقس الرسول"},
-            {"mary_nativity", "Nativity of St. Mary", "ميلاد السيدة العذراء"},
-            {"raphael", "Archangel Raphael", "رئيس الملائكة رافائيل"},
-            {"m_michael", "Monthly commemoration of Archangel Michael", "تذكار رئيس الملائكة ميخائيل"},
-            {"m_mary", "Monthly commemoration of St. Mary", "تذكار السيدة العذراء"},
+            {"jonah", "Jonah's Fast begins", "بداية صوم يونان", "Début du jeûne de Jonas", "Comienza el ayuno de Jonás"},
+            {"jonah_end", "Jonah's Passover", "فصح يونان", "Pâque de Jonas", "Pascua de Jonás"},
+            {"lazarus", "Lazarus Saturday", "سبت لعازر", "Samedi de Lazare", "Sábado de Lázaro"},
+            {"bright_sat", "Bright Saturday", "سبت الفرح", "Samedi lumineux", "Sábado de Luz"},
+            {"thomas", "Thomas Sunday", "أحد توما", "Dimanche de Thomas", "Domingo de Tomás"},
+            {"apostles_fast", "Apostles' Fast begins", "بداية صوم الرسل", "Début du jeûne des Apôtres", "Comienza el ayuno de los Apóstoles"},
+            {"circumcision", "Feast of the Circumcision", "عيد الختان", "Fête de la Circoncision", "Fiesta de la Circuncisión"},
+            {"cana", "Wedding at Cana", "عرس قانا الجليل", "Noces de Cana", "Bodas de Caná"},
+            {"temple", "Entry into the Temple", "دخول المسيح الهيكل", "Entrée au Temple", "Entrada en el Templo"},
+            {"egypt", "Entry of the Lord into Egypt", "دخول المسيح أرض مصر", "Entrée du Seigneur en Égypte", "Entrada del Señor en Egipto"},
+            {"apostles", "Feast of the Apostles", "عيد الرسل", "Fête des Apôtres", "Fiesta de los Apóstoles"},
+            {"mary_fast", "St. Mary's Fast begins", "بداية صوم العذراء", "Début du jeûne de la Vierge Marie", "Comienza el ayuno de la Virgen María"},
+            {"transfiguration", "Transfiguration", "عيد التجلي", "Transfiguration", "Transfiguración"},
+            {"assumption", "Assumption of St. Mary", "صعود جسد العذراء", "Assomption de la Vierge Marie", "Asunción de la Virgen María"},
+            {"nayrouz", "Nayrouz, Coptic New Year", "عيد النيروز", "Nayrouz, Nouvel An copte", "Nayrouz, Año Nuevo copto"},
+            {"holycross", "Feast of the Cross", "عيد الصليب", "Fête de la Croix", "Fiesta de la Cruz"},
+            {"nativity_fast", "Nativity Fast begins", "بداية صوم الميلاد", "Début du jeûne de la Nativité", "Comienza el ayuno de la Natividad"},
+            {"kiahk", "Month of Kiahk begins", "بداية شهر كيهك", "Début du mois de Kiahk", "Comienza el mes de Kiahk"},
+            {"baptist", "Martyrdom of St. John the Baptist", "استشهاد القديس يوحنا المعمدان", "Martyre de saint Jean-Baptiste", "Martirio de san Juan Bautista"},
+            {"beasts", "The Four Incorporeal Beasts", "الأربعة الحيوانات غير المتجسدين", "Les quatre Êtres incorporels", "Los cuatro Seres incorpóreos"},
+            {"michael", "Feast of Archangel Michael", "عيد رئيس الملائكة ميخائيل", "Fête de l'archange Michel", "Fiesta del arcángel Miguel"},
+            {"mina", "Martyrdom of St. Mina", "استشهاد مار مينا العجايبي", "Martyre de saint Mina", "Martirio de san Mina"},
+            {"priests", "The 24 Priests", "الأربعة والعشرون قسيسًا", "Les vingt-quatre Prêtres", "Los veinticuatro Sacerdotes"},
+            {"mary_temple", "Presentation of St. Mary into the Temple", "دخول السيدة العذراء الهيكل", "Présentation de la Vierge Marie au Temple", "Presentación de la Virgen María en el Templo"},
+            {"gabriel", "Archangel Gabriel", "رئيس الملائكة غبريال", "Archange Gabriel", "Arcángel Gabriel"},
+            {"mary_dormition", "Dormition of St. Mary", "نياحة السيدة العذراء", "Dormition de la Vierge Marie", "Dormición de la Virgen María"},
+            {"antony", "Departure of St. Antony the Great", "نياحة الأنبا أنطونيوس", "Départ de saint Antoine le Grand", "Partida de san Antonio el Grande"},
+            {"george", "Martyrdom of St. George", "استشهاد مار جرجس", "Martyre de saint Georges", "Martirio de san Jorge"},
+            {"mark", "Martyrdom of St. Mark the Apostle", "استشهاد مار مرقس الرسول", "Martyre de saint Marc l'Apôtre", "Martirio de san Marcos Apóstol"},
+            {"mary_nativity", "Nativity of St. Mary", "ميلاد السيدة العذراء", "Nativité de la Vierge Marie", "Natividad de la Virgen María"},
+            {"raphael", "Archangel Raphael", "رئيس الملائكة رافائيل", "Archange Raphaël", "Arcángel Rafael"},
+            {"m_michael", "Monthly commemoration of Archangel Michael", "تذكار رئيس الملائكة ميخائيل", "Commémoration mensuelle de l'archange Michel", "Conmemoración mensual del arcángel Miguel"},
+            {"m_mary", "Monthly commemoration of St. Mary", "تذكار السيدة العذراء", "Commémoration mensuelle de la Vierge Marie", "Conmemoración mensual de la Virgen María"},
             // Catholic
-            {"ash", "Ash Wednesday", "أربعاء الرماد"},
-            {"presentation", "Presentation of the Lord", "تقدمة الرب للهيكل"},
-            {"assumption_c", "Assumption of Mary", "انتقال العذراء"},
-            {"allsaints", "All Saints", "عيد جميع القديسين"},
-            {"immaculate", "Immaculate Conception", "الحبل بلا دنس"},
-            {"advent", "Advent begins", "بداية زمن المجيء"},
+            {"ash", "Ash Wednesday", "أربعاء الرماد", "Mercredi des Cendres", "Miércoles de Ceniza"},
+            {"presentation", "Presentation of the Lord", "تقدمة الرب للهيكل", "Présentation du Seigneur", "Presentación del Señor"},
+            {"assumption_c", "Assumption of Mary", "انتقال العذراء", "Assomption de Marie", "Asunción de María"},
+            {"allsaints", "All Saints", "عيد جميع القديسين", "Toussaint", "Todos los Santos"},
+            {"immaculate", "Immaculate Conception", "الحبل بلا دنس", "Immaculée Conception", "Inmaculada Concepción"},
+            {"advent", "Advent begins", "بداية زمن المجيء", "Début de l'Avent", "Comienza el Adviento"},
     };
     private static Feast feast(String id, int days) {
-        for (String[] n : NAMES) if (n[0].equals(id)) return new Feast(id, n[1], n[2], days);
+        for (String[] n : NAMES) if (n[0].equals(id)) {
+            Feast f = new Feast(id, n[1], n[2], days);
+            if (n.length > 4) { f.fr = n[3]; f.es = n[4]; }
+            return f;
+        }
         return null;
     }
 
@@ -222,18 +235,18 @@ final class Church {
         int year = t.get(Calendar.YEAR);
         int diff = daysBetween(orthodox ? orthodoxEaster(year) : westernEaster(year), t);
         int m = t.get(Calendar.MONTH) + 1, d = t.get(Calendar.DAY_OF_MONTH);
-        if (diff >= -7 && diff <= -1) return new String[] {"Holy Week", "أسبوع الآلام"};
+        if (diff >= -7 && diff <= -1) return new String[] {"Holy Week", "أسبوع الآلام", "Semaine sainte", "Semana Santa"};
         if (orthodox) {
-            if (diff >= -69 && diff <= -67) return new String[] {"Jonah's Fast", "صوم يونان"};
-            if (diff >= -55 && diff < -7) return new String[] {"Great Lent", "الصوم الكبير"};
-            if (diff >= 0 && diff <= 49) return new String[] {"The Holy Fifty Days", "الخماسين المقدسة"};
+            if (diff >= -69 && diff <= -67) return new String[] {"Jonah's Fast", "صوم يونان", "Jeûne de Jonas", "Ayuno de Jonás"};
+            if (diff >= -55 && diff < -7) return new String[] {"Great Lent", "الصوم الكبير", "Grand Carême", "Gran Cuaresma"};
+            if (diff >= 0 && diff <= 49) return new String[] {"The Holy Fifty Days", "الخماسين المقدسة", "Les cinquante jours saints", "Los cincuenta días santos"};
             Calendar apostles = new GregorianCalendar(year, Calendar.JULY, 12);
-            if (diff >= 50 && daysBetween(t, apostles) > 0) return new String[] {"Apostles' Fast", "صوم الرسل"};
-            if (m == 8 && d >= 7 && d <= 21) return new String[] {"St. Mary's Fast", "صوم العذراء"};
-            if ((m == 11 && d >= 25) || m == 12 || (m == 1 && d <= 6)) return new String[] {"Nativity Fast", "صوم الميلاد"};
+            if (diff >= 50 && daysBetween(t, apostles) > 0) return new String[] {"Apostles' Fast", "صوم الرسل", "Jeûne des Apôtres", "Ayuno de los Apóstoles"};
+            if (m == 8 && d >= 7 && d <= 21) return new String[] {"St. Mary's Fast", "صوم العذراء", "Jeûne de la Vierge Marie", "Ayuno de la Virgen María"};
+            if ((m == 11 && d >= 25) || m == 12 || (m == 1 && d <= 6)) return new String[] {"Nativity Fast", "صوم الميلاد", "Jeûne de la Nativité", "Ayuno de la Natividad"};
         } else {
-            if (diff >= -46 && diff < -7) return new String[] {"Lent", "الصوم الكبير"};
-            if (diff >= 0 && diff <= 49) return new String[] {"Eastertide", "الزمن الفصحي"};
+            if (diff >= -46 && diff < -7) return new String[] {"Lent", "الصوم الكبير", "Carême", "Cuaresma"};
+            if (diff >= 0 && diff <= 49) return new String[] {"Eastertide", "الزمن الفصحي", "Temps pascal", "Tiempo pascual"};
         }
         return null;
     }
@@ -281,6 +294,15 @@ final class Church {
         return d == 12 ? feast("m_michael", 0) : d == 21 ? feast("m_mary", 0) : null;
     }
 
+    /** e.g. "Hathor 9, 1743", "9 هاتور 1743", "9 Hathor 1743" (French), "9 de Hathor de 1743" (Spanish). */
+    static String copticDate(Calendar day, String lang) {
+        if (lang.equals("ar") || lang.equals("en")) return copticDate(day, lang.equals("ar"));
+        int[] md = coptic(day);
+        int y = day.get(Calendar.YEAR);
+        if (daysBetween(copticNewYear(y), day) < 0) y--;
+        String m = md[0] == 13 ? (lang.equals("fr") ? "Petit mois" : "Mes pequeño") : MONTHS[md[0] - 1];
+        return lang.equals("es") ? md[1] + " de " + m + " de " + (y - 283) : md[1] + " " + m + " " + (y - 283);
+    }
     /** e.g. "Hathor 9, 1743" (or the Arabic month name). */
     static String copticDate(Calendar day, boolean arabic) {
         int y = day.get(Calendar.YEAR);

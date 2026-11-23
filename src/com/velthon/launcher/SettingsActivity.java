@@ -107,7 +107,7 @@ public class SettingsActivity extends Activity {
         header();
 
         section(Ico.BOOK, L.t("Scripture"), L.t("What appears on screen and how often"),
-                choice(L.t("Verse language"), "langs", U.langs(this), new String[] {L.t("English"), L.t("Arabic")}, new String[] {"en", "ar"}),
+                choice(L.t("Verse language"), "langs", U.langs(this), new String[] {L.t("English"), L.t("Arabic"), L.t("French"), L.t("Spanish")}, new String[] {"en", "ar", "fr", "es"}),
                 choice(L.t("Verse changes"), "verse_every", "5", new String[] {L.t("Every 5 minutes"), L.t("Every 15 minutes"), L.t("Every 30 minutes"), L.t("Every hour"), L.t("Once a day")},
                         new String[] {"5", "15", "30", "60", "1440"}),
                 choice(L.t("Verse font"), "verse_font", "system", new String[] {L.t("The phone's font"), L.t("Classic serif")}, new String[] {"system", "serif"}),

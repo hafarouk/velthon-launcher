@@ -25,4 +25,13 @@ for m in re.finditer(r'choice\((L\.t\("[^"]*"\)|"[^"]*"), "([^"]+)", [^,]+, new 
     v = len(re.findall(r'"(?:[^"\\]|\\.)*"', m.group(4)))
     if n != v: print('CHOICE NAMES/VALUES DIFFER:', m.group(2), n, v); bad += 1
 print('source checks: %d translation rows, %d words without translation, %d problems' % (len(table), len(missing), bad))
-sys.exit(1 if bad else 0)
+_exit_bad = bad
+
+# every verse has all four languages and their references
+import json as _json, os as _os
+_v = _json.load(open(_os.path.join(_os.path.dirname(__file__), '..', '..', 'app', 'assets', 'bible_verses.json'), encoding='utf-8'))
+_bad = [e.get('ref') for e in _v if not all(e.get(k) for k in ('en', 'ar', 'fr', 'es', 'ref_en', 'ref_ar', 'ref_fr', 'ref_es'))]
+if _bad:
+    print('verses missing a language:', _bad[:10]); sys.exit(1)
+print('verses: %d, each in English, Arabic, French and Spanish' % len(_v))
+sys.exit(1 if _exit_bad else 0)

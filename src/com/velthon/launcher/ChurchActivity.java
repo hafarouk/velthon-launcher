@@ -33,6 +33,10 @@ public class ChurchActivity extends Activity {
     private Scene scene;
     private LinearLayout list;
     private boolean ar;
+    /** The page follows the verse language (English, Arabic, French or Spanish), not the phone's. */
+    private String lang = "en";
+    private java.util.Locale loc = java.util.Locale.getDefault();
+    private String t(String en) { return L.in(lang, en); }
     private float x0, y0;
 
     @Override protected void onCreate(Bundle b) {
@@ -43,7 +47,9 @@ public class ChurchActivity extends Activity {
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        ar = U.langs(this).equals("ar");
+        lang = U.langs(this);
+        ar = lang.equals("ar");
+        loc = U.langLocale(this);
         scene = new Scene(this);
         View dim = new View(this);
         dim.setBackgroundColor(0x8C060A18);
@@ -110,7 +116,7 @@ public class ChurchActivity extends Activity {
         TextView prev = text(26, 0xFFF2B640, Typeface.DEFAULT_BOLD); prev.setText("‹"); prev.setPadding(dp(4), 0, dp(16), 0);
         TextView next = text(26, 0xFFF2B640, Typeface.DEFAULT_BOLD); next.setText("›"); next.setPadding(dp(16), 0, dp(4), 0);
         TextView title = text(20, Color.WHITE, Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER);
-        title.setText(new SimpleDateFormat("LLLL yyyy", Locale.getDefault()).format(shown.getTime()));
+        title.setText(new SimpleDateFormat("LLLL yyyy", loc).format(shown.getTime()));
         prev.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { shown.add(Calendar.MONTH, -1); selDay = 1; build(); } });
         next.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { shown.add(Calendar.MONTH, 1); selDay = 1; build(); } });
         head.addView(prev); head.addView(title, new LinearLayout.LayoutParams(0, -2, 1f)); head.addView(next);
@@ -119,7 +125,7 @@ public class ChurchActivity extends Activity {
         Calendar c = Calendar.getInstance(); c.clear(); c.set(y, m, 1);
         int first = c.getFirstDayOfWeek();
         LinearLayout wk = new LinearLayout(this);
-        SimpleDateFormat wf = new SimpleDateFormat("EEEEE", Locale.getDefault());
+        SimpleDateFormat wf = new SimpleDateFormat("EEEEE", loc);
         Calendar w = Calendar.getInstance(); w.set(Calendar.DAY_OF_WEEK, first);
         for (int i = 0; i < 7; i++) {
             TextView t = text(12, 0x99FFFFFF, Typeface.DEFAULT_BOLD); t.setGravity(Gravity.CENTER);
@@ -161,11 +167,11 @@ public class ChurchActivity extends Activity {
         Calendar sel = Calendar.getInstance(); sel.clear(); sel.set(y, m, Math.min(selDay, days));
         LinearLayout card = card();
         TextView sd = text(17, Color.WHITE, Typeface.DEFAULT_BOLD);
-        sd.setText(new SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(sel.getTime()));
+        sd.setText(new SimpleDateFormat("EEEE, MMMM d", loc).format(sel.getTime()));
         card.addView(sd);
-        if (orth) { TextView cd = text(14, 0xFFF2B640, Typeface.DEFAULT); cd.setText(Church.copticDate(sel, ar)); card.addView(cd); }
+        if (orth) { TextView cd = text(14, 0xFFF2B640, Typeface.DEFAULT); cd.setText(Church.copticDate(sel, lang)); card.addView(cd); }
         Church.Feast f = Church.feastOf(this, sel);
-        if (f != null) { TextView ft = text(15, 0xFFF2B640, Typeface.DEFAULT_BOLD); ft.setText("✦ " + (ar ? f.ar : f.en)); ft.setPadding(0, dp(8), 0, 0); card.addView(ft); }
+        if (f != null) { TextView ft = text(15, 0xFFF2B640, Typeface.DEFAULT_BOLD); ft.setText("✦ " + f.in(lang)); ft.setPadding(0, dp(8), 0, 0); card.addView(ft); }
         java.util.ArrayList<String[]> l = ev.get(sel.get(Calendar.DAY_OF_MONTH));
         if (l != null) for (String[] e : l) {
             TextView et = text(15, Color.WHITE, Typeface.DEFAULT);
@@ -174,10 +180,10 @@ public class ChurchActivity extends Activity {
         }
         else if (!Events.allowed(this)) {
             TextView et = text(13, 0xB3FFFFFF, Typeface.DEFAULT);
-            et.setText(L.t("Allow the calendar to see your own events here.")); et.setPadding(0, dp(8), 0, 0);
+            et.setText(t("Allow the calendar to see your own events here.")); et.setPadding(0, dp(8), 0, 0);
             card.addView(et);
         }
-        else if (f == null) { TextView et = text(13, 0x99FFFFFF, Typeface.DEFAULT); et.setText(L.t("Nothing on this day.")); et.setPadding(0, dp(8), 0, 0); card.addView(et); }
+        else if (f == null) { TextView et = text(13, 0x99FFFFFF, Typeface.DEFAULT); et.setText(t("Nothing on this day.")); et.setPadding(0, dp(8), 0, 0); card.addView(et); }
         LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(-1, -2); cl.topMargin = dp(12);
         list.addView(card, cl);
     }
@@ -203,11 +209,11 @@ public class ChurchActivity extends Activity {
     private void nextEvents() {
         LinearLayout card = card();
         TextView h = text(12.5f, 0xFF8FD0FF, Typeface.DEFAULT_BOLD);
-        h.setText(L.t("Next on your calendar")); h.setLetterSpacing(.06f);
+        h.setText(t("Next on your calendar")); h.setLetterSpacing(.06f);
         card.addView(h);
         if (!Events.allowed(this)) {
             TextView t = text(14, 0xCCFFFFFF, Typeface.DEFAULT);
-            t.setText(L.t("Allow the calendar to see your own events here.")); t.setPadding(0, dp(6), 0, 0);
+            t.setText(t("Allow the calendar to see your own events here.")); t.setPadding(0, dp(6), 0, 0);
             card.addView(t);
             card.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= 23) requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5); } });
@@ -215,7 +221,7 @@ public class ChurchActivity extends Activity {
             java.util.ArrayList<String[]> ev = Events.upcoming(this, 5, 60);
             if (ev.isEmpty()) {
                 TextView t = text(14, 0x99FFFFFF, Typeface.DEFAULT);
-                t.setText(L.t("Nothing coming up.")); t.setPadding(0, dp(6), 0, 0);
+                t.setText(t("Nothing coming up.")); t.setPadding(0, dp(6), 0, 0);
                 card.addView(t);
             } else for (int i = 0; i < ev.size(); i++) {
                 String[] e = ev.get(i);
@@ -235,21 +241,21 @@ public class ChurchActivity extends Activity {
         Calendar now = Calendar.getInstance();
         // the date
         TextView k = text(13, 0xFFF2B640, Typeface.DEFAULT_BOLD);
-        k.setText(ar ? "التقويم القبطي" : (orthodox ? "COPTIC CALENDAR" : "CHURCH CALENDAR"));
+        k.setText(ar ? "التقويم القبطي" : t(orthodox ? "Coptic calendar" : "Church calendar").toUpperCase(loc));
         k.setLetterSpacing(.12f);
         list.addView(k);
         TextView d = text(30, Color.WHITE, Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        d.setText(orthodox ? Church.copticDate(now, ar) : new SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(now.getTime()));
+        d.setText(orthodox ? Church.copticDate(now, lang) : new SimpleDateFormat("EEEE, MMMM d", loc).format(now.getTime()));
         d.setPadding(0, dp(4), 0, 0);
         list.addView(d);
         if (orthodox) {
             TextView g = text(15, 0xD9FFFFFF, Typeface.DEFAULT);
-            g.setText(new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(now.getTime()));
+            g.setText(new SimpleDateFormat("EEEE, MMMM d, yyyy", loc).format(now.getTime()));
             list.addView(g);
         }
         String[] season = Church.season(this);
         if (season != null) {
-            TextView s = chip(ar ? season[1] : season[0]);
+            TextView s = chip(lang.equals("ar") ? season[1] : lang.equals("fr") && season.length > 2 ? season[2] : lang.equals("es") && season.length > 3 ? season[3] : season[0]);
             LinearLayout.LayoutParams sl = new LinearLayout.LayoutParams(-2, -2); sl.topMargin = dp(10);
             list.addView(s, sl);
         }
@@ -275,18 +281,18 @@ public class ChurchActivity extends Activity {
             hl.setOrientation(LinearLayout.VERTICAL);
             hl.setPadding(dp(14), 0, 0, 0);
             TextView t1 = text(12.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
-            t1.setText(L.t("Saint of the day"));
+            t1.setText(t("Saint of the day"));
             hl.addView(t1);
             String st = Synax.saint(this);
             TextView t2 = text(18, Color.WHITE, Typeface.DEFAULT_BOLD);
-            t2.setText(st == null ? L.t("Loading the Synaxarium…") : tidy(st));
+            t2.setText(st == null ? t("Loading the Synaxarium…") : tidy(st));
             hl.addView(t2);
             head.addView(hl, new LinearLayout.LayoutParams(0, -2, 1f));
             card.addView(head);
             String all = Synax.all(this);
             if (all != null && all.contains("\n")) {
                 TextView h2 = text(13, 0xCCFFFFFF, Typeface.DEFAULT_BOLD);
-                h2.setText(L.t("Also remembered today"));
+                h2.setText(t("Also remembered today"));
                 h2.setPadding(0, dp(14), 0, dp(4));
                 card.addView(h2);
                 String[] lines = all.split("\n");
@@ -298,7 +304,7 @@ public class ChurchActivity extends Activity {
                 }
             }
             TextView read = text(14.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
-            read.setText(L.t("Read today's Synaxarium  ›"));
+            read.setText(t("Read today's Synaxarium  ›"));
             read.setPadding(0, dp(16), 0, dp(2));
             read.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
                 try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Synax.url(ChurchActivity.this)))); } catch (Throwable ignored) { } } });
@@ -307,11 +313,14 @@ public class ChurchActivity extends Activity {
         }
 
         // feasts coming up
+        // the regular calendar right under the Coptic day: the month with feasts and your events, then your next events
+        buildMonth();
+        nextEvents();
         java.util.ArrayList<Church.Feast> fs = Church.upcoming(this, 14);
         if (!fs.isEmpty()) {
             LinearLayout card = card();
             TextView h = text(12.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
-            h.setText(L.t("Feasts and fasts ahead"));
+            h.setText(t("Feasts and fasts ahead"));
             h.setPadding(0, 0, 0, dp(6));
             card.addView(h);
             Calendar day = Calendar.getInstance();
@@ -329,35 +338,34 @@ public class ChurchActivity extends Activity {
                 when.addView(dd);
                 TextView mm = text(11, 0xB3FFFFFF, Typeface.DEFAULT);
                 mm.setGravity(Gravity.CENTER);
-                mm.setText(new SimpleDateFormat("MMM", Locale.getDefault()).format(on.getTime()).toUpperCase(Locale.getDefault()));
+                mm.setText(new SimpleDateFormat("MMM", loc).format(on.getTime()).toUpperCase(loc));
                 when.addView(mm);
                 row.addView(when, new LinearLayout.LayoutParams(dp(46), -2));
                 LinearLayout tx = new LinearLayout(this);
                 tx.setOrientation(LinearLayout.VERTICAL);
                 tx.setPadding(dp(12), 0, 0, 0);
                 TextView n = text(15.5f, Color.WHITE, f.days == 0 ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
-                n.setText(ar ? f.ar : f.en);
+                n.setText(f.in(lang));
                 tx.addView(n);
                 TextView w = text(12, 0xB3FFFFFF, Typeface.DEFAULT);
-                w.setText(f.days == 0 ? L.t("Today") : f.days == 1 ? L.t("Tomorrow")
-                        : (ar ? "بعد " + f.days + " يوم" : "In " + f.days + " days")
-                        + (orthodox ? "  ·  " + Church.copticDate(on, ar) : ""));
+                w.setText(f.days == 0 ? t("Today") : f.days == 1 ? t("Tomorrow")
+                        : String.format(loc, t("In %d days"), f.days)
+                        + (orthodox ? "  ·  " + Church.copticDate(on, lang) : ""));
                 tx.addView(w);
                 row.addView(tx, new LinearLayout.LayoutParams(0, -2, 1f));
                 card.addView(row);
             }
             add(card);
         }
-        // your own calendar, on the same page: the next events, then the month with feasts and events
-        nextEvents();
-        buildMonth();
         if (orthodox) {
             LinearLayout card = card();
             TextView h = text(12.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
-            h.setText(L.t("Every Coptic month"));
+            h.setText(t("Every Coptic month"));
             card.addView(h);
             TextView m = text(15, Color.WHITE, Typeface.DEFAULT);
             m.setText(ar ? "١٢: تذكار رئيس الملائكة ميخائيل\n٢١: تذكار السيدة العذراء\n٢٩: تذكار الميلاد والبشارة والقيامة"
+                    : lang.equals("fr") ? "Le 12 : l'archange Michel\nLe 21 : la Vierge Marie, Mère de Dieu\nLe 29 : l'Annonciation, la Nativité et la Résurrection"
+                    : lang.equals("es") ? "Día 12: el arcángel Miguel\nDía 21: la Virgen María, Madre de Dios\nDía 29: la Anunciación, la Natividad y la Resurrección"
                     : "12th: Archangel Michael\n21st: St. Mary, the Mother of God\n29th: the Annunciation, Nativity and Resurrection");
             m.setLineSpacing(dp(4), 1f);
             m.setPadding(0, dp(6), 0, 0);
@@ -365,7 +373,7 @@ public class ChurchActivity extends Activity {
             add(card);
         }
         TextView src = text(11.5f, 0x99FFFFFF, Typeface.DEFAULT);
-        src.setText(L.t("Synaxarium: CopticChurch.net"));
+        src.setText(t("Synaxarium: CopticChurch.net"));
         src.setGravity(Gravity.CENTER);
         src.setPadding(0, dp(18), 0, 0);
         list.addView(src);

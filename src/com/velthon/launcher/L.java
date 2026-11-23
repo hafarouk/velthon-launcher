@@ -18,17 +18,23 @@ final class L {
     }
     static boolean rtl() { return lang().equals("ar"); }
 
-    static String t(String en) {
-        if (en == null) return null;
-        String l = lang();
-        if (l.equals("en")) return en;
-        synchronized (MAP) {
-            if (!l.equals(built)) {
-                MAP.clear(); int i = 0; for (int k = 0; k < LANGS.length; k++) if (LANGS[k].equals(l)) i = k;
-                for (String[] r : T) MAP.put(r[0], r[i]);
-                built = l;
+    static String t(String en) { return in(lang(), en); }
+
+    private static final java.util.HashMap<String, java.util.HashMap<String, String>> BY = new java.util.HashMap<>();
+    /** The text in a given language ("en", "ar", "fr", "es", "de", "pt"), whatever the phone's language is:
+     *  the church page follows the verse language. */
+    static String in(String l, String en) {
+        if (en == null || l == null || l.equals("en")) return en;
+        synchronized (BY) {
+            java.util.HashMap<String, String> m = BY.get(l);
+            if (m == null) {
+                int i = -1; for (int k = 0; k < LANGS.length; k++) if (LANGS[k].equals(l)) i = k;
+                if (i < 0) return en;
+                m = new java.util.HashMap<>();
+                for (String[] r : T) m.put(r[0], r[i]);
+                BY.put(l, m);
             }
-            String v = MAP.get(en);
+            String v = m.get(en);
             return v != null ? v : en;
         }
     }
@@ -192,6 +198,12 @@ final class L {
         {"Nothing coming up.", "لا شيء قادم.", "Rien à venir.", "Nada próximo.", "Nichts geplant.", "Nada por vir."},
         {"No SIM", "لا توجد شريحة", "Pas de SIM", "Sin SIM", "Keine SIM", "Sem SIM"},
         {"No service", "لا توجد خدمة", "Aucun service", "Sin servicio", "Kein Netz", "Sem serviço"},
+        {"In %d days", "بعد %d يوم", "Dans %d jours", "En %d días", "In %d Tagen", "Em %d dias"},
+        {"French", "الفرنسية", "Français", "Francés", "Französisch", "Francês"},
+        {"Spanish", "الإسبانية", "Espagnol", "Español", "Spanisch", "Espanhol"},
+        {"Today: %s", "اليوم: %s", "Aujourd'hui : %s", "Hoy: %s", "Heute: %s", "Hoje: %s"},
+        {"%s tomorrow", "%s غدًا", "%s demain", "%s mañana", "%s morgen", "%s amanhã"},
+        {"%s in %d days", "%s بعد %d يوم", "%s dans %d jours", "%s en %d días", "%s in %d Tagen", "%s em %d dias"},
         {"Remove widget", "إزالة الأداة", "Retirer le widget", "Quitar widget", "Widget entfernen", "Remover widget"},
         {"Show on lock screen", "إظهار على شاشة القفل", "Afficher sur l'écran de verrouillage", "Mostrar en la pantalla de bloqueo", "Auf dem Sperrbildschirm zeigen", "Mostrar na tela de bloqueio"},
         {"Remove from lock screen", "إزالة من شاشة القفل", "Retirer de l'écran de verrouillage", "Quitar de la pantalla de bloqueo", "Vom Sperrbildschirm entfernen", "Remover da tela de bloqueio"},

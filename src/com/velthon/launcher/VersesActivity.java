@@ -249,7 +249,7 @@ public class VersesActivity extends Activity {
     }
     private void speak(U.Verse v, boolean arabic) {
         if (tts.isSpeaking()) { tts.stop(); return; }
-        int r = tts.setLanguage(arabic ? new Locale("ar") : Locale.US);
+        int r = tts.setLanguage(U.langLocale(this));
         String t = arabic ? v.ar + ". " + v.refAr : v.en + " " + v.refEn;
         if (arabic && r < 0) { tts.setLanguage(Locale.US); t = v.en + " " + v.refEn; }
         tts.speak(t, TextToSpeech.QUEUE_FLUSH, null, "verse");
@@ -357,7 +357,7 @@ public class VersesActivity extends Activity {
     }
     @SuppressWarnings("unused") private void oldSettings() {
         final android.content.SharedPreferences p = U.prefs(this);
-        final String[] langV = {"en", "ar"}, langN = {L.t("English"), L.t("Arabic")};
+        final String[] langV = {"en", "ar", "fr", "es"}, langN = {L.t("English"), L.t("Arabic"), L.t("French"), L.t("Spanish")};
         final String[] seasonV = {"auto", "spring", "summer", "fall", "winter"}, seasonN = {"Follow the calendar", L.t("Spring"), L.t("Summer"), L.t("Autumn"), L.t("Winter")};
         final String[] unitV = {"auto", "c", "f"}, unitN = {L.t("Automatic"), L.t("Celsius (°C)"), L.t("Fahrenheit (°F)")};
         final String[] churchV = {"orthodox", "catholic", "off"}, churchN = {L.t("Coptic Orthodox"), L.t("Catholic"), L.t("Off")};

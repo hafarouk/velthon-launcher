@@ -1406,7 +1406,7 @@ public class Launcher extends Activity {
         verseSlotShown = U.verseSlot(this);
         ui.post(new Runnable() { @Override public void run() { verseColors(); } });
         String langs = U.langs(this);
-        boolean showEn = !langs.equals("ar"), showAr = !langs.equals("en");
+        boolean showEn = !langs.equals("ar"), showAr = langs.equals("ar");
         en.setVisibility(showEn ? View.VISIBLE : View.GONE);
         enRef.setVisibility(showEn ? View.VISIBLE : View.GONE);
         ar.setVisibility(showAr ? View.VISIBLE : View.GONE);
@@ -1452,7 +1452,7 @@ public class Launcher extends Activity {
     private void speak(boolean arabic) {
         if (tts.isSpeaking()) { tts.stop(); return; }
         tts.setSpeechRate(U.prefs(this).getString("speech_rate", "normal").equals("slow") ? .8f : 1f);
-        int r = tts.setLanguage(arabic ? new Locale("ar") : Locale.US);
+        int r = tts.setLanguage(U.langLocale(this));
         String t = arabic ? verse.ar + ". " + verse.refAr : verse.en + " " + verse.refEn;
         if (arabic && r < 0) { tts.setLanguage(Locale.US); t = verse.en + " " + verse.refEn; }
         tts.speak(t, TextToSpeech.QUEUE_FLUSH, null, "verse");
@@ -1536,20 +1536,21 @@ public class Launcher extends Activity {
             if (today == null) today = Church.monthly(this);
             String[] season = Church.season(this);
             StringBuilder b = new StringBuilder("✦ ");
+            final String lg = U.langs(this);   // the church line follows the verse language
             if (today != null) {
-                b.append(arabic ? "اليوم: " + today.ar : "Today: " + today.en);
-                if (next != null) b.append("  ·  ").append(arabic ? next.ar + " بعد " + next.days + " يوم" : next.en + (next.days == 1 ? " tomorrow" : " in " + next.days + " days"));
+                b.append(String.format(L.in(lg, "Today: %s"), today.in(lg)));
+                if (next != null) b.append("  ·  ").append(whenFeast(next, lg));
                 churchLine.setTypeface(U.sansBold(this));
             } else {
                 churchLine.setTypeface(U.sans(this));
-                if (season != null) b.append(arabic ? season[1] : season[0]);
+                if (season != null) b.append(lg.equals("ar") ? season[1] : lg.equals("fr") && season.length > 2 ? season[2] : lg.equals("es") && season.length > 3 ? season[3] : season[0]);
                 if (next != null) {
                     if (b.length() > 2) b.append("  ·  ");
-                    b.append(arabic ? next.ar + " بعد " + next.days + " يوم" : next.en + (next.days == 1 ? " tomorrow" : " in " + next.days + " days"));
+                    b.append(whenFeast(next, lg));
                 }
             }
             if (cal.equals("orthodox")) {
-                b.append("\n").append(Church.copticDate(java.util.Calendar.getInstance(), arabic));
+                b.append("\n").append(Church.copticDate(java.util.Calendar.getInstance(), lg));
                 String st = Synax.saint(this);          // the Synaxarium: something for every day of the year
                 if (st != null) b.append("  ·  ").append(st.replaceFirst("^(?i)the\\s+", "").replaceAll("[.]$", ""));
             }
@@ -2926,12 +2927,16 @@ public class Launcher extends Activity {
         return grid.getChildCount() == 0 || (grid.getFirstVisiblePosition() == 0 && grid.getChildAt(0).getTop() >= grid.getPaddingTop() - 2);
     }
 
+    /** "Nativity tomorrow", "Nativité dans 3 jours"... in the verse language. */
+    private static String whenFeast(Church.Feast f, String lg) {
+        return f.days == 1 ? String.format(L.in(lg, "%s tomorrow"), f.in(lg)) : String.format(L.in(lg, "%s in %d days"), f.in(lg), f.days);
+    }
+
     /** Today's saint in the app list's header (CopticChurch.net), with a small picture when there is one. */
     private void showSaint() {
         if (saintRow == null) return;
         String st = Church.calendar(this).equals("orthodox") ? Synax.saint(this) : null;
-        boolean ar = U.langs(this).equals("ar");
-        String cd = Church.calendar(this).equals("orthodox") ? Church.copticDate(java.util.Calendar.getInstance(), ar) : null;
+        String cd = Church.calendar(this).equals("orthodox") ? Church.copticDate(java.util.Calendar.getInstance(), U.langs(this)) : null;
         if (st == null && cd == null) { saintRow.setVisibility(View.GONE); return; }
         saintRow.setVisibility(View.VISIBLE);
         android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder();
