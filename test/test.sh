@@ -81,9 +81,10 @@ dump; cp rec/s.xml rec/church.xml
 adb shell input swipe 300 900 300 1400 300; sleep 2; shot 12b_church_scrolled
 # one page: the church day, then your next events, then the month with feasts and events
 adb shell input swipe 540 1700 540 500 300; sleep 2; shot 12c_church_events
+adb shell input swipe 540 900 540 1700 300; sleep 1; dump; grep -c "Prayer meeting" rec/s.xml > rec/week_events.txt
+c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_week
 adb shell input swipe 540 1700 540 900 300; sleep 1.5; shot 12d_calendar_week_events
 dump; grep -c "Prayer meeting" rec/s.xml > rec/next_events.txt
-c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_week
 adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1000 540 1700 250; sleep 2; shot 13_quick
 adb shell input swipe 540 1500 540 600 250; sleep 2
