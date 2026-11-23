@@ -29,5 +29,5 @@ jobs:
           git init -q
           git config user.name "velthon-bot"; git config user.email "noreply@github.com"
           git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
-          if git fetch -q --depth 1 origin ad-assets; then git checkout -q -b ad-assets FETCH_HEAD; git checkout -q FETCH_HEAD -- . 2>/dev/null || true; else git checkout -q -b ad-assets; fi
+          if git fetch -q --depth 1 origin ad-assets; then git checkout -q -b ad-assets FETCH_HEAD; else git checkout -q -b ad-assets; fi
           git add -A && git commit -qm "assets $(date -u +%FT%TZ)" && git push -q origin HEAD:ad-assets
