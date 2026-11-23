@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="lock_log">04:55:57 unlocked</string>
+    <string name="wx_alert"></string>
+    <string name="syn_day">3_14</string>
+    <string name="wx_official"></string>
+    <long name="lon" value="-4585006279018213453" />
+    <string name="syn_all">The Departure of St. Martinus (Martin) Bishop of Tours (Thrace)</string>
+    <boolean name="asked_loc" value="true" />
+    <int name="wx_temp" value="44" />
+    <long name="syn_at" value="1795409747207" />
+    <long name="wx_at" value="1795409797489" />
+    <string name="desk">0=folder:77;1=com.google.android.deskclock/com.android.deskclock.DeskClock;2=com.android.settings/com.android.settings.Settings;3=com.android.contacts/com.android.contacts.activities.PeopleActivity;4=com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+    <string name="wx_cc">US</string>
+    <string name="dock">com.android.dialer/com.android.dialer.main.impl.MainActivity|com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity|com.android.camera2/com.android.camera.CameraLauncher|com.android.chrome/com.google.android.apps.chrome.Main</string>
+    <string name="hfolders">77&#1;Tools&#1;com.android.contacts/com.android.contacts.activities.PeopleActivity,com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+    <string name="wx_city">Redwood Valley</string>
+    <string name="syn_name">The Departure of St. Martinus (Martin) Bishop of Tours (Thrace)</string>
+    <long name="lat" value="4630719812798470642" />
+    <boolean name="wx_f" value="true" />
+    <int name="wx_code" value="0" />
+    <string name="wx_fc">23,41,0,0;02,41,3,0;05,40,3,0;08,41,3,1;11,51,3,1;</string>
+</map>

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="lock_log">08:20:56 unlocked shown&#10;08:20:53 on L shown&#10;08:20:49 lock widget: none found&#10;08:20:49 window opened&#10;08:20:49 off L&#10;04:55:57 unlocked</string>
+    <string name="wx_alert"></string>
+    <string name="syn_day">3_14ar</string>
+    <string name="city">Toronto</string>
+    <string name="icon_style">colorglass</string>
+    <string name="wx_official"></string>
+    <long name="lon" value="-4585006279018213453" />
+    <string name="syn_all">استشهاد القديس مرتينوس أسقف ثراكى&#10;استشهاد الضابط فاروس ومعلميه&#10;باقى نوة المكنسة جنوبية غربية ممطرة 4 أيام</string>
+    <boolean name="asked_loc" value="true" />
+    <int name="wx_temp" value="44" />
+    <long name="syn_at" value="1795440314090" />
+    <long name="wx_at" value="1795440001656" />
+    <string name="desk">0=folder:77;1=com.google.android.deskclock/com.android.deskclock.DeskClock;2=com.android.settings/com.android.settings.Settings;3=com.android.contacts/com.android.contacts.activities.PeopleActivity;4=com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+    <string name="wx_cc">US</string>
+    <string name="dock">com.android.dialer/com.android.dialer.main.impl.MainActivity|com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity|com.android.contacts/com.android.contacts.activities.PeopleActivity|com.google.android.documentsui/com.android.documentsui.LauncherActivity|com.google.android.deskclock/com.android.deskclock.DeskClock</string>
+    <string name="hfolders">77&#1;Tools&#1;com.android.contacts/com.android.contacts.activities.PeopleActivity,com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+    <string name="wx_city">Redwood Valley</string>
+    <string name="syn_name">استشهاد القديس مرتينوس أسقف ثراكى</string>
+    <long name="lat" value="4630719812798470642" />
+    <boolean name="wx_f" value="true" />
+    <int name="wx_code" value="0" />
+    <string name="wx_fc">23,41,0,0;02,41,3,0;05,40,3,0;08,41,3,1;11,51,3,1;</string>
+<string name="langs">en</string>
+</map>

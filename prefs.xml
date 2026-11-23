@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <long name="syn_at" value="1795409747207" />
+    <string name="lock_log">04:55:57 unlocked</string>
+    <string name="syn_day">3_14</string>
+    <string name="syn_all">The Departure of St. Martinus (Martin) Bishop of Tours (Thrace)</string>
+    <string name="dock">com.android.dialer/com.android.dialer.main.impl.MainActivity|com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity|com.android.camera2/com.android.camera.CameraLauncher|com.android.chrome/com.google.android.apps.chrome.Main</string>
+    <boolean name="asked_loc" value="true" />
+    <string name="syn_name">The Departure of St. Martinus (Martin) Bishop of Tours (Thrace)</string>
+</map>

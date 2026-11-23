@@ -1,0 +1,3 @@
+Row: 0 title=Bible study at St. Mark, dtstart=1795416940000
+Row: 1 title=Divine Liturgy, dtstart=1795499740000
+Row: 2 title=Prayer meeting, dtstart=1795407940000
