@@ -102,98 +102,76 @@ public class ChurchActivity extends Activity {
         }
     }
 
-    private final Calendar shown = Calendar.getInstance();
-    private int selDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
     @Override public void onRequestPermissionsResult(int req, String[] p, int[] g) { build(); }
 
-    private void buildMonth() {
-        final int y = shown.get(Calendar.YEAR), m = shown.get(Calendar.MONTH);
+    /** The first day shown in the week list (today, then a week at a time with the arrows). */
+    private final Calendar weekStart = Calendar.getInstance();
+
+    /** Seven days as a list: "Nov 23 | your events", the day's feast in gold, a week at a time. */
+    private void buildWeek() {
         Calendar today = Calendar.getInstance();
-        java.util.HashMap<Integer, java.util.ArrayList<String[]>> ev = Events.month(this, y, m);
-        // header: ‹ November 2026 ›
-        LinearLayout head = new LinearLayout(this); head.setGravity(Gravity.CENTER_VERTICAL); head.setPadding(0, dp(10), 0, dp(6));
-        TextView prev = text(26, 0xFFF2B640, Typeface.DEFAULT_BOLD); prev.setText("‹"); prev.setPadding(dp(4), 0, dp(16), 0);
-        TextView next = text(26, 0xFFF2B640, Typeface.DEFAULT_BOLD); next.setText("›"); next.setPadding(dp(16), 0, dp(4), 0);
-        TextView title = text(20, Color.WHITE, Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER);
-        title.setText(new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "LLLLyyyy"), loc).format(shown.getTime()));
-        prev.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { shown.add(Calendar.MONTH, -1); selDay = 1; build(); } });
-        next.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { shown.add(Calendar.MONTH, 1); selDay = 1; build(); } });
-        head.addView(prev); head.addView(title, new LinearLayout.LayoutParams(0, -2, 1f)); head.addView(next);
-        list.addView(head);
-        // the weekday names, in the phone's own order (Sunday or Monday first)
-        Calendar c = Calendar.getInstance(); c.clear(); c.set(y, m, 1);
-        int first = c.getFirstDayOfWeek();
-        LinearLayout wk = new LinearLayout(this);
-        SimpleDateFormat wf = new SimpleDateFormat("EEEEE", loc);
-        Calendar w = Calendar.getInstance(); w.set(Calendar.DAY_OF_WEEK, first);
-        for (int i = 0; i < 7; i++) {
-            TextView t = text(12, 0x99FFFFFF, Typeface.DEFAULT_BOLD); t.setGravity(Gravity.CENTER);
-            t.setText(wf.format(w.getTime())); w.add(Calendar.DAY_OF_MONTH, 1);
-            wk.addView(t, new LinearLayout.LayoutParams(0, -2, 1f));
-        }
-        list.addView(wk);
-        int lead = (c.get(Calendar.DAY_OF_WEEK) - first + 7) % 7;
-        int days = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-        boolean orth = Church.calendar(this).equals("orthodox");
-        LinearLayout row = null;
-        for (int cell = 0; cell < 42; cell++) {
-            if (cell % 7 == 0) {
-                if (cell >= lead + days) break;
-                row = new LinearLayout(this); list.addView(row);
-            }
-            final int d = cell - lead + 1;
-            LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL); box.setGravity(Gravity.CENTER_HORIZONTAL);
-            box.setPadding(0, dp(6), 0, dp(6));
-            if (d >= 1 && d <= days) {
-                Calendar day = Calendar.getInstance(); day.clear(); day.set(y, m, d);
-                boolean isToday = today.get(Calendar.YEAR) == y && today.get(Calendar.MONTH) == m && today.get(Calendar.DAY_OF_MONTH) == d;
-                Church.Feast f = Church.feastOf(this, day);
-                TextView n = text(16, isToday ? 0xFF1A1206 : Color.WHITE, Typeface.DEFAULT_BOLD); n.setGravity(Gravity.CENTER); n.setText(String.valueOf(d));
-                android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable(); g.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-                if (isToday) g.setColor(0xFFF2B640); else if (d == selDay) { g.setColor(0x33FFFFFF); g.setStroke(dp(1), 0xFFF2B640); } else g.setColor(0);
-                n.setBackground(g);
-                box.addView(n, new LinearLayout.LayoutParams(dp(34), dp(34)));
-                if (orth) { TextView cd = text(9.5f, 0x99FFFFFF, Typeface.DEFAULT); cd.setGravity(Gravity.CENTER); cd.setText(String.valueOf(Church.coptic(day)[1])); box.addView(cd); }
-                LinearLayout dots = new LinearLayout(this); dots.setGravity(Gravity.CENTER);
-                if (f != null) dots.addView(dot(0xFFF2B640));
-                if (ev.containsKey(d)) dots.addView(dot(0xFF8FD0FF));
-                box.addView(dots, new LinearLayout.LayoutParams(-2, dp(8)));
-                box.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { selDay = d; build(); } });
-            }
-            row.addView(box, new LinearLayout.LayoutParams(0, -2, 1f));
-        }
-        // the chosen day: its date, the feast, your events
-        Calendar sel = Calendar.getInstance(); sel.clear(); sel.set(y, m, Math.min(selDay, days));
+        Calendar first = (Calendar) weekStart.clone();
+        Calendar last = (Calendar) first.clone(); last.add(Calendar.DAY_OF_MONTH, 6);
+        // your events for the month(s) this week touches
+        java.util.HashMap<String, java.util.HashMap<Integer, java.util.ArrayList<String[]>>> byMonth = new java.util.HashMap<>();
         LinearLayout card = card();
-        TextView sd = text(17, Color.WHITE, Typeface.DEFAULT_BOLD);
-        sd.setText(new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "EEEEMMMMd"), loc).format(sel.getTime()));
-        card.addView(sd);
-        if (orth) { TextView cd = text(14, 0xFFF2B640, Typeface.DEFAULT); cd.setText(Church.copticDate(sel, lang)); card.addView(cd); }
-        Church.Feast f = Church.feastOf(this, sel);
-        if (f != null) { TextView ft = text(15, 0xFFF2B640, Typeface.DEFAULT_BOLD); ft.setText("✦ " + f.in(lang)); ft.setPadding(0, dp(8), 0, 0); card.addView(ft); }
-        java.util.ArrayList<String[]> l = ev.get(sel.get(Calendar.DAY_OF_MONTH));
-        if (l != null) for (String[] e : l) {
-            TextView et = text(15, Color.WHITE, Typeface.DEFAULT);
-            et.setText("•  " + e[0] + "   ·   " + e[1]); et.setPadding(0, dp(6), 0, 0);
-            card.addView(et);
+        // header: ‹  Nov 23 – 29  ›
+        LinearLayout head = new LinearLayout(this); head.setGravity(Gravity.CENTER_VERTICAL); head.setPadding(0, 0, 0, dp(6));
+        TextView prev = text(24, 0xFFF2B640, Typeface.DEFAULT_BOLD); prev.setText("‹"); prev.setPadding(dp(2), 0, dp(14), 0);
+        TextView next = text(24, 0xFFF2B640, Typeface.DEFAULT_BOLD); next.setText("›"); next.setPadding(dp(14), 0, dp(2), 0);
+        TextView title = text(16, Color.WHITE, Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER);
+        SimpleDateFormat md = new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "MMMd"), loc);
+        title.setText(md.format(first.getTime()) + "  –  " + md.format(last.getTime()));
+        prev.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { weekStart.add(Calendar.DAY_OF_MONTH, -7); build(); } });
+        next.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { weekStart.add(Calendar.DAY_OF_MONTH, 7); build(); } });
+        head.addView(prev); head.addView(title, new LinearLayout.LayoutParams(0, -2, 1f)); head.addView(next);
+        card.addView(head);
+        SimpleDateFormat wd = new SimpleDateFormat("EEE", loc);
+        Calendar d = (Calendar) first.clone();
+        for (int k = 0; k < 7; k++, d.add(Calendar.DAY_OF_MONTH, 1)) {
+            boolean isToday = d.get(Calendar.YEAR) == today.get(Calendar.YEAR) && d.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
+            String mk = d.get(Calendar.YEAR) + "-" + d.get(Calendar.MONTH);
+            if (!byMonth.containsKey(mk)) byMonth.put(mk, Events.month(this, d.get(Calendar.YEAR), d.get(Calendar.MONTH)));
+            java.util.ArrayList<String[]> ev = byMonth.get(mk).get(d.get(Calendar.DAY_OF_MONTH));
+            Church.Feast f = Church.feastOf(this, d);
+
+            LinearLayout row = new LinearLayout(this);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setPadding(0, dp(8), 0, dp(8));
+            // the day: "Nov 23" with the weekday under it (gold for today)
+            LinearLayout day = new LinearLayout(this); day.setOrientation(LinearLayout.VERTICAL);
+            TextView dn = text(15.5f, isToday ? 0xFFF2B640 : Color.WHITE, Typeface.DEFAULT_BOLD);
+            dn.setText(md.format(d.getTime())); dn.setSingleLine(true);
+            TextView dw = text(12, isToday ? 0xCCF2B640 : 0x99FFFFFF, Typeface.DEFAULT);
+            dw.setText(isToday ? t("Today") : wd.format(d.getTime())); dw.setSingleLine(true);
+            day.addView(dn); day.addView(dw);
+            row.addView(day, new LinearLayout.LayoutParams(dp(74), -2));
+            // the divider
+            View bar = new View(this); bar.setBackgroundColor(0x99F2B640);
+            LinearLayout.LayoutParams bl = new LinearLayout.LayoutParams(dp(1.5f), -1); bl.leftMargin = bl.rightMargin = dp(10);
+            row.addView(bar, bl);
+            // the day's feast and your events
+            LinearLayout what = new LinearLayout(this); what.setOrientation(LinearLayout.VERTICAL);
+            if (f != null) { TextView ft = text(14, 0xFFF2B640, Typeface.DEFAULT_BOLD); ft.setText("✦ " + f.in(lang)); what.addView(ft); }
+            if (ev != null) for (String[] e : ev) {
+                TextView et = text(14.5f, Color.WHITE, Typeface.DEFAULT);
+                et.setText(e[0] + (e[1] == null || e[1].isEmpty() ? "" : "   ·   " + e[1]));
+                what.addView(et);
+            }
+            if (what.getChildCount() == 0) { TextView no = text(14, 0x55FFFFFF, Typeface.DEFAULT); no.setText("—"); what.addView(no); }
+            row.addView(what, new LinearLayout.LayoutParams(0, -2, 1f));
+            card.addView(row);
+            if (k < 6) { View sep = new View(this); sep.setBackgroundColor(0x14FFFFFF); card.addView(sep, new LinearLayout.LayoutParams(-1, 1)); }
         }
-        else if (!Events.allowed(this)) {
+        if (!Events.allowed(this)) {
             TextView et = text(13, 0xB3FFFFFF, Typeface.DEFAULT);
             et.setText(t("Allow the calendar to see your own events here.")); et.setPadding(0, dp(8), 0, 0);
             card.addView(et);
+            card.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= 23) requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5); } });
         }
-        else if (f == null) { TextView et = text(13, 0x99FFFFFF, Typeface.DEFAULT); et.setText(t("Nothing on this day.")); et.setPadding(0, dp(8), 0, 0); card.addView(et); }
-        LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(-1, -2); cl.topMargin = dp(12);
-        list.addView(card, cl);
-    }
-    private View dot(int color) {
-        View v = new View(this);
-        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable(); g.setShape(android.graphics.drawable.GradientDrawable.OVAL); g.setColor(color);
-        v.setBackground(g);
-        LinearLayout.LayoutParams l = new LinearLayout.LayoutParams(dp(6), dp(6)); l.leftMargin = l.rightMargin = dp(1.5f);
-        v.setLayoutParams(l);
-        return v;
+        add(card);
     }
 
     private void build() {
@@ -203,37 +181,6 @@ public class ChurchActivity extends Activity {
         list.removeAllViews();
         buildDay();
         if (sc != null && y > 0) sc.post(new Runnable() { @Override public void run() { sc.scrollTo(0, y); } });
-    }
-
-    /** Your next events, from the phone's calendar: the next five, within two months. */
-    private void nextEvents() {
-        LinearLayout card = card();
-        TextView h = text(12.5f, 0xFF8FD0FF, Typeface.DEFAULT_BOLD);
-        h.setText(t("Next on your calendar")); h.setLetterSpacing(.06f);
-        card.addView(h);
-        if (!Events.allowed(this)) {
-            TextView t = text(14, 0xCCFFFFFF, Typeface.DEFAULT);
-            t.setText(t("Allow the calendar to see your own events here.")); t.setPadding(0, dp(6), 0, 0);
-            card.addView(t);
-            card.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= 23) requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5); } });
-        } else {
-            java.util.ArrayList<String[]> ev = Events.upcoming(this, 5, 60);
-            if (ev.isEmpty()) {
-                TextView t = text(14, 0x99FFFFFF, Typeface.DEFAULT);
-                t.setText(t("Nothing coming up.")); t.setPadding(0, dp(6), 0, 0);
-                card.addView(t);
-            } else for (int i = 0; i < ev.size(); i++) {
-                String[] e = ev.get(i);
-                TextView t = text(i == 0 ? 17 : 15, Color.WHITE, i == 0 ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
-                t.setText(e[0]); t.setPadding(0, dp(i == 0 ? 8 : 10), 0, 0);
-                card.addView(t);
-                TextView w = text(13, e.length > 2 ? 0xFFFF8A80 : 0xFF8FD0FF, Typeface.DEFAULT);
-                w.setText(e[1]);
-                card.addView(w);
-            }
-        }
-        add(card);
     }
 
     private void buildDay() {
@@ -313,9 +260,8 @@ public class ChurchActivity extends Activity {
         }
 
         // feasts coming up
-        // the regular calendar right under the Coptic day: the month with feasts and your events, then your next events
-        buildMonth();
-        nextEvents();
+        // the regular calendar right under the Coptic day: this week, day by day, with feasts and your events
+        buildWeek();
         java.util.ArrayList<Church.Feast> fs = Church.upcoming(this, 14);
         if (!fs.isEmpty()) {
             LinearLayout card = card();

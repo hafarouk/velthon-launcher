@@ -81,9 +81,9 @@ dump; cp rec/s.xml rec/church.xml
 adb shell input swipe 300 900 300 1400 300; sleep 2; shot 12b_church_scrolled
 # one page: the church day, then your next events, then the month with feasts and events
 adb shell input swipe 540 1700 540 500 300; sleep 2; shot 12c_church_events
-for k in 1 2 3 4 5 6; do adb shell input swipe 540 1700 540 500 250; sleep .8; done; sleep 1; shot 12d_calendar_month_events
-dump; grep -c "Next on your calendar" rec/s.xml > rec/next_events.txt
-c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_month
+adb shell input swipe 540 1700 540 900 300; sleep 1.5; shot 12d_calendar_week_events
+dump; grep -c "Prayer meeting" rec/s.xml > rec/next_events.txt
+c=$(center "›"); [ -n "$c" ] && adb shell input tap $c; sleep 2; shot 12e_calendar_next_week
 adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1000 540 1700 250; sleep 2; shot 13_quick
 adb shell input swipe 540 1500 540 600 250; sleep 2
@@ -153,7 +153,7 @@ adb shell input swipe 540 700 540 1500 300; sleep 1; shot 68_settings_lock2
 for lg in fr es; do
   adb shell am force-stop $P; setpref langs $lg; adb shell am start -n $P/.Launcher >/dev/null; sleep 5; shot 90_home_$lg
   adb shell am start -n $P/.ChurchActivity >/dev/null; sleep 4; shot 91_church_$lg
-  adb shell input swipe 540 1700 540 700 300; sleep 1.5; shot 92_church_month_$lg
+  adb shell input swipe 540 1700 540 700 300; sleep 1.5; shot 92_church_week_$lg
   adb shell input keyevent KEYCODE_BACK; sleep 1
 done
 adb shell am force-stop $P; setpref langs en
