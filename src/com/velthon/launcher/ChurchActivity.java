@@ -116,7 +116,7 @@ public class ChurchActivity extends Activity {
         TextView prev = text(26, 0xFFF2B640, Typeface.DEFAULT_BOLD); prev.setText("‹"); prev.setPadding(dp(4), 0, dp(16), 0);
         TextView next = text(26, 0xFFF2B640, Typeface.DEFAULT_BOLD); next.setText("›"); next.setPadding(dp(16), 0, dp(4), 0);
         TextView title = text(20, Color.WHITE, Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER);
-        title.setText(new SimpleDateFormat("LLLL yyyy", loc).format(shown.getTime()));
+        title.setText(new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "LLLLyyyy"), loc).format(shown.getTime()));
         prev.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { shown.add(Calendar.MONTH, -1); selDay = 1; build(); } });
         next.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { shown.add(Calendar.MONTH, 1); selDay = 1; build(); } });
         head.addView(prev); head.addView(title, new LinearLayout.LayoutParams(0, -2, 1f)); head.addView(next);
@@ -167,7 +167,7 @@ public class ChurchActivity extends Activity {
         Calendar sel = Calendar.getInstance(); sel.clear(); sel.set(y, m, Math.min(selDay, days));
         LinearLayout card = card();
         TextView sd = text(17, Color.WHITE, Typeface.DEFAULT_BOLD);
-        sd.setText(new SimpleDateFormat("EEEE, MMMM d", loc).format(sel.getTime()));
+        sd.setText(new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "EEEEMMMMd"), loc).format(sel.getTime()));
         card.addView(sd);
         if (orth) { TextView cd = text(14, 0xFFF2B640, Typeface.DEFAULT); cd.setText(Church.copticDate(sel, lang)); card.addView(cd); }
         Church.Feast f = Church.feastOf(this, sel);
@@ -245,12 +245,12 @@ public class ChurchActivity extends Activity {
         k.setLetterSpacing(.12f);
         list.addView(k);
         TextView d = text(30, Color.WHITE, Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        d.setText(orthodox ? Church.copticDate(now, lang) : new SimpleDateFormat("EEEE, MMMM d", loc).format(now.getTime()));
+        d.setText(orthodox ? Church.copticDate(now, lang) : new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "EEEEMMMMd"), loc).format(now.getTime()));
         d.setPadding(0, dp(4), 0, 0);
         list.addView(d);
         if (orthodox) {
             TextView g = text(15, 0xD9FFFFFF, Typeface.DEFAULT);
-            g.setText(new SimpleDateFormat("EEEE, MMMM d, yyyy", loc).format(now.getTime()));
+            g.setText(new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "EEEEMMMMdyyyy"), loc).format(now.getTime()));
             list.addView(g);
         }
         String[] season = Church.season(this);

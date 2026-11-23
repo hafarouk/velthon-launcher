@@ -51,7 +51,7 @@ final class Events {
             ArrayList<String[]> live = new ArrayList<>(), coming = new ArrayList<>();
             if (q != null) while (q.moveToNext() && coming.size() < n) {
                 String title = q.getString(0);
-                if (title == null || title.trim().isEmpty()) title = L.t("Event");
+                if (title == null || title.trim().isEmpty()) title = L.in(U.langs(c), "Event");
                 long begin = q.getLong(1), end = q.getLong(2);
                 boolean allDay = q.getInt(3) == 1;
                 if (allDay) {   // all-day events are stored in UTC midnight
@@ -68,9 +68,9 @@ final class Events {
                     if (end <= now) continue;
                 }
                 if (begin <= now) {   // happening now: first, with when it ends
-                    String until = allDay ? L.t("All day")
-                            : L.t("until ") + DateFormat.getTimeFormat(c).format(new java.util.Date(end));
-                    live.add(new String[] {title.trim(), L.t("Now  ·  ") + until, "live"});
+                    String until = allDay ? L.in(U.langs(c), "All day")
+                            : L.in(U.langs(c), "until ") + DateFormat.getTimeFormat(c).format(new java.util.Date(end));
+                    live.add(new String[] {title.trim(), L.in(U.langs(c), "Now  ·  ") + until, "live"});
                 } else coming.add(new String[] {title.trim(), when(c, begin, allDay, ar)});
             }
             out.addAll(live); out.addAll(coming);
@@ -83,8 +83,8 @@ final class Events {
         Calendar at = Calendar.getInstance(); at.setTimeInMillis(t);
         Calendar today = Calendar.getInstance();
         int dd = dayIndex(at) - dayIndex(today);
-        String day = dd <= 0 ? L.t("Today") : dd == 1 ? L.t("Tomorrow")
-                : new java.text.SimpleDateFormat(dd < 7 ? "EEE" : "EEE d MMM", Locale.getDefault()).format(at.getTime());
+        String day = dd <= 0 ? L.in(U.langs(c), "Today") : dd == 1 ? L.in(U.langs(c), "Tomorrow")
+                : new java.text.SimpleDateFormat(dd < 7 ? "EEE" : DateFormat.getBestDateTimePattern(U.langLocale(c), "EEEdMMM"), U.langLocale(c)).format(at.getTime());
         if (allDay) return day;
         return day + " " + DateFormat.getTimeFormat(c).format(at.getTime());
     }
@@ -103,7 +103,7 @@ final class Events {
         try (Cursor q = c.getContentResolver().query(b.build(), cols, CalendarContract.Instances.VISIBLE + " = 1", null, CalendarContract.Instances.BEGIN + " ASC")) {
             if (q != null) while (q.moveToNext()) {
                 String title = q.getString(0);
-                if (title == null || title.trim().isEmpty()) title = L.t("Event");
+                if (title == null || title.trim().isEmpty()) title = L.in(U.langs(c), "Event");
                 long begin = q.getLong(1), end = q.getLong(2);
                 boolean allDay = q.getInt(3) == 1;
                 Calendar s = Calendar.getInstance(allDay ? java.util.TimeZone.getTimeZone("UTC") : java.util.TimeZone.getDefault());
@@ -115,7 +115,7 @@ final class Events {
                 Calendar last = Calendar.getInstance(); last.clear(); last.set(en.get(Calendar.YEAR), en.get(Calendar.MONTH), en.get(Calendar.DAY_OF_MONTH));
                 for (int guard = 0; !d.after(last) && guard < 62; guard++) {
                     if (d.get(Calendar.YEAR) == year && d.get(Calendar.MONTH) == month0) {
-                        String when = allDay ? L.t("All day") : DateFormat.getTimeFormat(c).format(new java.util.Date(begin));
+                        String when = allDay ? L.in(U.langs(c), "All day") : DateFormat.getTimeFormat(c).format(new java.util.Date(begin));
                         ArrayList<String[]> l = out.get(d.get(Calendar.DAY_OF_MONTH));
                         if (l == null) { l = new ArrayList<>(); out.put(d.get(Calendar.DAY_OF_MONTH), l); }
                         l.add(new String[] {title.trim(), when});
