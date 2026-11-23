@@ -2726,6 +2726,31 @@ public class Launcher extends Activity {
         d.setFormat12Hour("EEEE, MMMM d"); d.setFormat24Hour("EEEE, MMMM d");
         d.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 21 * textScale); d.setTextColor(Color.WHITE); d.setTypeface(U.sansBold(this));
         d.setSingleLine(true); d.setEllipsize(TextUtils.TruncateAt.END); shadow(d, 5);
+        // the whole date always shows: smaller first, then the short form ("Sun, Nov 22") if it still doesn't fit
+        final float full = 21 * textScale;
+        d.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                TextClock tc = (TextClock) v;
+                int room = tc.getWidth() - tc.getPaddingLeft() - tc.getPaddingRight();
+                if (room <= 0) return;
+                String txt = tc.getText().toString();
+                android.graphics.Paint p = new android.graphics.Paint(tc.getPaint());
+                float sz = full;
+                p.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sz, getResources().getDisplayMetrics()));
+                while (p.measureText(txt) > room && sz > 16) { sz -= .5f; p.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sz, getResources().getDisplayMetrics())); }
+                final boolean shortForm = p.measureText(txt) > room;
+                final float fsz = shortForm ? Math.max(16, Math.min(full, 19)) : sz;
+                if (Math.abs(tc.getTextSize() - TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, fsz, getResources().getDisplayMetrics())) > 1
+                        || (shortForm != "EEE, MMM d".contentEquals(tc.getFormat12Hour()))) {
+                    final TextClock c = tc;
+                    c.post(new Runnable() { @Override public void run() {
+                        c.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fsz);
+                        String f = shortForm ? "EEE, MMM d" : "EEEE, MMMM d";
+                        c.setFormat12Hour(f); c.setFormat24Hour(f);
+                    } });
+                }
+            }
+        });
         d.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openCalendar(); } });
         r1.addView(d, new LinearLayout.LayoutParams(0, -2, 1f));
         // two settings, told apart at a glance: Velthon's own (gold) and the phone's (white, a phone with a gear)
@@ -2756,7 +2781,7 @@ public class Launcher extends Activity {
         saintPic.setBackground(ring);
         saintRow.addView(saintPic, new LinearLayout.LayoutParams(dp(34), dp(34)));
         saintText = text(12.5f, Color.WHITE, U.sans(this));
-        saintText.setMaxLines(2); saintText.setEllipsize(TextUtils.TruncateAt.END);
+        saintText.setMaxLines(3); saintText.setEllipsize(TextUtils.TruncateAt.END);
         saintText.setPadding(dp(10), 0, dp(8), 0); shadow(saintText, 4);
         saintRow.addView(saintText, new LinearLayout.LayoutParams(0, -2, 1f));
         saintRow.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openChurch(); } });
@@ -2940,10 +2965,10 @@ public class Launcher extends Activity {
         if (st == null && cd == null) { saintRow.setVisibility(View.GONE); return; }
         saintRow.setVisibility(View.VISIBLE);
         android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder();
-        b.append(L.t("Saint of the day"));
-        if (cd != null) b.append("  ·  ").append(cd);
+        // a very small gold label, so the saint's name has the room (the Coptic date is on the home screen)
+        b.append(L.t("Saint of the day").toUpperCase(java.util.Locale.getDefault()));
         b.setSpan(new android.text.style.ForegroundColorSpan(0xFFF2B640), 0, b.length(), 0);
-        b.setSpan(new android.text.style.RelativeSizeSpan(.88f), 0, b.length(), 0);
+        b.setSpan(new android.text.style.RelativeSizeSpan(.68f), 0, b.length(), 0);
         if (st != null) b.append("\n").append(st.replaceFirst("^(?i)the\\s+", "").replaceAll("[.]$", ""));
         saintText.setText(b);
         android.graphics.Bitmap pic = Synax.picture(this);
