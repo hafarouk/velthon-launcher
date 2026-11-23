@@ -4,11 +4,6 @@ P=com.velthon.launcher
 adb wait-for-device
 until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do sleep 2; done
 adb shell settings put global package_verifier_enable 0
-# a real morning: 7:40 am in Virginia (12:40 UTC), so the sky is the true sunrise sky
-adb root >/dev/null 2>&1; sleep 3
-adb shell settings put global auto_time 0; adb shell settings put global auto_time_zone 0
-adb shell service call alarm 3 s16 America/New_York >/dev/null
-adb shell "date -u 112312402026.00"; adb shell date
 adb install -r -g app.apk > rec/install.txt 2>&1
 adb logcat -c
 adb shell am start -a android.intent.action.SET_ALARM --ei android.intent.extra.alarm.HOUR 6 --ei android.intent.extra.alarm.MINUTES 45 --ez android.intent.extra.alarm.SKIP_UI true; sleep 3
@@ -78,34 +73,66 @@ adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME
 adb exec-out screencap -p > rec/70_home_items.png; adb shell uiautomator dump /sdcard/h.xml >/dev/null 2>&1; adb pull /sdcard/h.xml rec/home.xml >/dev/null 2>&1; adb shell cat $F > rec/prefs_after.xml
 # v3.5: gestures, page 2, Coptic page, recent/VIP panel, app list, widget move, text size
 shot() { adb exec-out screencap -p > rec/$1.png; }
-# ---------------------------------------------------------------- how-to screens for the commercial (each with its layout dump)
+# ---------------------------------------------------------------- real screens for the commercial, nothing edited afterwards
 grab() { shot "$1"; adb shell uiautomator dump /sdcard/m.xml >/dev/null 2>&1; adb pull /sdcard/m.xml "rec/$1.xml" >/dev/null 2>&1; cp "rec/$1.xml" rec/s.xml; }
 tapc() { local c; c=$(center "$1"); [ -z "$c" ] && c=$(centerp "$1"); [ -n "$c" ] && adb shell input tap $c; }
-findrow() {   # scroll Settings until a row with this text is on screen
-  local want="$1" k c y
+findrow() { local want="$1" k c y
   for k in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do dump; c=$(center "$want")
     if [ -n "$c" ]; then y=${c#* }; [ "$y" -gt 300 ] && [ "$y" -lt 1900 ] && return 0; fi
     adb shell input swipe 540 1600 540 1100 300; sleep .8; done; return 1; }
-adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME; sleep 4
-grab m00_home
-# the weather: tap it for warnings and the full forecast
-c=$(centerp "°F"); [ -n "$c" ] && adb shell input tap $c; sleep 3; grab m01_weather_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1
-# swipe right: the Coptic page
-adb shell input swipe 900 1300 200 1310 250; sleep 6; grab m02_coptic; adb shell input keyevent KEYCODE_BACK; sleep 2
-# swipe up: the app list; long-press an app: its menu (Add to VIP)
-adb shell input swipe 540 1500 540 600 250; sleep 2; adb shell input swipe 540 1700 540 800 250; sleep 3; adb shell input keyevent KEYCODE_BACK; sleep 2; grab m03_drawer
-c=$(center "Calculator"); [ -z "$c" ] && c=$(center "Clock"); [ -z "$c" ] && c=$(center "Contacts"); if [ -n "$c" ]; then set -- $c; adb shell input motionevent DOWN $1 $2; sleep 1.3; adb shell input motionevent UP $1 $2; sleep 2; grab m04_app_menu
-  tapc "Add to VIP"; sleep 2; fi
-adb shell input keyevent KEYCODE_HOME; sleep 2
-adb shell input swipe 540 1000 540 1700 250; sleep 2; grab m05_vip_panel; adb shell input keyevent KEYCODE_BACK; sleep 1
-# Settings: verse language, icon style, dock icons, text colour, the lock screen
-adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3; grab m10_settings_top
-findrow "Icon style" && { grab m14_icon_style_row; tapc "Icon style"; sleep 2; grab m15_icon_style_sheet; tapc "Colour glass (full-colour icon inside the glass)"; sleep 2; grab m16_icon_style_chosen; }
-findrow "Dock icons" && { tapc "Dock icons"; sleep 2; grab m17_dock_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1; }
-findrow "Text colour" && { tapc "Text colour"; sleep 2; grab m18_text_colour_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1; }
-findrow "Velthon lock screen" && { grab m19_lock_row; tapc "Velthon lock screen"; sleep 2; grab m20_lock_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1; }
+home() { adb shell input keyevent KEYCODE_HOME; sleep 1; adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME >/dev/null; sleep ${1:-5}; }
+settime() { adb shell "date -u $1" >/dev/null; }      # MMDDhhmmYYYY.ss in UTC
+# Toronto, a real morning (8:20 am), gesture navigation, the phone's own apps only
+adb shell settings put global auto_time 0; adb shell settings put global auto_time_zone 0
+adb shell service call alarm 3 s16 America/Toronto >/dev/null
+settime 112313202026.00
+adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural; sleep 3
+for p in com.android.chrome com.google.android.gm com.google.android.apps.maps com.google.android.youtube com.google.android.apps.youtube.music \
+         com.google.android.apps.photos com.google.android.apps.docs com.google.android.videos com.google.android.googlequicksearchbox \
+         com.google.android.music com.android.vending com.google.android.apps.googleassistant com.google.android.apps.wellbeing; do
+  adb shell pm disable-user --user 0 $p >/dev/null 2>&1; done
+python3 - <<'PY'
+acts=[l.strip() for l in open('rec/acts.txt') if '/' in l]
+def key(part):
+    for a in acts:
+        if part in a:
+            p,c=a.split('/'); return p+'/'+(p+c if c.startswith('.') else c)
+dock='|'.join(k for k in [key('dialer'),key('messaging'),key('camera2'),key('contacts'),key('documentsui'),key('deskclock')] if k)
+open('rec/dock.txt','w').write(dock)
+PY
+setpref dock "$(cat rec/dock.txt)"
+setpref city Toronto
+setpref langs en
+home 12; home 8
+grab r00_home_en
+# the lock screen (Velthon's own)
+adb shell appops set $P SYSTEM_ALERT_WINDOW allow
+adb shell locksettings set-disabled false >/dev/null 2>&1
+adb shell input keyevent KEYCODE_SLEEP; sleep 5; adb shell input keyevent KEYCODE_WAKEUP; sleep 1.2; grab r01_lock_en
+adb shell input swipe 540 1800 540 500 200; sleep 3
+# swipe left: the Coptic page
+home; adb shell input swipe 900 1300 200 1310 250; sleep 6; grab r02_coptic_en; adb shell input keyevent KEYCODE_BACK; sleep 2
+# swipe up: the app list (keyboard closed)
+home; adb shell input swipe 540 1500 540 600 250; sleep 2; adb shell input swipe 540 1700 540 800 250; sleep 3; adb shell input keyevent KEYCODE_BACK; sleep 2; grab r03_drawer
+# long-press an app: Add to VIP
+c=$(center "Camera"); [ -z "$c" ] && c=$(center "Contacts")
+if [ -n "$c" ]; then set -- $c; adb shell input motionevent DOWN $1 $2; sleep 1.4; adb shell input motionevent UP $1 $2; sleep 2; grab r04_app_menu; tapc "Add to VIP"; sleep 2; fi
+home; adb shell input swipe 540 1000 540 1700 250; sleep 2; grab r05_vip_panel; adb shell input keyevent KEYCODE_BACK; sleep 1
+# Settings: the lock screen row and its choices, icon style
+adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3; grab r10_settings_top
+findrow "Velthon lock screen" && { grab r11_lock_row; tapc "Velthon lock screen"; sleep 2; grab r12_lock_sheet; adb shell input keyevent KEYCODE_BACK; sleep 1; }
 adb shell am force-stop $P; adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3
-findrow "Verse language" && { grab m11_verse_language_row; tapc "Verse language"; sleep 2; grab m12_language_sheet; tapc "French"; sleep 2; grab m13_language_chosen; }
-adb shell input keyevent KEYCODE_HOME; sleep 5; grab m21_home_french_colour
-adb shell input swipe 900 1300 200 1310 250; sleep 6; grab m23_coptic_french; adb shell input keyevent KEYCODE_BACK; sleep 2
-adb shell input keyevent KEYCODE_POWER; sleep 3; adb shell input keyevent KEYCODE_WAKEUP; sleep 4; grab m22_lock
+findrow "Icon style" && { grab r13_icon_row; tapc "Icon style"; sleep 2; grab r14_icon_sheet; tapc "Colour glass (full-colour icon inside the glass)"; sleep 2; grab r15_icon_chosen; }
+home 6; grab r16_home_colour_en
+# languages: the sheet, then real French, Spanish and Arabic screens
+adb shell am start -n $P/.SettingsActivity >/dev/null; sleep 3
+findrow "Verse language" && { grab r20_lang_row; tapc "Verse language"; sleep 2; grab r21_lang_sheet; tapc "French"; sleep 2; }
+home 6; grab r22_home_fr
+adb shell input swipe 900 1300 200 1310 250; sleep 6; grab r23_coptic_fr; adb shell input keyevent KEYCODE_BACK; sleep 2
+setpref langs es; home 8; grab r24_home_es
+setpref langs ar; home 8; grab r25_home_ar
+adb shell input swipe 900 1300 200 1310 250; sleep 6; grab r26_coptic_ar; adb shell input keyevent KEYCODE_BACK; sleep 2
+# evening: 10:30 pm, the same phone at night
+setpref langs en; settime 112403302026.00; home 10; home 6; grab r30_home_night
+adb shell input keyevent KEYCODE_SLEEP; sleep 5; adb shell input keyevent KEYCODE_WAKEUP; sleep 1.2; grab r31_lock_night
+adb shell date
