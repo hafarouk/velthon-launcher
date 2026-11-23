@@ -340,7 +340,7 @@ class SaverView extends View {
             // the next two calendar events, under the verse, on a light frosted card
             float under = textTop + text.getHeight();
             if (status != null) {
-                status.drawRow(c, w / 2f, under + status.rowHeight() * .55f, textAlpha);
+                status.drawRow(c, w / 2f, under + status.rowHeight() * .55f, textAlpha, Color.red(dateP.getColor()) < 128);
                 under += status.rowHeight() * 1.25f;
             }
             drawEvents(c, w, under);

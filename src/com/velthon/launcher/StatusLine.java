@@ -132,13 +132,20 @@ final class StatusLine extends View {
     /** The lock screen draws the row itself, under the verse; this view only keeps the readings fresh. */
     @Override protected void onDraw(Canvas c) { }
 
-    static final int INK = 0xFFA9DBFF;   // a soft sky blue: apart from the white verse and the gold reference
+    static final int INK = 0xFFA9DBFF;
+    private int ink = INK;   // the colour of this frame (deeper on a bright sky)   // a soft sky blue: apart from the white verse and the gold reference
 
     float rowHeight() { return 26 * d; }
 
     /** One centred row: network (signal, 5G, carrier)  |  battery (percent, icon). */
-    void drawRow(Canvas c, float cx, float mid, float alpha) {
+    void drawRow(Canvas c, float cx, float mid, float alpha, boolean brightSky) {
         int a = Math.round(255 * Math.max(0, Math.min(1, alpha)));
+        // on a bright sky: deep blue with a light halo, a deep amber divider; on a dark one: soft blue with a dark shadow
+        final int INK = brightSky ? 0xFF1F4E7A : StatusLine.INK, GOLD = brightSky ? 0xFF8A5212 : 0xFFF2B640;
+        int halo = brightSky ? 0xB3FFFFFF : 0x99000000;
+        text.setShadowLayer(3 * d, 0, brightSky ? .5f * d : d, halo);
+        line.setShadowLayer(3 * d, 0, brightSky ? .5f * d : d, halo);
+        ink = INK;
         text.setColor(INK); text.setAlpha(a); line.setColor(INK); line.setAlpha(a); fill.setColor(INK); fill.setAlpha(a);
         String label = wifi ? net : !gen.isEmpty() ? (net.isEmpty() ? gen : gen + "  " + net) : net;
         boolean icon = wifi || bars >= 0;
@@ -156,7 +163,7 @@ final class StatusLine extends View {
         }
         if (both) {   // the thin divider
             x += sepGap;
-            fill.setColor(0xFFF2B640); fill.setAlpha(a);   // gold, like the verse's reference above it
+            fill.setColor(GOLD); fill.setAlpha(a);   // gold, like the verse's reference above it
             c.drawRoundRect(new RectF(x, mid - 8 * d, x + 1.5f * d, mid + 8 * d), d, d, fill);
             fill.setColor(INK); fill.setAlpha(a);
             x += 1.5f * d + sepGap;
@@ -194,13 +201,13 @@ final class StatusLine extends View {
         p.moveTo(left, bottom); p.lineTo(right, top); p.lineTo(right, bottom); p.close();
         fill.setPathEffect(new android.graphics.CornerPathEffect(2.2f * d));
         fill.setShadowLayer(3 * d, 0, d, 0x66000000);
-        fill.setColor((INK & 0x00FFFFFF) | 0x47000000);
+        fill.setColor((ink & 0x00FFFFFF) | 0x47000000);
         c.drawPath(p, fill);
         fill.clearShadowLayer();
         if (bars > 0) {
             c.save();
             c.clipRect(left - d, top - d, left + sz * Math.min(4, bars) / 4f, bottom + d);
-            fill.setColor(INK);
+            fill.setColor(ink);
             c.drawPath(p, fill);
             c.restore();
         }
@@ -212,12 +219,12 @@ final class StatusLine extends View {
         float r = 10.5f * d, cx = x + w / 2f, cy = mid + r * .62f;
         RectF o = new RectF(cx - r, cy - r, cx + r, cy + r);
         fill.setShadowLayer(3 * d, 0, d, 0x66000000);
-        fill.setColor((INK & 0x00FFFFFF) | 0x47000000);
+        fill.setColor((ink & 0x00FFFFFF) | 0x47000000);
         c.drawArc(o, 225, 90, true, fill);
         fill.clearShadowLayer();
         int lv = Math.max(1, Math.min(3, bars + 1));   // 0..3 → a third, two thirds, full
         float rr = r * (lv == 3 ? 1f : lv == 2 ? .72f : .45f);
-        fill.setColor(INK);
+        fill.setColor(ink);
         c.drawArc(new RectF(cx - rr, cy - rr, cx + rr, cy + rr), 225, 90, true, fill);
     }
 }
