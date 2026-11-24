@@ -405,6 +405,8 @@ public class Launcher extends Activity {
             try { requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 41); } catch (Throwable ignored) { }
             askedNow = true;
         }
+        NavGuard.check(this);                       // Xiaomi: keep full-screen gestures if that is what the phone used
+        if (!askedNow) { final Launcher me = this; ui.postDelayed(new Runnable() { @Override public void run() { if (visible) NavGuard.askOnce(me); } }, 1500); }
         LockSaver.watch(this);
         if (LockSaver.ENABLED && U.prefs(this).getString("lock_saver", "on").equals("on")) {
             LockSaver.prepare(this);
@@ -426,7 +428,7 @@ public class Launcher extends Activity {
         String ps = U.prefs(this).getString("pending_scale", null);
         if (ps != null && (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))) {
             U.prefs(this).edit().remove("pending_scale").apply();
-            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(1.5f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
+            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(2.0f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
         }
         if (everResumed) entrance();
         everResumed = true;
@@ -2613,7 +2615,7 @@ public class Launcher extends Activity {
         LinearLayout head = new LinearLayout(this);
         head.setGravity(Gravity.CENTER_VERTICAL);
         head.setPadding(dp(18), dp(36), dp(10), dp(8));
-        TextView title = text(22, Color.WHITE, U.serif(this));
+        TextView title = text(22, Color.WHITE, U.sansBold(this));
         title.setText(L.t("Add a widget"));
         head.addView(title, new LinearLayout.LayoutParams(0, -2, 1f));
         ImageView close = new ImageView(this);
@@ -3318,7 +3320,7 @@ public class Launcher extends Activity {
         bg.setColor(0xF2181C24); bg.setCornerRadius(dp(26));
         box.setBackground(bg);
         final boolean mine = f.key != null && f.key.startsWith("folder:");
-        TextView t = text(19, Color.WHITE, U.serif(this));
+        TextView t = text(19, Color.WHITE, U.sansBold(this));
         t.setText(mine ? f.label + "  ✎" : f.label);
         t.setGravity(Gravity.CENTER);
         t.setPadding(0, 0, 0, dp(10));

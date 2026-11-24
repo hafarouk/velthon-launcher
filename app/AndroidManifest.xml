@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- only if the person grants it from a computer: on Xiaomi, to keep full-screen gestures on (NavGuard) -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher" android:allowBackup="false" android:usesCleartextTraffic="false"
         android:largeHeap="false" android:hardwareAccelerated="true" android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">

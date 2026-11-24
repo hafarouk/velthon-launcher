@@ -338,6 +338,7 @@ final class U {
     /** Light motion (Settings › Atmosphere › Animations), and never when the phone's own animations are off. */
     /** True when the phone is driven by swipe gestures (no Back button on screen). Without them, every panel gets an X. */
     static boolean gestureNav(android.content.Context c) {
+        if (NavGuard.xiaomiGestures(c) == 1) return true;      // Xiaomi keeps its own switch
         try { return android.provider.Settings.Secure.getInt(c.getContentResolver(), "navigation_mode", 0) == 2; } catch (Throwable t) { return false; }
     }
     /** A small round X that closes a panel (shown when the phone is not on gesture navigation). */

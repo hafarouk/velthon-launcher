@@ -90,7 +90,7 @@ public class SettingsActivity extends Activity {
         String ps = p().getString("pending_scale", null);
         if (ps != null && (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))) {
             p().edit().remove("pending_scale").apply();
-            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(1.5f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
+            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(2.0f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
         }
         scene.refresh(); build();
     }
@@ -151,6 +151,13 @@ public class SettingsActivity extends Activity {
                 action(L.t("Add a widget"), null, new Runnable() { @Override public void run() {
                     p().edit().putBoolean("want_widget", true).apply(); finish(); } }),
                 action(L.t("Make Velthon my home screen"), null, new Runnable() { @Override public void run() { open(Settings.ACTION_HOME_SETTINGS); } }),
+                NavGuard.xiaomi() ? action(L.t("Full-screen gestures"),
+                        NavGuard.xiaomiGestures(this) == 1 ? L.t("On") : NavGuard.allowed(this) ? L.t("Turn on") : L.t("How to keep them with Velthon"),
+                        new Runnable() { @Override public void run() {
+                            p().edit().putString("nav_want", "gestures").apply();
+                            if (NavGuard.allowed(SettingsActivity.this)) { NavGuard.check(SettingsActivity.this); build(); }
+                            else NavGuard.guide(SettingsActivity.this);
+                        } }) : null,
                 action(L.t("Phone settings"), L.t("The phone's own settings (Wi-Fi, sound, display…)"), new Runnable() { @Override public void run() { open(Settings.ACTION_SETTINGS); } }));
 
         String[] gn = {L.t("Second home page"), L.t("Coptic calendar"), L.t("Search apps"), L.t("Recent apps & VIP"), L.t("All apps"), L.t("Notifications"), L.t("Quick settings"), L.t("Verses"), L.t("Screensaver"), L.t("Weather"), L.t("Lock the phone"), L.t("Launcher settings"), L.t("Phone settings"), L.t("Nothing")};
@@ -226,7 +233,7 @@ public class SettingsActivity extends Activity {
         LinearLayout t = new LinearLayout(this);
         t.setOrientation(LinearLayout.VERTICAL);
         t.setPadding(dp(6), 0, 0, 0);
-        TextView a = text(24, Color.WHITE, U.serif(this));
+        TextView a = text(24, Color.WHITE, U.sansBold(this));
         a.setText(L.t("Settings"));
         t.addView(a);
         TextView s = text(12.5f, 0xCCFFFFFF, U.sans(SettingsActivity.this));
@@ -284,14 +291,14 @@ public class SettingsActivity extends Activity {
         LinearLayout head = new LinearLayout(this);
         head.setOrientation(LinearLayout.VERTICAL);
         head.setPadding(dp(86), 0, dp(16), dp(6));
-        TextView t = text(18, Color.WHITE, U.serif(this));
+        TextView t = text(18, Color.WHITE, U.sansBold(this));
         t.setText(title);
         head.addView(t);
         TextView s = text(12, 0xB3FFFFFF, U.sans(SettingsActivity.this));
         s.setText(sub);
         head.addView(s);
         card.addView(head);
-        for (View r : rows) card.addView(r, new LinearLayout.LayoutParams(-1, -2));
+        for (View r : rows) if (r != null) card.addView(r, new LinearLayout.LayoutParams(-1, -2));
         card.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override public void onLayoutChange(View v, int l, int tt, int r, int bb, int ol, int ot, int or, int ob) {
                 if (r - l > 0) card.setNotch(dp(46) / (float) (r - l));
@@ -402,7 +409,7 @@ public class SettingsActivity extends Activity {
             return;
         }
         try {
-            Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(1.5f, Float.parseFloat(v))));
+            Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(2.0f, Float.parseFloat(v))));
         } catch (Throwable t) {
             Toast.makeText(this, L.t("Change it in the phone's Display settings"), Toast.LENGTH_LONG).show();
             open(Settings.ACTION_DISPLAY_SETTINGS);
@@ -450,7 +457,7 @@ public class SettingsActivity extends Activity {
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.notchR = dp(31); panel.notchCy = -dp(9); panel.notchX = .5f;
         panel.setPadding(dp(8), dp(30), dp(8), bottom + dp(14));
-        TextView t = text(17, Color.WHITE, U.serif(this));
+        TextView t = text(17, Color.WHITE, U.sansBold(this));
         t.setGravity(Gravity.CENTER);
         t.setText(title);
         panel.addView(t, new LinearLayout.LayoutParams(-1, -2));

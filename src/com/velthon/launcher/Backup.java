@@ -23,7 +23,8 @@ final class Backup {
     /** Things that belong to this phone only and must not travel to another one (widget slots, caches, logs). */
     private static boolean skip(String k) {
         return k.startsWith("wx_") || k.startsWith("lock_log") || k.startsWith("widget") || k.equals("lat") || k.equals("lon")
-                || k.endsWith("_asked") || k.startsWith("synax") || k.startsWith("saint");
+                || k.endsWith("_asked") || k.startsWith("synax") || k.startsWith("saint")
+                || k.startsWith("nav_") || k.equals("pending_scale");
     }
 
     static String export(Context c) throws Exception {
