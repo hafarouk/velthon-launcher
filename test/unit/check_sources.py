@@ -34,4 +34,20 @@ _bad = [e.get('ref') for e in _v if not all(e.get(k) for k in ('en', 'ar', 'fr',
 if _bad:
     print('verses missing a language:', _bad[:10]); sys.exit(1)
 print('verses: %d, each in English, Arabic, French and Spanish' % len(_v))
+
+# every word shown on screen has a translation row (English, Arabic, French, Spanish, German, Portuguese)
+import re as _re, glob as _glob, os as _os
+_src = _os.path.join(_os.path.dirname(__file__), '..', '..', 'src', 'com', 'velthon', 'launcher')
+_rows = _re.findall(r'^\s*\{"((?:[^"\\]|\\.)*)",((?:\s*"(?:[^"\\]|\\.)*",?){5})\s*\},', open(_os.path.join(_src, 'L.java'), encoding='utf-8').read(), _re.M)
+_keys = {r[0] for r in _rows}
+_missing = set()
+for _f in _glob.glob(_os.path.join(_src, '*.java')):
+    if _f.endswith('L.java'): continue
+    _t = open(_f, encoding='utf-8').read()
+    for _m in _re.finditer(r'L\.(?:t|in)\((?:[^,()]+,\s*)?"((?:[^"\\]|\\.)*)"\)', _t): 
+        if _m.group(1) not in _keys: _missing.add(_m.group(1))
+if _missing:
+    print('UNTRANSLATED:', '\n  '.join(sorted(_missing))); raise SystemExit(1)
+print('translations: every on-screen word has all languages (%d)' % len(_keys))
+
 sys.exit(1 if _exit_bad else 0)
