@@ -1,14 +1,15 @@
 # Quick check of the launcher on one emulated phone type (run once per device in the device matrix).
 # Env: NAV=gestural|threebutton  SCALE=<font scale>  LOCALE=<e.g. ar-EG>  NAME=<device label>
 set -x
+if [ -n "$ONLY" ] && [ "$ONLY" != "$NAME" ]; then echo "skipped"; exit 0; fi
 mkdir -p rec
 P=com.velthon.launcher
 adb wait-for-device
 until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do sleep 2; done
-adb root >/dev/null 2>&1; sleep 3
 adb shell settings put global package_verifier_enable 0
 SDK=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 if [ -n "$LOCALE" ] && [ "$SDK" -lt 33 ]; then
+  adb root >/dev/null 2>&1; sleep 3; adb wait-for-device
   adb shell "setprop persist.sys.locale $LOCALE; stop; sleep 2; start" ; sleep 30
   for t in $(seq 1 60); do [ "$(timeout 5 adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && break; sleep 3; done; sleep 8
 fi

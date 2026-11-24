@@ -3,6 +3,11 @@ name: Device matrix
 # large text and Arabic (right-to-left). Each device's screens land on its own devices-<name> branch.
 on:
   workflow_dispatch:
+    inputs:
+      only:
+        description: "Run just this device (its name), or leave empty for all"
+        required: false
+        default: ""
 permissions:
   contents: write
 jobs:
@@ -37,6 +42,7 @@ jobs:
       - uses: reactivecircus/android-emulator-runner@v2
         env:
           NAME: ${{ matrix.name }}
+          ONLY: ${{ github.event.inputs.only }}
           NAV: ${{ matrix.nav }}
           SCALE: ${{ matrix.scale }}
           LOCALE: ${{ matrix.locale }}
@@ -50,7 +56,7 @@ jobs:
           working-directory: test
           script: bash devices.sh
       - name: Keep the screens on devices-${{ matrix.name }}
-        if: always()
+        if: always() && (github.event.inputs.only == '' || github.event.inputs.only == matrix.name)
         run: |
           cd test/rec || exit 0
           git init -q -b devices-${{ matrix.name }} && git add -A
