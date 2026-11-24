@@ -1,0 +1,54 @@
+name: voice-over
+# Free neural voice-over for the commercial (edge-tts). Input: one line per clip, "<id>|<rate>|<text>".
+on:
+  workflow_dispatch:
+    inputs:
+      lines:
+        description: "One per line: <id>|<rate e.g. -6%>|<text>"
+        required: true
+      voice:
+        description: "Voice name"
+        required: false
+        default: "en-US-AndrewMultilingualNeural"
+jobs:
+  vo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Speak
+        env:
+          LINES: ${{ github.event.inputs.lines }}
+          VOICE: ${{ github.event.inputs.voice }}
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y ffmpeg >/dev/null
+          pip install -q edge-tts
+          mkdir -p out
+          printf '%s\n' "$LINES" > lines.txt
+          cat > speak.py <<'PY'
+          import asyncio, os, edge_tts
+          V = os.environ.get('VOICE') or 'en-US-AndrewMultilingualNeural'
+          async def main():
+              for ln in open('lines.txt'):
+                  ln = ln.strip()
+                  if not ln: continue
+                  i, rate, text = ln.split('|', 2)
+                  for a in range(6):
+                      try:
+                          await edge_tts.Communicate(text, V if a < 3 else V.replace('Multilingual', ''), rate=rate).save(f'out/{i}.mp3')
+                          if os.path.getsize(f'out/{i}.mp3') > 2000: break
+                      except Exception as e: print('retry', i, e)
+                      await asyncio.sleep(3)
+          asyncio.run(main())
+          PY
+          python speak.py
+          for f in out/*.mp3; do ffmpeg -y -loglevel error -i "$f" -af 'silenceremove=start_periods=1:start_threshold=-50dB,areverse,silenceremove=start_periods=1:start_threshold=-50dB,areverse' -ar 44100 -ac 1 "${f%.mp3}.wav"; rm "$f"; done
+          ls -la out
+      - name: Publish to voiceover
+        run: |
+          cd out
+          git init -q
+          git config user.name "velthon-bot"; git config user.email "noreply@github.com"
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          git checkout -q -b voiceover
+          git add -A && git commit -qm "voice-over $(date -u +%FT%TZ)" && git push -qf origin HEAD:voiceover
