@@ -1,0 +1,1 @@
+android11-pixel4-buttons 1080x2280 density=Physical density: 440 sdk=30 nav=threebutton scale=1.15 locale=fr-FR
