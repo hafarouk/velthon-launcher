@@ -106,60 +106,48 @@ public class SettingsActivity extends Activity {
         list.removeAllViews();
         header();
 
-        section(Ico.BOOK, L.t("Scripture"), L.t("What appears on screen and how often"),
+        tidyOnce();
+        section(Ico.BOOK, L.t("Scripture"), L.t("The verse on your screen"),
                 choice(L.t("Verse language"), "langs", U.langs(this), new String[] {L.t("English"), L.t("Arabic"), L.t("French"), L.t("Spanish")}, new String[] {"en", "ar", "fr", "es"}),
                 choice(L.t("Verse changes"), "verse_every", "5", new String[] {L.t("Every 5 minutes"), L.t("Every 15 minutes"), L.t("Every 30 minutes"), L.t("Every hour"), L.t("Once a day")},
                         new String[] {"5", "15", "30", "60", "1440"}),
                 choice(L.t("Verse font"), "verse_font", "system", new String[] {L.t("Velthon Sans"), L.t("Classic serif")}, new String[] {"system", "serif"}),
-                choice(L.t("Next-verse countdown on the home screen"), "countdown", "off", new String[] {L.t("Hidden (more room for apps)"), L.t("Shown")}, new String[] {"off", "on"}),
-                choice(L.t("Verse text size"), "text_scale", "auto", new String[] {L.t("Auto fit"), L.t("Smaller"), L.t("Larger")}, new String[] {"auto", "small", "large"}),
-                choice(L.t("Feast-day verses"), "feast_verses", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
                 action(L.t("Saved verses"), L.t("Your favourites and all verses"), new Runnable() { @Override public void run() {
                     startActivity(new Intent(SettingsActivity.this, VersesActivity.class)); } }));
 
-        section(Ico.LEAF, L.t("Atmosphere"), L.t("The picture, the season and the window"),
+        section(Ico.LEAF, L.t("Look"), L.t("Picture, colours and motion"),
                 backgrounds(),
-                choice(L.t("Season theme"), "season", "auto", new String[] {L.t("Automatic (by date)"), L.t("Spring"), L.t("Summer"), L.t("Autumn"), L.t("Winter")},
-                        new String[] {"auto", "spring", "summer", "fall", "winter"}),
-                
-                choice(L.t("Weather motion (rain, snow, sun rays, stars)"), "wx_fx", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
-                choice(L.t("Animations"), "anims", "on", new String[] {L.t("Light (recommended)"), L.t("Off")}, new String[] {"on", "off"}),
-                
-                
+                choice(L.t("Text colour"), "text_theme", "auto", new String[] {L.t("Automatic (by the sky)"), L.t("White"), L.t("Cream"), L.t("Gold"), L.t("Light blue"), L.t("Rose")},
+                        new String[] {"auto", "white", "cream", "gold", "blue", "rose"}),
+                choice(L.t("Motion"), "@motion", p().getString("anims", "on").equals("off") ? "off" : p().getString("wx_fx", "on").equals("off") ? "light" : "on",
+                        new String[] {L.t("Weather and animations"), L.t("Animations only"), L.t("Off")}, new String[] {"on", "light", "off"}),
                 choice(L.t("Night mode"), "night_mode", "off", new String[] {L.t("Off"), "10 PM – 6 AM", "9 PM – 7 AM"}, new String[] {"off", "22", "21"}));
 
         String city = p().getString("city", "");
-        section(Ico.CLOUD, L.t("Weather & calendar"), L.t("Forecast, alerts and church feasts"),
+        section(Ico.CLOUD, L.t("Weather & calendar"), L.t("Forecast and church feasts"),
                 action(L.t("Weather city"), city.isEmpty() ? L.t("Your location") : city, new Runnable() { @Override public void run() { askCity(); } }),
                 choice(L.t("Temperature"), "units", "auto", new String[] {L.t("Automatic"), L.t("Celsius (°C)"), L.t("Fahrenheit (°F)")}, new String[] {"auto", "c", "f"}),
-                choice(L.t("Weather alerts"), "wx_alerts", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
                 choice(L.t("Church calendar"), "church", "orthodox", new String[] {L.t("Coptic Orthodox"), L.t("Catholic"), L.t("Off")}, new String[] {"orthodox", "catholic", "off"}));
 
-        section(Ico.HOME, L.t("Home screen"), L.t("Apps, icons and widgets"),
-                choice(L.t("App icons"), "@velthon_icons", p().getBoolean("velthon_icons", false) ? "1" : "0",
-                        new String[] {L.t("The phone's own"), L.t("Velthon line icons")}, new String[] {"0", "1"}),
-                choice(L.t("Icon style"), "icon_style", "glass", new String[] {L.t("Glass (symbol on frosted glass)"), L.t("Colour glass (full-colour icon inside the glass)"), L.t("Classic (full app icon)")}, new String[] {"glass", "colorglass", "classic"}),
-                choice(L.t("Dock icons"), "dock_icon_style", "same", new String[] {L.t("Same as the apps"), L.t("Glass (symbol on frosted glass)"), L.t("Colour glass (full-colour icon inside the glass)"), L.t("Classic (full app icon)")}, new String[] {"same", "glass", "colorglass", "classic"}),
-                choice(L.t("Dock symbols"), "dock_symbol", "white", new String[] {L.t("White"), L.t("Gold")}, new String[] {"white", "gold"}),
-                choice(L.t("Columns"), "@columns", String.valueOf(p().getInt("columns", 3)), new String[] {"3 (largest icons)", "4 (bigger icons)", "5 (more apps)"}, new String[] {"3", "4", "5"}),
-                choice(L.t("Phone text size"), "@font_scale", fontScale(), new String[] {L.t("Small"), L.t("Default"), L.t("Large"), L.t("Larger"), L.t("Largest"), L.t("Huge")},
-                        new String[] {"0.85", "1.0", "1.15", "1.3", "1.5", "1.8"}),
-                choice(L.t("Text colour"), "text_theme", "auto", new String[] {L.t("Automatic (by the sky, as now)"), L.t("White"), L.t("Cream"), L.t("Gold"), L.t("Light blue"), L.t("Rose")},
-                        new String[] {"auto", "white", "cream", "gold", "blue", "rose"}),
-                choice(L.t("Notification dots"), "dots", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
-                action(L.t("Hidden apps"), L.t("Choose apps to keep out of the app list"), new Runnable() { @Override public void run() {
+        String icons = p().getBoolean("velthon_icons", false) ? "line" : p().getString("icon_style", "glass");
+        String dock = p().getString("dock_icon_style", "same");
+        if (dock.equals("glass") && p().getString("dock_symbol", "white").equals("gold")) dock = "glassgold";
+        boolean isHome = isDefaultHome();
+        section(Ico.HOME, L.t("Home screen"), L.t("Apps and icons"),
+                choice(L.t("App icons"), "@icons", icons, new String[] {L.t("Glass"), L.t("Colour glass"), L.t("Classic"), L.t("Velthon line icons")}, new String[] {"glass", "colorglass", "classic", "line"}),
+                choice(L.t("Dock"), "@dock", dock, new String[] {L.t("Same as the apps"), L.t("Glass, white symbols"), L.t("Glass, gold symbols"), L.t("Colour glass"), L.t("Classic")},
+                        new String[] {"same", "glass", "glassgold", "colorglass", "classic"}),
+                choice(L.t("Columns"), "@columns", String.valueOf(p().getInt("columns", 3)), new String[] {"3", "4", "5"}, new String[] {"3", "4", "5"}),
+                action(L.t("Hidden apps"), L.t("Keep apps out of the app list"), new Runnable() { @Override public void run() {
                     p().edit().putBoolean("want_hidden", true).apply(); finish(); } }),
-                action(L.t("Add a widget"), null, new Runnable() { @Override public void run() {
-                    p().edit().putBoolean("want_widget", true).apply(); finish(); } }),
-                action(L.t("Make Velthon my home screen"), null, new Runnable() { @Override public void run() { open(Settings.ACTION_HOME_SETTINGS); } }),
+                isHome ? null : action(L.t("Make Velthon my home screen"), null, new Runnable() { @Override public void run() { open(Settings.ACTION_HOME_SETTINGS); } }),
                 NavGuard.xiaomi() ? action(L.t("Full-screen gestures"),
                         NavGuard.xiaomiGestures(this) == 1 ? L.t("On") : NavGuard.allowed(this) ? L.t("Turn on") : L.t("How to keep them with Velthon"),
                         new Runnable() { @Override public void run() {
                             p().edit().putString("nav_want", "gestures").apply();
                             if (NavGuard.allowed(SettingsActivity.this)) { NavGuard.check(SettingsActivity.this); build(); }
                             else NavGuard.guide(SettingsActivity.this);
-                        } }) : null,
-                action(L.t("Phone settings"), L.t("The phone's own settings (Wi-Fi, sound, display…)"), new Runnable() { @Override public void run() { open(Settings.ACTION_SETTINGS); } }));
+                        } }) : null);
 
         String[] gn = {L.t("Second home page"), L.t("Coptic calendar"), L.t("Search apps"), L.t("Recent apps & VIP"), L.t("All apps"), L.t("Notifications"), L.t("Quick settings"), L.t("Verses"), L.t("Screensaver"), L.t("Weather"), L.t("Lock the phone"), L.t("Launcher settings"), L.t("Phone settings"), L.t("Nothing")};
         String[] gv = {"page", "church", "search", "quick", "apps", "notifications", "quick_settings", "verses", "saver", "weather", "lock", "settings", "phone_settings", "none"};
@@ -170,25 +158,29 @@ public class SettingsActivity extends Activity {
                 choice(L.t("Swipe right"), "swipe_right", "page", gn, gv),
                 choice(L.t("Double tap"), "double_tap", "lock", new String[] {L.t("Lock the phone"), L.t("Screensaver"), L.t("All apps"), L.t("Nothing")}, new String[] {"lock", "saver", "apps", "none"}));
 
-        section(Ico.MOON, L.t("Screensaver"), L.t("The window, while the phone rests or charges"),
+        boolean lockOn = p().getString("lock_saver", "on").equals("on");
+        section(Ico.MOON, L.t("Lock screen & screensaver"), L.t("The window when the phone wakes, rests or charges"),
                 choice(L.t("Velthon lock screen"), "lock_saver", "on", new String[] {L.t("On"), L.t("Off (the phone's own)")}, new String[] {"on", "off"}),
-                choice(L.t("Unlock with"), "lock_unlock", "phone", new String[] {L.t("The phone's fingerprint, face or PIN"), L.t("Velthon only: a tap opens the phone")}, new String[] {"phone", "velthon"}),
-                action(L.t("Set up the Velthon lock screen"), LockSaver.readyText(this), new Runnable() { @Override public void run() { LockSetup.show(SettingsActivity.this); } }),
-                choice(L.t("Next calendar events under the verse"), "lock_events", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
-                action(L.t("Make it my screensaver"), "Choose \"Velthon\" in the list", new Runnable() { @Override public void run() {
+                lockOn && !LockSaver.ready(this) ? action(L.t("Finish setting up the lock screen"), LockSaver.readyText(this), new Runnable() { @Override public void run() { LockSetup.show(SettingsActivity.this); } }) : null,
+                lockOn ? choice(L.t("Unlock with"), "lock_unlock", "phone", new String[] {L.t("The phone's fingerprint, face or PIN"), L.t("A tap (Velthon only)")}, new String[] {"phone", "velthon"}) : null,
+                lockOn ? choice(L.t("Calendar events"), "lock_events", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}) : null,
+                action(L.t("Make it my screensaver"), L.t("Choose \"Velthon\" in the list"), new Runnable() { @Override public void run() {
                     if (!open(Settings.ACTION_DREAM_SETTINGS)) open(Settings.ACTION_DISPLAY_SETTINGS);
-                    Toast.makeText(SettingsActivity.this, "Choose \"Velthon\" as the screen saver", Toast.LENGTH_LONG).show(); } }),
-                action(L.t("Preview"), null, new Runnable() { @Override public void run() {
-                    startActivity(new Intent(SettingsActivity.this, PreviewActivity.class)); } }));
+                    Toast.makeText(SettingsActivity.this, L.t("Choose \"Velthon\" as the screen saver"), Toast.LENGTH_LONG).show(); } }));
 
-        section(Ico.GEAR, L.t("Backup & uninstall"), L.t("Save your set-up, bring it back or remove Velthon"),
-                action(L.t("Back up settings"), L.t("Save your layout, folders, VIP and choices to a file on the phone"), new Runnable() { @Override public void run() {
-                    Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json")
-                            .putExtra(Intent.EXTRA_TITLE, "Velthon-backup-" + new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date()) + ".json");
-                    try { startActivityForResult(i, SAVE_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } }),
-                action(L.t("Restore settings"), L.t("Bring back a saved set-up"), new Runnable() { @Override public void run() {
-                    Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
-                    try { startActivityForResult(i, LOAD_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } }),
+        section(Ico.GEAR, L.t("Backup & uninstall"), L.t("Save your set-up or remove Velthon"),
+                action(L.t("Backup"), L.t("Save your set-up to a file, or bring one back"), new Runnable() { @Override public void run() {
+                    new android.app.AlertDialog.Builder(SettingsActivity.this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                            .setTitle(L.t("Backup"))
+                            .setMessage(L.t("Your layout, folders, VIP and choices."))
+                            .setPositiveButton(L.t("Back up"), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) {
+                                Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json")
+                                        .putExtra(Intent.EXTRA_TITLE, "Velthon-backup-" + new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date()) + ".json");
+                                try { startActivityForResult(i, SAVE_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } })
+                            .setNeutralButton(L.t("Restore"), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) {
+                                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
+                                try { startActivityForResult(i, LOAD_BACKUP); } catch (Throwable t) { Toast.makeText(SettingsActivity.this, "Can't open the file picker", Toast.LENGTH_SHORT).show(); } } })
+                            .setNegativeButton(L.t("Cancel"), null).show(); } }),
                 action(L.t("Uninstall Velthon"), L.t("Removes the launcher and everything it saved on this phone"), new Runnable() { @Override public void run() {
                     // uninstalling is where the clean-up happens: Velthon's own data is wiped first, so nothing is left behind
                     new android.app.AlertDialog.Builder(SettingsActivity.this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -208,6 +200,18 @@ public class SettingsActivity extends Activity {
         footer();
     }
 
+    /** Settings that are no longer offered go back to how they work best, once. */
+    private void tidyOnce() {
+        if (p().getBoolean("settings_tidy1", false)) return;
+        p().edit().remove("countdown").remove("text_scale").remove("feast_verses").remove("season").remove("wx_alerts").remove("dots")
+                .putBoolean("settings_tidy1", true).apply();
+    }
+    private boolean isDefaultHome() {
+        try {
+            android.content.pm.ResolveInfo r = getPackageManager().resolveActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0);
+            return r != null && r.activityInfo != null && getPackageName().equals(r.activityInfo.packageName);
+        } catch (Throwable t) { return false; }
+    }
     private static final int SAVE_BACKUP = 42, LOAD_BACKUP = 43;
     private void confirm(String title, String msg, final Runnable yes) {
         new android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle(title).setMessage(msg)
@@ -428,6 +432,9 @@ public class SettingsActivity extends Activity {
         }
         SharedPreferences.Editor e = p().edit();
         if (key.equals("@velthon_icons")) e.putBoolean("velthon_icons", v.equals("1"));
+        else if (key.equals("@icons")) { e.putBoolean("velthon_icons", v.equals("line")); e.putString("icon_style", v.equals("line") ? "glass" : v); }
+        else if (key.equals("@dock")) { e.putString("dock_icon_style", v.equals("glassgold") ? "glass" : v); e.putString("dock_symbol", v.equals("glassgold") ? "gold" : "white"); }
+        else if (key.equals("@motion")) { e.putString("anims", v.equals("off") ? "off" : "on"); e.putString("wx_fx", v.equals("on") ? "on" : "off"); }
         else if (key.equals("@columns")) e.putInt("columns", Integer.parseInt(v));
         else if (key.equals("@font_scale")) { setFontScale(v); return; }
         else e.putString(key, v);
