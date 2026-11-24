@@ -214,6 +214,7 @@ public class Launcher extends Activity {
     private int page;
     private View clockV;
     private TextView pageDots;
+    private View drawerTop;
     private String deskKey() { return page == 0 ? "desk" : "desk_p2"; }
     private String widgetsKey() { return page == 0 ? "widgets" : "widgets_p2"; }
     private View[] infoViews() { return new View[] {clockV, card, wxPill, alertLine, nextLine, churchLine}; }
@@ -654,7 +655,7 @@ public class Launcher extends Activity {
         card.addView(en, lp(-1, -2));
         enRef = text(15, 0xFFF0B43C, U.sansBold(Launcher.this));
         enRef.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams rl = lp(-1, -2); rl.topMargin = dp(6);
+        LinearLayout.LayoutParams rl = lp(-2, -2); rl.topMargin = dp(6); rl.gravity = Gravity.CENTER_HORIZONTAL;
         card.addView(enRef, rl);
         ar = text(24, Color.WHITE, U.arabic(Launcher.this));
         ar.setGravity(Gravity.CENTER); ar.setLineSpacing(0, 1.12f); shadow(ar, 4);
@@ -663,7 +664,7 @@ public class Launcher extends Activity {
         card.addView(ar, al);
         arRef = text(15, 0xFFF0B43C, U.arabic(Launcher.this));
         arRef.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams arl = lp(-1, -2); arl.topMargin = dp(3);
+        LinearLayout.LayoutParams arl = lp(-2, -2); arl.topMargin = dp(3); arl.gravity = Gravity.CENTER_HORIZONTAL;
         card.addView(arRef, arl);
         // Listen / Save / Share stay available: hold the verse
         chips = new LinearLayout(this);
@@ -958,6 +959,18 @@ public class Launcher extends Activity {
         if (churchLine.getMaxLines() > 2) { churchLine.setMaxLines(2); churchLine.setEllipsize(android.text.TextUtils.TruncateAt.END); return; }
         if (cardFrac > .11f) { cardFrac -= .025f; fitCard(); return; }
     }
+    /** A short thin line on each side of the reference, in its own colour. */
+    private void refLines(TextView t) {
+        int col = (t.getCurrentTextColor() & 0x00FFFFFF) | 0xB0000000;
+        android.graphics.drawable.Drawable[] ln = new android.graphics.drawable.Drawable[2];
+        for (int i = 0; i < 2; i++) {
+            android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+            g.setColor(col); g.setCornerRadius(dp(1)); g.setSize(dp(26), Math.max(2, dp(1.3f)));
+            ln[i] = g;
+        }
+        t.setCompoundDrawablesRelativeWithIntrinsicBounds(ln[0], null, ln[1], null);
+        t.setCompoundDrawablePadding(dp(10));
+    }
     private U.Verse fitFor;
     /** Picks the largest verse size that keeps the card within about a third of the screen. */
     private void fitCard() {
@@ -973,7 +986,9 @@ public class Launcher extends Activity {
         for (int pass = 0; pass < 2; pass++) {
             String ts = U.prefs(this).getString("text_scale", "auto");
             float f = ts.equals("small") ? .88f : ts.equals("large") ? 1.12f : 1f;
-            for (float sz = (both ? 19 : 26) * f; sz >= (both ? 14 : 15f) * f; sz -= .5f) {
+            int len = verse.en.length();
+            float top = both ? 19 : len < 70 ? 23 : len < 140 ? 22 : 21;
+            for (float sz = top * f; sz >= (both ? 14 : 15f) * f; sz -= .5f) {
                 en.setTextSize(TypedValue.COMPLEX_UNIT_DIP, sz);
                 ar.setTextSize(TypedValue.COMPLEX_UNIT_DIP, sz * 1.04f);
                 card.measure(wSpec, hSpec);
@@ -1153,7 +1168,7 @@ public class Launcher extends Activity {
         // dark letters on a light patch, white or gold on a dark one.
         card.setBackground(null); wxPill.setBackground(null); churchLine.setBackground(null);
         for (TextView t : new TextView[] {en, ar}) ink(t, INK, Color.WHITE);
-        for (TextView t : new TextView[] {enRef, arRef}) ink(t, 0xFF874C0C, 0xFFF2BC4E);
+        for (TextView t : new TextView[] {enRef, arRef}) { ink(t, 0xFF874C0C, 0xFFF2BC4E); refLines(t); }
         ink(churchLine, 0xFF7A450B, 0xFFF2BC4E);
         // the verse in the phone's font, or the classic serif (Settings › Scripture)
         boolean serif = U.prefs(this).getString("verse_font", "system").equals("serif");
@@ -1208,13 +1223,13 @@ public class Launcher extends Activity {
         int theme = textTheme();
         if (theme != 0 && light == Color.WHITE) {   // a chosen colour for the main text; gold, red and blue accents keep theirs
             t.setTextColor(theme); crisp(t, false);
-            if (scene.lastMixed || l) t.setShadowLayer(dp(3.5f), 0, 0, 0xF2000000);
+            if (scene.lastMixed || l) t.setShadowLayer(dp(2.2f), 0, 0, 0xB3000000);
             return false;
         }
         t.setTextColor(l ? dark : light);
         crisp(t, l);
         // over light and dark at once: a soft halo in the opposite tone, so the letters read on both
-        if (scene.lastMixed) t.setShadowLayer(dp(3.5f), 0, 0, l ? 0xF2FFFFFF : 0xF2000000);
+        if (scene.lastMixed) t.setShadowLayer(dp(2.2f), 0, 0, l ? 0xB3FFFFFF : 0xB3000000);
         return l;
     }
     /** Settings › Home screen › Text colour: 0 = automatic (by the sky behind it, as before). */
@@ -2730,9 +2745,12 @@ public class Launcher extends Activity {
         // the top: today's date (the time is already in the status bar) and the saint of the day
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.VERTICAL);
-        top.setPadding(dp(22), dp(10), dp(14), 0);
+        top.setPadding(dp(22), dp(2), dp(14), 0);
         LinearLayout r1 = new LinearLayout(this);
-        r1.setGravity(Gravity.CENTER_VERTICAL);
+        r1.setGravity(Gravity.TOP);
+        final LinearLayout leftCol = new LinearLayout(this);       // the date, and the saint just under it
+        leftCol.setOrientation(LinearLayout.VERTICAL);
+        leftCol.setPadding(0, dp(8), dp(6), 0);
         TextClock d = new TextClock(this);
         d.setFormat12Hour("EEEE, MMMM d"); d.setFormat24Hour("EEEE, MMMM d");
         d.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 21 * textScale); d.setTextColor(Color.WHITE); d.setTypeface(U.sansBold(this));
@@ -2763,7 +2781,8 @@ public class Launcher extends Activity {
             }
         });
         d.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openCalendar(); } });
-        r1.addView(d, new LinearLayout.LayoutParams(0, -2, 1f));
+        leftCol.addView(d, new LinearLayout.LayoutParams(-1, -2));
+        r1.addView(leftCol, new LinearLayout.LayoutParams(0, -2, 1f));
         // two settings, told apart at a glance: Velthon's own (gold) and the phone's (white, a phone with a gear)
         r1.addView(settingsChip(new Ico(Ico.GEAR, GOLD), "Velthon", GOLD, new View.OnClickListener() {
             @Override public void onClick(View v) { openSettings(); } }), lp(-2, -2));
@@ -2781,7 +2800,7 @@ public class Launcher extends Activity {
         top.addView(r1);
         saintRow = new LinearLayout(this);
         saintRow.setGravity(Gravity.CENTER_VERTICAL);
-        saintRow.setPadding(0, dp(4), 0, 0);
+        saintRow.setPadding(0, dp(3), 0, 0);
         saintPic = new ImageView(this);
         saintPic.setScaleType(ImageView.ScaleType.CENTER_CROP);
         saintPic.setClipToOutline(true);
@@ -2790,14 +2809,15 @@ public class Launcher extends Activity {
         android.graphics.drawable.GradientDrawable ring = new android.graphics.drawable.GradientDrawable();
         ring.setShape(android.graphics.drawable.GradientDrawable.OVAL); ring.setColor(0x33FFC94A);
         saintPic.setBackground(ring);
-        saintRow.addView(saintPic, new LinearLayout.LayoutParams(dp(34), dp(34)));
-        saintText = text(12.5f, Color.WHITE, U.sans(this));
-        saintText.setMaxLines(3); saintText.setEllipsize(TextUtils.TruncateAt.END);
-        saintText.setPadding(dp(10), 0, dp(8), 0); shadow(saintText, 4);
+        saintRow.addView(saintPic, new LinearLayout.LayoutParams(dp(22), dp(22)));
+        saintText = text(11.5f, 0xE6FFFFFF, U.sans(this));
+        saintText.setMaxLines(2); saintText.setEllipsize(TextUtils.TruncateAt.END);
+        saintText.setPadding(dp(7), 0, 0, 0); shadow(saintText, 4);
         saintRow.addView(saintText, new LinearLayout.LayoutParams(0, -2, 1f));
         saintRow.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openChurch(); } });
-        top.addView(saintRow, lp(-1, -2));
+        leftCol.addView(saintRow, lp(-1, -2));
         drawer.addView(top, new FrameLayout.LayoutParams(-1, -2, Gravity.TOP));
+        drawerTop = top;
         showSaint();
 
         sheet = new Glass(this, 30, Glass.DARK);
@@ -2931,10 +2951,16 @@ public class Launcher extends Activity {
         });
         sheet.addView(grid, new LinearLayout.LayoutParams(-1, 0, 1f));
 
-        FrameLayout.LayoutParams shl = new FrameLayout.LayoutParams(-1, -1);
+        final FrameLayout.LayoutParams shl = new FrameLayout.LayoutParams(-1, -1);
         shl.topMargin = dp(100);
         shl.bottomMargin = -dp(30);
         drawer.addView(sheet, shl);
+        drawerTop.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                int want = b + dp(8);
+                if (b > 0 && shl.topMargin != want) { shl.topMargin = want; sheet.post(new Runnable() { @Override public void run() { sheet.setLayoutParams(shl); } }); }
+            }
+        });
 
         final GestureDetector close = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override public boolean onFling(MotionEvent a, MotionEvent b, float vx, float vy) {
@@ -2979,8 +3005,8 @@ public class Launcher extends Activity {
         // a very small gold label, so the saint's name has the room (the Coptic date is on the home screen)
         b.append(L.t("Saint of the day").toUpperCase(java.util.Locale.getDefault()));
         b.setSpan(new android.text.style.ForegroundColorSpan(0xFFF2B640), 0, b.length(), 0);
-        b.setSpan(new android.text.style.RelativeSizeSpan(.68f), 0, b.length(), 0);
-        if (st != null) b.append("\n").append(st.replaceFirst("^(?i)the\\s+", "").replaceAll("[.]$", ""));
+        b.setSpan(new android.text.style.RelativeSizeSpan(.82f), 0, b.length(), 0);
+        if (st != null) b.append("  ").append(st.replaceFirst("^(?i)the\\s+", "").replaceAll("[.]$", ""));
         saintText.setText(b);
         android.graphics.Bitmap pic = Synax.picture(this);
         if (pic != null) { saintPic.setImageBitmap(pic); saintPic.setPadding(0, 0, 0, 0); }

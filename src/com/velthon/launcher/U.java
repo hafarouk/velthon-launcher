@@ -117,14 +117,14 @@ final class U {
     static Typeface serifBold(Context c) { return Typeface.create(serif(c), Typeface.BOLD); }
     static Typeface sans(Context c) {
         if (sans == null) {
-            try { sans = Typeface.createFromAsset(c.getAssets(), "fonts/sourcesans_regular.ttf"); }
+            try { sans = Typeface.createFromAsset(c.getAssets(), "fonts/velthon_sans.ttf"); }
             catch (Throwable t) { sans = Typeface.SANS_SERIF; }
         }
         return sans;
     }
     static Typeface sansBold(Context c) {
         if (sansBold == null) {
-            try { sansBold = Typeface.createFromAsset(c.getAssets(), "fonts/sourcesans_semibold.ttf"); }
+            try { sansBold = Typeface.createFromAsset(c.getAssets(), "fonts/velthon_sans_medium.ttf"); }
             catch (Throwable t) { sansBold = Typeface.DEFAULT_BOLD; }
         }
         return sansBold;
@@ -133,8 +133,7 @@ final class U {
     /** The app's own Arabic font, so the verse looks the same on every phone. */
     static Typeface arabic(Context c) {
         if (arabic == null) {
-            try { arabic = Typeface.createFromAsset(c.getAssets(), "fonts/naskh_arabic.ttf"); }
-            catch (Throwable t) { arabic = Typeface.DEFAULT; }
+            arabic = sans(c);      // the app's font carries Arabic too: one look in every language
         }
         return arabic;
     }

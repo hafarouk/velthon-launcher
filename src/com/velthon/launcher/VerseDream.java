@@ -9,6 +9,13 @@ public class VerseDream extends DreamService {
         setInteractive(false);
         setFullscreen(true);
         setScreenBright(true);
-        setContentView(new SaverView(this));
+        android.widget.FrameLayout root = new android.widget.FrameLayout(this);
+        SaverView sv = new SaverView(this);
+        sv.calm = true;
+        root.addView(sv, new android.widget.FrameLayout.LayoutParams(-1, -1));
+        StatusLine st = new StatusLine(this);        // battery and network under the verse, as on the lock screen
+        root.addView(st, new android.widget.FrameLayout.LayoutParams(1, 1));
+        sv.status = st;
+        setContentView(root);
     }
 }

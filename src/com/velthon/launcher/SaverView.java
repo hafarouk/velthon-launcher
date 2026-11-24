@@ -91,6 +91,14 @@ class SaverView extends View {
     boolean calm;
     // performance: the feast of the day is worked out once a minute, not on every frame
     private Church.Feast feastC; private long feastAt = -1;
+    /** The Coptic date and today's saint ("Hathor 14, 1743 · Departure of St. Martin"), as on the home screen. */
+    private String copticLine() {
+        if (!Church.calendar(getContext()).equals("orthodox")) return null;
+        String cd = Church.copticDate(Calendar.getInstance(), U.langs(getContext()));
+        String st = Synax.saint(getContext());
+        if (st != null) st = st.replaceFirst("^(?i)the\\s+", "").replaceAll("[.]$", "");
+        return cd == null ? st : st == null ? cd : cd + "  ·  " + st;
+    }
     private Church.Feast feastNow() {
         long m = System.currentTimeMillis() / 60000;
         if (m != feastAt) { feastAt = m; feastC = Church.today(getContext()); }
@@ -175,8 +183,8 @@ class SaverView extends View {
         String langs = U.langs(getContext());
         int tw = Math.round(w * .86f);
         int len = (langs.equals("ar") ? 0 : verse.en.length()) + (!langs.equals("ar") ? 0 : verse.ar.length());
-        float size = w * (len > 260 ? .052f : len > 180 ? .058f : .064f);
-        size *= 1.35f;                                  // big and easy to read on the lock screen
+        // a calm, readable size: like the home screen, a little larger for short verses, never oversized
+        float size = w * (len > 260 ? .050f : len > 180 ? .055f : len > 110 ? .060f : .065f);
         int evCount = Events.next(getContext(), 2).size();
         if (evCount > 0) size *= len > 120 ? .74f : .84f;   // room for the "Up next" card under it
         String ts = U.prefs(getContext()).getString("text_scale", "auto");
@@ -213,7 +221,7 @@ class SaverView extends View {
         if (text != null) text.recycle();
         text = Bitmap.createBitmap(w, Math.max(1, th + Math.round(size)), Bitmap.Config.ARGB_8888);
         textC = new Canvas(text);
-        float clockBottom = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f) + reserveTop;
+        float clockBottom = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null || copticLine() != null ? 3.6f : 2.4f) + reserveTop;
         float glassBottom = oy + GLASS_BOTTOM * k;
         float bottomLimit = Math.min(glassBottom, h * .9f);
         float rowRoom = status != null ? status.rowHeight() * 1.25f : 0;   // the battery and network row under the verse
@@ -237,7 +245,7 @@ class SaverView extends View {
         }
         // room for the calendar events under the verse: lift the verse by half their height
         if (evCount > 0) {   // the verse right under the date, the card right under the verse
-            float clockB = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null ? 3.6f : 2.4f) + reserveTop;
+            float clockB = h * .07f + clockH + dateP.getTextSize() * (feastNow() != null || copticLine() != null ? 3.6f : 2.4f) + reserveTop;
             textTop = clockB + h * .01f;
         }
         // colours by what is behind each part: dark letters on the bright sun or moon, white on a dark sky
@@ -246,7 +254,7 @@ class SaverView extends View {
         refP.setColor(vl ? 0xFF874C0C : 0xFFF2BC4E);
         float sr2 = U.dp(getContext(), 1.4f);
         int sc2 = vl ? 0xB3FFFFFF : 0xB3000000;
-        if (mixed) { sr2 = U.dp(getContext(), 3.5f); sc2 = vl ? 0xF2FFFFFF : 0xF2000000; }   // a halo in the opposite tone
+        if (mixed) { sr2 = U.dp(getContext(), 2.2f); sc2 = vl ? 0xB3FFFFFF : 0xB3000000; }   // a halo in the opposite tone
         enP.setShadowLayer(sr2, 0, U.dp(getContext(), vl ? .6f : 1.2f), sc2); arP.setShadowLayer(sr2, 0, U.dp(getContext(), vl ? .6f : 1.2f), sc2);
         refP.setShadowLayer(sr2, 0, U.dp(getContext(), vl ? .6f : 1.2f), sc2);
         float dy = h * .07f + clockH + dateP.getTextSize() * 1.9f;
@@ -310,8 +318,18 @@ class SaverView extends View {
         textC.restore();
         return budget - n;
     }
+    private final Paint refLine = new Paint(Paint.ANTI_ALIAS_FLAG);
     private void drawFade(StaticLayout l, int x, float y, float f) {
-        textC.save(); textC.translate(x, y); l.draw(textC); textC.restore();
+        textC.save(); textC.translate(x, y); l.draw(textC);
+        if ((l == enRefL || l == arRefL) && l.getLineCount() == 1) {   // a short thin line on each side, as on the home screen
+            float lw = l.getLineWidth(0), cx = l.getWidth() / 2f, ts = refP.getTextSize();
+            float ly = l.getLineBaseline(0) - ts * .32f, gap = ts * .65f, len = ts * 1.5f;
+            refLine.setColor((refP.getColor() & 0x00FFFFFF) | 0xB0000000);
+            refLine.setStrokeWidth(Math.max(2f, ts * .07f)); refLine.setStrokeCap(Paint.Cap.ROUND);
+            textC.drawLine(cx - lw / 2 - gap - len, ly, cx - lw / 2 - gap, ly, refLine);
+            textC.drawLine(cx + lw / 2 + gap, ly, cx + lw / 2 + gap + len, ly, refLine);
+        }
+        textC.restore();
     }
 
     // ------------------------------------------------------------------ frame
@@ -380,6 +398,18 @@ class SaverView extends View {
             int col = dateP.getColor(); dateP.setColor(Color.red(col) < 128 ? 0xFF8A5212 : 0xFFF2B640);   // deep amber on a bright sky
             c.drawText(f, w / 2f + drift, dy + sz * 1.35f, dateP);
             dateP.setColor(col); dateP.setTextSize(sz);
+        } else {
+            String cl = copticLine();
+            if (cl != null) {
+                float sz = dateP.getTextSize(), max = w * .88f;
+                dateP.setTextSize(sz * .8f);
+                String f = cl;
+                while (dateP.measureText(f) > max && f.length() > 8) f = f.substring(0, f.length() - 2).trim();
+                if (!f.equals(cl)) f = f + "…";
+                int col = dateP.getColor(); dateP.setColor(Color.red(col) < 128 ? 0xFF8A5212 : 0xFFF2B640);
+                c.drawText(f, w / 2f + drift, dy + sz * 1.3f, dateP);
+                dateP.setColor(col); dateP.setTextSize(sz);
+            }
         }
         // night mode: the whole window dims late at night
         if (nightFrom >= 0 && !calm) {   // the lock screen is seen for a moment: keep it clear and readable
