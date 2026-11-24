@@ -115,27 +115,49 @@ final class U {
         return serif;
     }
     static Typeface serifBold(Context c) { return Typeface.create(serif(c), Typeface.BOLD); }
+    private static Typeface latin(Context c, String file, Typeface fb) {
+        try { return Typeface.createFromAsset(c.getAssets(), "fonts/" + file); } catch (Throwable t) { return fb; }
+    }
+    /** The app's text font: Google Sans for English, French and Spanish. In Arabic, the classic Naskh Arabic
+     *  letters (always, on every phone), with Google Sans for any Latin words and numbers. */
     static Typeface sans(Context c) {
-        if (sans == null) {
-            try { sans = Typeface.createFromAsset(c.getAssets(), "fonts/velthon_sans.ttf"); }
-            catch (Throwable t) { sans = Typeface.SANS_SERIF; }
-        }
+        if (langs(c).equals("ar")) return arabic(c);
+        if (sans == null) sans = latin(c, "velthon_sans.ttf", Typeface.SANS_SERIF);
         return sans;
     }
     static Typeface sansBold(Context c) {
-        if (sansBold == null) {
-            try { sansBold = Typeface.createFromAsset(c.getAssets(), "fonts/velthon_sans_medium.ttf"); }
-            catch (Throwable t) { sansBold = Typeface.DEFAULT_BOLD; }
-        }
+        if (langs(c).equals("ar")) return arabicBold(c);
+        if (sansBold == null) sansBold = latin(c, "velthon_sans_medium.ttf", Typeface.DEFAULT_BOLD);
         return sansBold;
     }
-    private static Typeface arabic;
-    /** The app's own Arabic font, so the verse looks the same on every phone. */
+    private static Typeface arabic, arabicBold;
     static Typeface arabic(Context c) {
-        if (arabic == null) {
-            arabic = sans(c);      // the app's font carries Arabic too: one look in every language
-        }
+        if (arabic == null) arabic = withLatin(c, "arabic_regular.ttf", "velthon_sans.ttf");
         return arabic;
+    }
+    /** The Arabic verse: Naskh Arabic, bold, as before. */
+    static Typeface arabicBold(Context c) {
+        if (arabicBold == null) arabicBold = withLatin(c, "arabic_bold.ttf", "velthon_sans_medium.ttf");
+        return arabicBold;
+    }
+    /** Arabic letters from one font, everything else from the Latin one (Android 10+); older phones: the Arabic font. */
+    private static Typeface withLatin(Context c, String ar, String lat) {
+        if (android.os.Build.VERSION.SDK_INT >= 29) {
+            try {
+                Class<?> fontB = Class.forName("android.graphics.fonts.Font$Builder"), font = Class.forName("android.graphics.fonts.Font");
+                Class<?> famB = Class.forName("android.graphics.fonts.FontFamily$Builder"), fam = Class.forName("android.graphics.fonts.FontFamily");
+                Object[] fams = new Object[2]; String[] files = {ar, lat};
+                for (int i = 0; i < 2; i++) {
+                    Object f = fontB.getMethod("build").invoke(fontB.getConstructor(android.content.res.AssetManager.class, String.class).newInstance(c.getAssets(), "fonts/" + files[i]));
+                    fams[i] = famB.getMethod("build").invoke(famB.getConstructor(font).newInstance(f));
+                }
+                Class<?> cfb = Class.forName("android.graphics.Typeface$CustomFallbackBuilder");
+                Object b = cfb.getConstructor(fam).newInstance(fams[0]);
+                cfb.getMethod("addCustomFallback", fam).invoke(b, fams[1]);
+                return (Typeface) cfb.getMethod("build").invoke(b);
+            } catch (Throwable ignored) { }
+        }
+        return latin(c, ar, Typeface.DEFAULT);
     }
     static Typeface light() {
         if (sansLight == null) sansLight = Typeface.create("sans-serif-light", Typeface.NORMAL);

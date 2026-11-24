@@ -171,7 +171,7 @@ public class VersesActivity extends Activity {
             card.addView(r, rl);
         }
         if (!langs.equals("en")) {
-            TextView ar = text(25, Color.WHITE, U.arabic(this));
+            TextView ar = text(25, Color.WHITE, U.arabicBold(this));
             ar.setGravity(Gravity.CENTER); ar.setLineSpacing(0, 1.25f); ar.setText(v.ar);
             ar.setTextDirection(View.TEXT_DIRECTION_RTL);
             ar.setShadowLayer(5, 0, 2, 0x99000000);

@@ -152,7 +152,7 @@ class SaverView extends View {
         dateP.setColor(0xFFFFFFFF); dateP.setTypeface(U.sans(c)); dateP.setTextAlign(Paint.Align.CENTER);
         dateP.setShadowLayer(U.dp(c, 2.5f), U.dp(c, .8f), U.dp(c, 2), 0xE6000000);
         enP.setColor(Color.WHITE); enP.setTypeface(U.sans(c)); enP.setShadowLayer(U.dp(c, 6), 0, U.dp(c, 2), 0xAA000000);
-        arP.setColor(Color.WHITE); arP.setTypeface(U.arabic(c)); arP.setShadowLayer(U.dp(c, 6), 0, U.dp(c, 2), 0xAA000000);
+        arP.setColor(Color.WHITE); arP.setTypeface(U.arabicBold(c)); arP.setShadowLayer(U.dp(c, 6), 0, U.dp(c, 2), 0xAA000000);
         refP.setColor(0xFFF0B43C); refP.setTypeface(U.sansBold(c)); refP.setShadowLayer(U.dp(c, 4), 0, U.dp(c, 1), 0x99000000);
         verse = U.verseOfHour(c);
     }
@@ -215,7 +215,8 @@ class SaverView extends View {
         }
         if (!langs.equals("en")) {
             arL = layout(verse.ar, arP, tw, 1.3f);
-            arRefL = layout(verse.refAr, refP, tw, 1f);
+            TextPaint arRefP = new TextPaint(refP); arRefP.setTypeface(U.arabic(getContext()));
+            arRefL = layout(verse.refAr, arRefP, tw, 1f);
         }
         int th = blockHeight();
         if (text != null) text.recycle();

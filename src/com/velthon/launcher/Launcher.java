@@ -659,7 +659,7 @@ public class Launcher extends Activity {
         enRef.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams rl = lp(-2, -2); rl.topMargin = dp(6); rl.gravity = Gravity.CENTER_HORIZONTAL;
         card.addView(enRef, rl);
-        ar = text(24, Color.WHITE, U.arabic(Launcher.this));
+        ar = text(24, Color.WHITE, U.arabicBold(Launcher.this));
         ar.setGravity(Gravity.CENTER); ar.setLineSpacing(0, 1.12f); shadow(ar, 4);
         ar.setTextDirection(View.TEXT_DIRECTION_RTL);
         LinearLayout.LayoutParams al = lp(-1, -2); al.topMargin = dp(8);
@@ -1179,7 +1179,7 @@ public class Launcher extends Activity {
         android.graphics.Typeface phone = U.sans(this);   // medium weight: crisp on any sky
         wxTemp.setTypeface(U.sansBold(this));
         for (TextView t : new TextView[] {wxText, nextLine, churchLine, dateView}) t.setTypeface(phone);
-        ar.setTypeface(U.arabic(this));
+        ar.setTypeface(U.arabicBold(this));
         int soft = Color.WHITE;
         ink(wxTemp, INK, Color.WHITE);
         ink(wxText, 0xFF2A3B53, Color.WHITE);
