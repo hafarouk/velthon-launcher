@@ -87,11 +87,6 @@ public class SettingsActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
-        String ps = p().getString("pending_scale", null);
-        if (ps != null && (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))) {
-            p().edit().remove("pending_scale").apply();
-            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(2.0f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
-        }
         scene.refresh(); build();
     }
 
@@ -203,7 +198,7 @@ public class SettingsActivity extends Activity {
     /** Settings that are no longer offered go back to how they work best, once. */
     private void tidyOnce() {
         if (p().getBoolean("settings_tidy1", false)) return;
-        p().edit().remove("countdown").remove("text_scale").remove("feast_verses").remove("season").remove("wx_alerts").remove("dots")
+        p().edit().remove("countdown").remove("text_scale").remove("feast_verses").remove("season").remove("wx_alerts").remove("dots").remove("pending_scale")
                 .putBoolean("settings_tidy1", true).apply();
     }
     private boolean isDefaultHome() {
@@ -398,29 +393,6 @@ public class SettingsActivity extends Activity {
         catch (Throwable t) { open(Settings.ACTION_MANAGE_OVERLAY_PERMISSION); }
     }
     /** The phone's own text size (the same setting as Display › Font size), nearest step. */
-    private String fontScale() {
-        float f = 1f;
-        try { f = Settings.System.getFloat(getContentResolver(), Settings.System.FONT_SCALE, 1f); } catch (Throwable ignored) { }
-        String[] v = {"0.85", "1.0", "1.15", "1.3", "1.5", "1.8"}; String best = "1.0"; float d = 9;
-        for (String x : v) if (Math.abs(Float.parseFloat(x) - f) < d) { d = Math.abs(Float.parseFloat(x) - f); best = x; }
-        return best;
-    }
-    private void setFontScale(String v) {
-        if (Build.VERSION.SDK_INT >= 23 && !Settings.System.canWrite(this)) {
-            p().edit().putString("pending_scale", v).apply();   // set as soon as permission is given
-            Toast.makeText(this, "Allow Velthon to modify system settings, then come back", Toast.LENGTH_LONG).show();
-            try { startActivity(new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, android.net.Uri.parse("package:" + getPackageName()))); }
-            catch (Throwable t) { open(Settings.ACTION_DISPLAY_SETTINGS); }
-            return;
-        }
-        try {
-            Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(2.0f, Float.parseFloat(v))));
-        } catch (Throwable t) {
-            Toast.makeText(this, L.t("Change it in the phone's Display settings"), Toast.LENGTH_LONG).show();
-            open(Settings.ACTION_DISPLAY_SETTINGS);
-        }
-        build();
-    }
     private void save(String key, String v) {
         if (key.equals("lock_unlock") && v.equals("velthon")) {
             new android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -436,7 +408,6 @@ public class SettingsActivity extends Activity {
         else if (key.equals("@dock")) { e.putString("dock_icon_style", v.equals("glassgold") ? "glass" : v); e.putString("dock_symbol", v.equals("glassgold") ? "gold" : "white"); }
         else if (key.equals("@motion")) { e.putString("anims", v.equals("off") ? "off" : "on"); e.putString("wx_fx", v.equals("on") ? "on" : "off"); }
         else if (key.equals("@columns")) e.putInt("columns", Integer.parseInt(v));
-        else if (key.equals("@font_scale")) { setFontScale(v); return; }
         else e.putString(key, v);
         if (key.equals("units")) e.putLong("wx_at", 0);
         

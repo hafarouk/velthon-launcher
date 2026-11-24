@@ -424,12 +424,6 @@ public class Launcher extends Activity {
         showAlarm();
         if (!alarmWatch) { alarmWatch = true;
             try { registerReceiver(alarmChanged, new IntentFilter(android.app.AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED)); } catch (Throwable ignored) { } }
-        // a text size chosen in Settings while permission was still being given
-        String ps = U.prefs(this).getString("pending_scale", null);
-        if (ps != null && (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))) {
-            U.prefs(this).edit().remove("pending_scale").apply();
-            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(2.0f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
-        }
         if (everResumed) entrance();
         everResumed = true;
         scene.setLiving(U.anims(this) && drawer.getVisibility() != View.VISIBLE);
