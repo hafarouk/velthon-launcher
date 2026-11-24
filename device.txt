@@ -1,0 +1,1 @@
+android10-small 480x800 density=Physical density: 240 sdk=29 nav=threebutton scale= locale=
