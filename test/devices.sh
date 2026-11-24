@@ -8,8 +8,9 @@ until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do sleep
 adb root >/dev/null 2>&1; sleep 3
 adb shell settings put global package_verifier_enable 0
 if [ -n "$LOCALE" ]; then
-  adb shell "setprop persist.sys.locale $LOCALE; setprop ctl.restart zygote"; sleep 25
-  until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do sleep 2; done; sleep 5
+  adb shell "setprop persist.sys.locale $LOCALE; stop; sleep 2; start" ; sleep 30
+  for t in $(seq 1 60); do [ "$(timeout 5 adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && break; sleep 3; done; sleep 8
+  adb shell getprop persist.sys.locale
 fi
 [ -n "$NAV" ] && adb shell cmd overlay enable-exclusive --category com.android.internal.systemui.navbar.$NAV
 [ -n "$SCALE" ] && adb shell settings put system font_scale $SCALE
