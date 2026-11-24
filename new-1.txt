@@ -1,0 +1,14 @@
+cold_start_ms 1573
+warm_start_ms 223
+calendar_open_ms 491
+calendar_frames 71
+calendar_janky_pct 100.00
+calendar_p50_ms 109
+calendar_p90_ms 150
+calendar_memory_kb 93232
+home_janky_pct 100.00
+home_p50_ms 133
+home_p90_ms 200
+home_memory_kb 85577
+cpu_at_rest_pct 79.70
+holidays_cached 2

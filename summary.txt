@@ -1,0 +1,16 @@
+measure               v3.71 (old)  v3.73 (new)    change
+cold_start_ms              1615.5       1584.0       -2%
+warm_start_ms               218.5        210.0       -4%
+calendar_open_ms            513.0        482.0       -6%
+calendar_frames              68.0         64.5       -5%
+calendar_janky_pct          100.0        100.0       +0%
+calendar_p50_ms             113.0        105.0       -7%
+calendar_p90_ms             150.0        150.0       +0%
+calendar_memory_kb        90103.0      92520.5       +3%
+home_janky_pct              100.0        100.0       +0%
+home_p50_ms                 141.5        133.0       -6%
+home_p90_ms                 225.0        175.0      -22%
+home_memory_kb            81669.0      83650.0       +2%
+cpu_at_rest_pct              78.8         79.7       +1%
+holidays_cached               0.0          2.0          
+apk_size_bytes            4115348      4168596     +1.3%
