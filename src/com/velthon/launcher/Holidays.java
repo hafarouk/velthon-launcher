@@ -42,6 +42,8 @@ final class Holidays {
     static ArrayList<Object[]> ahead(Context c, int days) {
         ArrayList<Object[]> out = new ArrayList<>();
         Calendar d = Calendar.getInstance();
+        HashMap<String, ArrayList<String>> y = year(c, d.get(Calendar.YEAR));
+        if (y.isEmpty() && year(c, d.get(Calendar.YEAR) + 1).isEmpty()) return out;   // nothing known: no work
         for (int i = 0; i <= days; i++, d.add(Calendar.DAY_OF_MONTH, 1))
             for (String n : on(c, d)) out.add(new Object[] {i, n});
         return out;
@@ -124,8 +126,15 @@ final class Holidays {
     }
 
     /** "CA-ON" for Ontario in Canada (from the place name found for the weather), "" when unknown. */
+    private static String lastIn = null, lastOut = "";
     static String regionCode(String cc, String region) {
         if (region == null) return "";
+        String in = cc + "|" + region;
+        if (in.equals(lastIn)) return lastOut;
+        lastOut = regionCode0(cc, region); lastIn = in;
+        return lastOut;
+    }
+    private static String regionCode0(String cc, String region) {
         String r = java.text.Normalizer.normalize(region.trim(), java.text.Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "").toLowerCase(Locale.US);
         if (r.isEmpty()) return "";

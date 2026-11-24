@@ -121,7 +121,9 @@ public class ChurchActivity extends Activity {
         U.prefs(this).edit().putBoolean("cal_asked", true).apply();
         requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5);
     }
-    @Override protected void onResume() { super.onResume(); if (list != null && list.getChildCount() > 0) build(); }
+    /** Back from the phone's settings (calendar access): show the events. Not on the first showing, already built. */
+    private boolean shown;
+    @Override protected void onResume() { super.onResume(); if (shown) build(); shown = true; }
 
     /** The first day shown in the week list (today, then a week at a time with the arrows). */
     private final Calendar weekStart = Calendar.getInstance();
@@ -325,6 +327,7 @@ public class ChurchActivity extends Activity {
             add(card);
         }
         java.util.ArrayList<Object[]> hs = Holidays.ahead(this, 60);
+        holidaysShown = !hs.isEmpty();
         if (!hs.isEmpty()) {
             LinearLayout card = card();
             TextView h = text(12.5f, HOLIDAY, U.sansBold(this));
@@ -381,12 +384,13 @@ public class ChurchActivity extends Activity {
             add(card);
         }
         TextView src = text(11.5f, 0x99FFFFFF, U.sans(this));
-        src.setText(t("Synaxarium: CopticChurch.net") + (Holidays.ahead(this, 60).isEmpty() ? "" : "  ·  " + t("Holidays: Nager.Date")));
+        src.setText(t("Synaxarium: CopticChurch.net") + (!holidaysShown ? "" : "  ·  " + t("Holidays: Nager.Date")));
         src.setGravity(Gravity.CENTER);
         src.setPadding(0, dp(18), 0, 0);
         list.addView(src);
     }
 
+    private boolean holidaysShown;
     private static String tidy(String s) { return s.replaceFirst("^(?i)the\\s+", "").replaceAll("[.]$", ""); }
 
     private LinearLayout card() {
