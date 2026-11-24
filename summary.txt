@@ -1,0 +1,3 @@
+android9-nexus5 1080x1920 density=Physical density: 480 sdk=28 nav= scale= locale=
+crash lines: 0
+layout problems: 0
