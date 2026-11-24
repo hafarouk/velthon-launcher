@@ -1,0 +1,3 @@
+android12-pixel5-big-text 1080x2340 density=Physical density: 440 sdk=31 nav=gestural scale=1.3 locale=
+crash lines: 0
+layout problems: 0
