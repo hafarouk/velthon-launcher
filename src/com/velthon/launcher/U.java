@@ -129,6 +129,15 @@ final class U {
         }
         return sansBold;
     }
+    private static Typeface arabic;
+    /** The app's own Arabic font, so the verse looks the same on every phone. */
+    static Typeface arabic(Context c) {
+        if (arabic == null) {
+            try { arabic = Typeface.createFromAsset(c.getAssets(), "fonts/naskh_arabic.ttf"); }
+            catch (Throwable t) { arabic = Typeface.DEFAULT; }
+        }
+        return arabic;
+    }
     static Typeface light() {
         if (sansLight == null) sansLight = Typeface.create("sans-serif-light", Typeface.NORMAL);
         return sansLight;

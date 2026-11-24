@@ -380,7 +380,8 @@ public class LockSaver extends Activity {
                 : kind == 2 && fs != null && fs.type == FpSensor.BACK ? L.t("Touch the sensor on the back to unlock")
                 : kind == 2 ? L.t("Touch to unlock with your fingerprint") : kind == 1 ? L.t("Tap to unlock with your face") : L.t("Tap to unlock"));
         t.setTextColor(Color.WHITE);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        t.setTypeface(U.sans(this));
+        t.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         t.setShadowLayer(3 * d, 0, d, 0xCC000000);
         t.setSingleLine(true);
         t.setGravity(Gravity.CENTER);

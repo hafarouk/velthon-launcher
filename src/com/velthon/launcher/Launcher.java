@@ -555,7 +555,7 @@ public class Launcher extends Activity {
         TextView t = new TextView(this);
         t.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size * textScale);
         t.setTextColor(color);
-        t.setTypeface(tf);
+        t.setTypeface(tf != null ? tf : U.sans(this));
         t.setIncludeFontPadding(false);
         return t;
     }
@@ -610,7 +610,7 @@ public class Launcher extends Activity {
         dateMidV = dateMid;
         dateMid.setGravity(Gravity.CENTER);
         dateMid.addView(dateView);
-        alarmLine = text(13, Color.WHITE, android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        alarmLine = text(13, Color.WHITE, U.sans(Launcher.this));
         alarmLine.setSingleLine(true);
         alarmLine.setVisibility(View.GONE);
         alarmLine.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { openAlarms(); } });
@@ -649,19 +649,19 @@ public class Launcher extends Activity {
         card.setOrientation(LinearLayout.VERTICAL);
         card.setGravity(Gravity.CENTER_HORIZONTAL);
         card.setPadding(dp(26), dp(6), dp(26), dp(4));
-        en = text(24, Color.WHITE, android.graphics.Typeface.DEFAULT);
+        en = text(24, Color.WHITE, U.sans(Launcher.this));
         en.setGravity(Gravity.CENTER); en.setLineSpacing(0, 1.06f); shadow(en, 4);
         card.addView(en, lp(-1, -2));
-        enRef = text(15, 0xFFF0B43C, android.graphics.Typeface.DEFAULT);
+        enRef = text(15, 0xFFF0B43C, U.sansBold(Launcher.this));
         enRef.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams rl = lp(-1, -2); rl.topMargin = dp(6);
         card.addView(enRef, rl);
-        ar = text(24, Color.WHITE, android.graphics.Typeface.DEFAULT);
+        ar = text(24, Color.WHITE, U.arabic(Launcher.this));
         ar.setGravity(Gravity.CENTER); ar.setLineSpacing(0, 1.12f); shadow(ar, 4);
         ar.setTextDirection(View.TEXT_DIRECTION_RTL);
         LinearLayout.LayoutParams al = lp(-1, -2); al.topMargin = dp(8);
         card.addView(ar, al);
-        arRef = text(15, 0xFFF0B43C, android.graphics.Typeface.DEFAULT);
+        arRef = text(15, 0xFFF0B43C, U.arabic(Launcher.this));
         arRef.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams arl = lp(-1, -2); arl.topMargin = dp(3);
         card.addView(arRef, arl);
@@ -1157,12 +1157,12 @@ public class Launcher extends Activity {
         ink(churchLine, 0xFF7A450B, 0xFFF2BC4E);
         // the verse in the phone's font, or the classic serif (Settings › Scripture)
         boolean serif = U.prefs(this).getString("verse_font", "system").equals("serif");
-        en.setTypeface(serif ? U.serifBold(this) : android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
-        enRef.setTypeface(serif ? U.serif(this) : android.graphics.Typeface.DEFAULT_BOLD);
-        android.graphics.Typeface phone = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL);   // medium weight: crisp on any sky
-        wxTemp.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        en.setTypeface(serif ? U.serif(this) : U.sans(this));
+        enRef.setTypeface(serif ? U.serif(this) : U.sansBold(this));
+        android.graphics.Typeface phone = U.sans(this);   // medium weight: crisp on any sky
+        wxTemp.setTypeface(U.sansBold(this));
         for (TextView t : new TextView[] {wxText, nextLine, churchLine, dateView}) t.setTypeface(phone);
-        ar.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
+        ar.setTypeface(U.arabic(this));
         int soft = Color.WHITE;
         ink(wxTemp, INK, Color.WHITE);
         ink(wxText, 0xFF2A3B53, Color.WHITE);
@@ -1421,8 +1421,8 @@ public class Launcher extends Activity {
                         .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f)).start();
             }
         }
-        en.setText(verse.en); enRef.setText("——   " + verse.refEn + "   ——");
-        ar.setText(verse.ar); arRef.setText("——   " + verse.refAr + "   ——");
+        en.setText(verse.en); enRef.setText(verse.refEn);
+        ar.setText(verse.ar); arRef.setText(verse.refAr);
         boolean s = U.saved(this).contains(verse.index);
         saveIcon.setImageDrawable(new Ico(s ? Ico.HEART_FULL : Ico.HEART, s ? 0xFFFF8FA8 : Color.WHITE));
         saveChip.setText(s ? L.t("Saved") : L.t("Save"));
@@ -1811,7 +1811,7 @@ public class Launcher extends Activity {
         iv.setImageDrawable(shaped(a, iconDp));
         l.addView(iv, lp(dp(iconDp), dp(iconDp)));
         if (label) {
-            TextView t = text(12.5f, Color.WHITE, android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            TextView t = text(12.5f, Color.WHITE, U.sans(Launcher.this));
             t.setSingleLine(true); t.setEllipsize(TextUtils.TruncateAt.END);
             t.setGravity(Gravity.CENTER);
             t.setPadding(dp(3), dp(6), dp(3), 0);
@@ -1983,6 +1983,17 @@ public class Launcher extends Activity {
             return l;
         }
         for (String k : s.split("\\|")) if (!k.isEmpty()) l.add(k);
+        // the dock always holds six apps: once, fill any empty places with the phone's everyday apps
+        if (l.size() < 6 && !apps.isEmpty() && !U.prefs(this).getBoolean("dock_filled6", false)) {
+            Intent[] jobs = {new Intent(Intent.ACTION_DIAL), new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:")),
+                    new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA), new Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com")),
+                    new Intent(Intent.ACTION_VIEW).setType("image/*"), new Intent(Intent.ACTION_VIEW, Uri.parse("content://contacts/people")),
+                    new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")), new Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=")),
+                    new Intent(android.provider.Settings.ACTION_SETTINGS), new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.velthon.launcher"))};
+            for (Intent j : jobs) { if (l.size() >= 6) break; String k = appFor(j); if (k != null && byKey.get(k) != null && !l.contains(k)) l.add(k); }
+            for (App a : apps) { if (l.size() >= 6) break; if (a.cn != null && a.mine && !l.contains(a.key) && !a.cn.getPackageName().equals(getPackageName())) l.add(a.key); }
+            saveDock(l); U.prefs(this).edit().putBoolean("dock_filled6", true).apply();
+        }
         return l;
     }
     private void saveDock(ArrayList<String> l) {
@@ -2596,7 +2607,7 @@ public class Launcher extends Activity {
         close.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { dlg.dismiss(); } });
         head.addView(close, lp(dp(44), dp(44)));
         page.addView(head);
-        TextView hint = text(12.5f, 0xB3FFFFFF, U.light());
+        TextView hint = text(12.5f, 0xB3FFFFFF, U.sans(Launcher.this));
         hint.setText(L.t("Tap a widget to add it. Later, hold it on the home screen to edit, resize, move or remove it."));
         hint.setPadding(dp(18), 0, dp(18), dp(10));
         page.addView(hint);
@@ -2639,7 +2650,7 @@ public class Launcher extends Activity {
             row.addView(n, new LinearLayout.LayoutParams(0, -2, 1f));
             int cols = Math.max(1, Math.min(desk.columns, (int) Math.ceil(info.minWidth / (float) dp(80))));
             int rws = Math.max(1, Math.min(4, (int) Math.ceil(info.minHeight / (float) dp(86))));
-            TextView sz = text(12, 0xB3FFFFFF, U.light());
+            TextView sz = text(12, 0xB3FFFFFF, U.sans(Launcher.this));
             sz.setText(cols + " × " + rws);
             row.addView(sz);
             card.addView(row);

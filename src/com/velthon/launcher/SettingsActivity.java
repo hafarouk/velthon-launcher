@@ -110,7 +110,7 @@ public class SettingsActivity extends Activity {
                 choice(L.t("Verse language"), "langs", U.langs(this), new String[] {L.t("English"), L.t("Arabic"), L.t("French"), L.t("Spanish")}, new String[] {"en", "ar", "fr", "es"}),
                 choice(L.t("Verse changes"), "verse_every", "5", new String[] {L.t("Every 5 minutes"), L.t("Every 15 minutes"), L.t("Every 30 minutes"), L.t("Every hour"), L.t("Once a day")},
                         new String[] {"5", "15", "30", "60", "1440"}),
-                choice(L.t("Verse font"), "verse_font", "system", new String[] {L.t("The phone's font"), L.t("Classic serif")}, new String[] {"system", "serif"}),
+                choice(L.t("Verse font"), "verse_font", "system", new String[] {L.t("Velthon Sans"), L.t("Classic serif")}, new String[] {"system", "serif"}),
                 choice(L.t("Next-verse countdown on the home screen"), "countdown", "off", new String[] {L.t("Hidden (more room for apps)"), L.t("Shown")}, new String[] {"off", "on"}),
                 choice(L.t("Verse text size"), "text_scale", "auto", new String[] {L.t("Auto fit"), L.t("Smaller"), L.t("Larger")}, new String[] {"auto", "small", "large"}),
                 choice(L.t("Feast-day verses"), "feast_verses", "on", new String[] {L.t("On"), L.t("Off")}, new String[] {"on", "off"}),
@@ -229,7 +229,7 @@ public class SettingsActivity extends Activity {
         TextView a = text(24, Color.WHITE, U.serif(this));
         a.setText(L.t("Settings"));
         t.addView(a);
-        TextView s = text(12.5f, 0xCCFFFFFF, U.light());
+        TextView s = text(12.5f, 0xCCFFFFFF, U.sans(SettingsActivity.this));
         s.setText("Velthon Launcher  ·  scripture for your home screen");
         t.addView(s);
         h.addView(t, new LinearLayout.LayoutParams(0, -2, 1f));
@@ -262,7 +262,7 @@ public class SettingsActivity extends Activity {
         d.setPadding(0, dp(10), 0, 0);
         d.setText("Developed by VELTHON Design & Development");
         f.addView(d);
-        TextView c = text(11, 0x99FFFFFF, U.light());
+        TextView c = text(11, 0x99FFFFFF, U.sans(SettingsActivity.this));
         c.setGravity(Gravity.CENTER);
         c.setPadding(0, dp(6), 0, dp(8));
         c.setText("© " + Calendar.getInstance().get(Calendar.YEAR) + " VELTHON Design & Development. All rights reserved.");
@@ -287,7 +287,7 @@ public class SettingsActivity extends Activity {
         TextView t = text(18, Color.WHITE, U.serif(this));
         t.setText(title);
         head.addView(t);
-        TextView s = text(12, 0xB3FFFFFF, U.light());
+        TextView s = text(12, 0xB3FFFFFF, U.sans(SettingsActivity.this));
         s.setText(sub);
         head.addView(s);
         card.addView(head);
@@ -314,7 +314,7 @@ public class SettingsActivity extends Activity {
         TextView t = new TextView(this);
         t.setTextSize(TypedValue.COMPLEX_UNIT_DIP, sp);
         t.setTextColor(color);
-        t.setTypeface(tf);
+        t.setTypeface(tf != null ? tf : U.sans(this));
         t.setShadowLayer(dp(3), 0, dp(1), 0x66000000);
         return t;
     }
@@ -332,7 +332,7 @@ public class SettingsActivity extends Activity {
         l.setText(label);
         col.addView(l);
         if (sub != null) {
-            TextView s = text(12, 0xA6FFFFFF, U.light());
+            TextView s = text(12, 0xA6FFFFFF, U.sans(SettingsActivity.this));
             s.setText(sub);
             col.addView(s);
         }

@@ -118,9 +118,9 @@ public class ChurchActivity extends Activity {
         LinearLayout card = card();
         // header: ‹  Nov 23 – 29  ›
         LinearLayout head = new LinearLayout(this); head.setGravity(Gravity.CENTER_VERTICAL); head.setPadding(0, 0, 0, dp(6));
-        TextView prev = text(24, 0xFFF2B640, Typeface.DEFAULT_BOLD); prev.setText("‹"); prev.setPadding(dp(2), 0, dp(14), 0);
-        TextView next = text(24, 0xFFF2B640, Typeface.DEFAULT_BOLD); next.setText("›"); next.setPadding(dp(14), 0, dp(2), 0);
-        TextView title = text(16, Color.WHITE, Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER);
+        TextView prev = text(24, 0xFFF2B640, U.sansBold(this)); prev.setText("‹"); prev.setPadding(dp(2), 0, dp(14), 0);
+        TextView next = text(24, 0xFFF2B640, U.sansBold(this)); next.setText("›"); next.setPadding(dp(14), 0, dp(2), 0);
+        TextView title = text(16, Color.WHITE, U.sansBold(this)); title.setGravity(Gravity.CENTER);
         SimpleDateFormat md = new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "MMMd"), loc);
         title.setText(md.format(first.getTime()) + "  –  " + md.format(last.getTime()));
         prev.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { weekStart.add(Calendar.DAY_OF_MONTH, -7); build(); } });
@@ -141,9 +141,9 @@ public class ChurchActivity extends Activity {
             row.setPadding(0, dp(8), 0, dp(8));
             // the day: "Nov 23" with the weekday under it (gold for today)
             LinearLayout day = new LinearLayout(this); day.setOrientation(LinearLayout.VERTICAL);
-            TextView dn = text(15.5f, isToday ? 0xFFF2B640 : Color.WHITE, Typeface.DEFAULT_BOLD);
+            TextView dn = text(15.5f, isToday ? 0xFFF2B640 : Color.WHITE, U.sansBold(this));
             dn.setText(md.format(d.getTime())); dn.setSingleLine(true);
-            TextView dw = text(12, isToday ? 0xCCF2B640 : 0x99FFFFFF, Typeface.DEFAULT);
+            TextView dw = text(12, isToday ? 0xCCF2B640 : 0x99FFFFFF, U.sans(this));
             dw.setText(isToday ? t("Today") : wd.format(d.getTime())); dw.setSingleLine(true);
             day.addView(dn); day.addView(dw);
             row.addView(day, new LinearLayout.LayoutParams(dp(74), -2));
@@ -153,19 +153,19 @@ public class ChurchActivity extends Activity {
             row.addView(bar, bl);
             // the day's feast and your events
             LinearLayout what = new LinearLayout(this); what.setOrientation(LinearLayout.VERTICAL);
-            if (f != null) { TextView ft = text(14, 0xFFF2B640, Typeface.DEFAULT_BOLD); ft.setText("✦ " + f.in(lang)); what.addView(ft); }
+            if (f != null) { TextView ft = text(14, 0xFFF2B640, U.sansBold(this)); ft.setText("✦ " + f.in(lang)); what.addView(ft); }
             if (ev != null) for (String[] e : ev) {
-                TextView et = text(14.5f, Color.WHITE, Typeface.DEFAULT);
+                TextView et = text(14.5f, Color.WHITE, U.sans(this));
                 et.setText(e[0] + (e[1] == null || e[1].isEmpty() ? "" : "   ·   " + e[1]));
                 what.addView(et);
             }
-            if (what.getChildCount() == 0) { TextView no = text(14, 0x55FFFFFF, Typeface.DEFAULT); no.setText("—"); what.addView(no); }
+            if (what.getChildCount() == 0) { TextView no = text(14, 0x55FFFFFF, U.sans(this)); no.setText("—"); what.addView(no); }
             row.addView(what, new LinearLayout.LayoutParams(0, -2, 1f));
             card.addView(row);
             if (k < 6) { View sep = new View(this); sep.setBackgroundColor(0x14FFFFFF); card.addView(sep, new LinearLayout.LayoutParams(-1, 1)); }
         }
         if (!Events.allowed(this)) {
-            TextView et = text(13, 0xB3FFFFFF, Typeface.DEFAULT);
+            TextView et = text(13, 0xB3FFFFFF, U.sans(this));
             et.setText(t("Allow the calendar to see your own events here.")); et.setPadding(0, dp(8), 0, 0);
             card.addView(et);
             card.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
@@ -187,16 +187,16 @@ public class ChurchActivity extends Activity {
         boolean orthodox = Church.calendar(this).equals("orthodox");
         Calendar now = Calendar.getInstance();
         // the date
-        TextView k = text(13, 0xFFF2B640, Typeface.DEFAULT_BOLD);
+        TextView k = text(13, 0xFFF2B640, U.sansBold(this));
         k.setText(ar ? "التقويم القبطي" : t(orthodox ? "Coptic calendar" : "Church calendar").toUpperCase(loc));
         k.setLetterSpacing(.12f);
         list.addView(k);
-        TextView d = text(30, Color.WHITE, Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        TextView d = text(30, Color.WHITE, U.sansBold(this));
         d.setText(orthodox ? Church.copticDate(now, lang) : new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "EEEEMMMMd"), loc).format(now.getTime()));
         d.setPadding(0, dp(4), 0, 0);
         list.addView(d);
         if (orthodox) {
-            TextView g = text(15, 0xD9FFFFFF, Typeface.DEFAULT);
+            TextView g = text(15, 0xD9FFFFFF, U.sans(this));
             g.setText(new SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(loc, "EEEEMMMMdyyyy"), loc).format(now.getTime()));
             list.addView(g);
         }
@@ -227,30 +227,30 @@ public class ChurchActivity extends Activity {
             LinearLayout hl = new LinearLayout(this);
             hl.setOrientation(LinearLayout.VERTICAL);
             hl.setPadding(dp(14), 0, 0, 0);
-            TextView t1 = text(12.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
+            TextView t1 = text(12.5f, 0xFFF2B640, U.sansBold(this));
             t1.setText(t("Saint of the day"));
             hl.addView(t1);
             String st = Synax.saint(this);
-            TextView t2 = text(18, Color.WHITE, Typeface.DEFAULT_BOLD);
+            TextView t2 = text(18, Color.WHITE, U.sansBold(this));
             t2.setText(st == null ? t("Loading the Synaxarium…") : tidy(st));
             hl.addView(t2);
             head.addView(hl, new LinearLayout.LayoutParams(0, -2, 1f));
             card.addView(head);
             String all = Synax.all(this);
             if (all != null && all.contains("\n")) {
-                TextView h2 = text(13, 0xCCFFFFFF, Typeface.DEFAULT_BOLD);
+                TextView h2 = text(13, 0xCCFFFFFF, U.sansBold(this));
                 h2.setText(t("Also remembered today"));
                 h2.setPadding(0, dp(14), 0, dp(4));
                 card.addView(h2);
                 String[] lines = all.split("\n");
                 for (int i = 1; i < lines.length; i++) {
-                    TextView li = text(15, Color.WHITE, Typeface.DEFAULT);
+                    TextView li = text(15, Color.WHITE, U.sans(this));
                     li.setText("•  " + tidy(lines[i]));
                     li.setPadding(0, dp(4), 0, dp(4));
                     card.addView(li);
                 }
             }
-            TextView read = text(14.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
+            TextView read = text(14.5f, 0xFFF2B640, U.sansBold(this));
             read.setText(t("Read today's Synaxarium  ›"));
             read.setPadding(0, dp(16), 0, dp(2));
             read.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
@@ -265,7 +265,7 @@ public class ChurchActivity extends Activity {
         java.util.ArrayList<Church.Feast> fs = Church.upcoming(this, 14);
         if (!fs.isEmpty()) {
             LinearLayout card = card();
-            TextView h = text(12.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
+            TextView h = text(12.5f, 0xFFF2B640, U.sansBold(this));
             h.setText(t("Feasts and fasts ahead"));
             h.setPadding(0, 0, 0, dp(6));
             card.addView(h);
@@ -278,11 +278,11 @@ public class ChurchActivity extends Activity {
                 LinearLayout when = new LinearLayout(this);
                 when.setOrientation(LinearLayout.VERTICAL);
                 when.setGravity(Gravity.CENTER);
-                TextView dd = text(19, f.days == 0 ? 0xFFF2B640 : Color.WHITE, Typeface.DEFAULT_BOLD);
+                TextView dd = text(19, f.days == 0 ? 0xFFF2B640 : Color.WHITE, U.sansBold(this));
                 dd.setGravity(Gravity.CENTER);
                 dd.setText(String.valueOf(on.get(Calendar.DAY_OF_MONTH)));
                 when.addView(dd);
-                TextView mm = text(11, 0xB3FFFFFF, Typeface.DEFAULT);
+                TextView mm = text(11, 0xB3FFFFFF, U.sans(this));
                 mm.setGravity(Gravity.CENTER);
                 mm.setText(new SimpleDateFormat("MMM", loc).format(on.getTime()).toUpperCase(loc));
                 when.addView(mm);
@@ -290,10 +290,10 @@ public class ChurchActivity extends Activity {
                 LinearLayout tx = new LinearLayout(this);
                 tx.setOrientation(LinearLayout.VERTICAL);
                 tx.setPadding(dp(12), 0, 0, 0);
-                TextView n = text(15.5f, Color.WHITE, f.days == 0 ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                TextView n = text(15.5f, Color.WHITE, f.days == 0 ? U.sansBold(this) : U.sans(this));
                 n.setText(f.in(lang));
                 tx.addView(n);
-                TextView w = text(12, 0xB3FFFFFF, Typeface.DEFAULT);
+                TextView w = text(12, 0xB3FFFFFF, U.sans(this));
                 w.setText(f.days == 0 ? t("Today") : f.days == 1 ? t("Tomorrow")
                         : String.format(loc, t("In %d days"), f.days)
                         + (orthodox ? "  ·  " + Church.copticDate(on, lang) : ""));
@@ -305,10 +305,10 @@ public class ChurchActivity extends Activity {
         }
         if (orthodox) {
             LinearLayout card = card();
-            TextView h = text(12.5f, 0xFFF2B640, Typeface.DEFAULT_BOLD);
+            TextView h = text(12.5f, 0xFFF2B640, U.sansBold(this));
             h.setText(t("Every Coptic month"));
             card.addView(h);
-            TextView m = text(15, Color.WHITE, Typeface.DEFAULT);
+            TextView m = text(15, Color.WHITE, U.sans(this));
             m.setText(ar ? "١٢: تذكار رئيس الملائكة ميخائيل\n٢١: تذكار السيدة العذراء\n٢٩: تذكار الميلاد والبشارة والقيامة"
                     : lang.equals("fr") ? "Le 12 : l'archange Michel\nLe 21 : la Vierge Marie, Mère de Dieu\nLe 29 : l'Annonciation, la Nativité et la Résurrection"
                     : lang.equals("es") ? "Día 12: el arcángel Miguel\nDía 21: la Virgen María, Madre de Dios\nDía 29: la Anunciación, la Natividad y la Resurrección"
@@ -318,7 +318,7 @@ public class ChurchActivity extends Activity {
             card.addView(m);
             add(card);
         }
-        TextView src = text(11.5f, 0x99FFFFFF, Typeface.DEFAULT);
+        TextView src = text(11.5f, 0x99FFFFFF, U.sans(this));
         src.setText(t("Synaxarium: CopticChurch.net"));
         src.setGravity(Gravity.CENTER);
         src.setPadding(0, dp(18), 0, 0);
@@ -341,7 +341,7 @@ public class ChurchActivity extends Activity {
         list.addView(v, l);
     }
     private TextView chip(String s) {
-        TextView t = text(13, 0xFF141414, Typeface.DEFAULT_BOLD);
+        TextView t = text(13, 0xFF141414, U.sansBold(this));
         t.setText(s);
         t.setPadding(dp(12), dp(6), dp(12), dp(6));
         android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
@@ -351,9 +351,9 @@ public class ChurchActivity extends Activity {
     }
     private TextView text(float sp, int color, Typeface tf) {
         TextView t = new TextView(this);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
+        t.setTextSize(TypedValue.COMPLEX_UNIT_DIP, sp);
         t.setTextColor(color);
-        t.setTypeface(tf);
+        t.setTypeface(tf != null ? tf : U.sans(this));
         t.setShadowLayer(dp(3), 0, dp(1), 0x99000000);
         t.setEllipsize(TextUtils.TruncateAt.END);
         return t;

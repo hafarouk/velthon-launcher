@@ -34,7 +34,7 @@ final class StatusLine extends View {
     StatusLine(Context c) {
         super(c);
         d = getResources().getDisplayMetrics().density;
-        text.setColor(0xEEFFFFFF); text.setTextSize(14 * d); text.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        text.setColor(0xEEFFFFFF); text.setTextSize(14 * d); text.setTypeface(U.sans(c));
         text.setShadowLayer(3 * d, 0, d, 0x99000000);
         line.setStyle(Paint.Style.STROKE); line.setStrokeWidth(1.4f * d); line.setColor(0xEEFFFFFF); line.setStrokeJoin(Paint.Join.ROUND);
         line.setShadowLayer(3 * d, 0, d, 0x99000000);

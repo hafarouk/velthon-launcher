@@ -121,9 +121,9 @@ public class VersesActivity extends Activity {
 
     private TextView text(float sp, int color, android.graphics.Typeface tf) {
         TextView t = new TextView(this);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
+        t.setTextSize(TypedValue.COMPLEX_UNIT_DIP, sp);
         t.setTextColor(color);
-        t.setTypeface(tf);
+        t.setTypeface(tf != null ? tf : U.sans(this));
         t.setIncludeFontPadding(false);
         return t;
     }
@@ -171,13 +171,13 @@ public class VersesActivity extends Activity {
             card.addView(r, rl);
         }
         if (!langs.equals("en")) {
-            TextView ar = text(25, Color.WHITE, android.graphics.Typeface.SERIF);
+            TextView ar = text(25, Color.WHITE, U.arabic(this));
             ar.setGravity(Gravity.CENTER); ar.setLineSpacing(0, 1.25f); ar.setText(v.ar);
             ar.setTextDirection(View.TEXT_DIRECTION_RTL);
             ar.setShadowLayer(5, 0, 2, 0x99000000);
             LinearLayout.LayoutParams al = new LinearLayout.LayoutParams(-1, -2); al.topMargin = dp(18);
             card.addView(ar, al);
-            TextView r = text(15, 0xFFF0B43C, android.graphics.Typeface.SERIF); r.setGravity(Gravity.CENTER); r.setText(v.refAr);
+            TextView r = text(15, 0xFFF0B43C, U.arabic(this)); r.setGravity(Gravity.CENTER); r.setText(v.refAr);
             LinearLayout.LayoutParams rl = new LinearLayout.LayoutParams(-1, -2); rl.topMargin = dp(6);
             card.addView(r, rl);
         }
@@ -308,7 +308,7 @@ public class VersesActivity extends Activity {
                 boolean arabic = U.langs(VersesActivity.this).equals("ar");
                 TextView a = (TextView) ((LinearLayout) v).getChildAt(0);
                 a.setText(arabic ? x.ar : x.en);
-                a.setTypeface(arabic ? android.graphics.Typeface.SERIF : U.serif(VersesActivity.this));
+                a.setTypeface(arabic ? U.arabic(VersesActivity.this) : U.serif(VersesActivity.this));
                 a.setGravity(arabic ? Gravity.RIGHT : Gravity.LEFT);
                 ((TextView) ((LinearLayout) v).getChildAt(1)).setText(arabic ? x.refAr : x.refEn + "  ·  " + x.refAr);
                 return v;

@@ -141,11 +141,11 @@ class SaverView extends View {
 
         clockP.setColor(Color.WHITE); clockP.setTypeface(U.sansBold(c)); clockP.setTextAlign(Paint.Align.CENTER);
         clockP.setShadowLayer(U.dp(c, 8), 0, U.dp(c, 2), 0x99000000);
-        dateP.setColor(0xFFFFFFFF); dateP.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)); dateP.setTextAlign(Paint.Align.CENTER);
+        dateP.setColor(0xFFFFFFFF); dateP.setTypeface(U.sans(c)); dateP.setTextAlign(Paint.Align.CENTER);
         dateP.setShadowLayer(U.dp(c, 2.5f), U.dp(c, .8f), U.dp(c, 2), 0xE6000000);
-        enP.setColor(Color.WHITE); enP.setTypeface(android.graphics.Typeface.DEFAULT); enP.setShadowLayer(U.dp(c, 6), 0, U.dp(c, 2), 0xAA000000);
-        arP.setColor(Color.WHITE); arP.setTypeface(android.graphics.Typeface.DEFAULT); arP.setShadowLayer(U.dp(c, 6), 0, U.dp(c, 2), 0xAA000000);
-        refP.setColor(0xFFF0B43C); refP.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); refP.setShadowLayer(U.dp(c, 4), 0, U.dp(c, 1), 0x99000000);
+        enP.setColor(Color.WHITE); enP.setTypeface(U.sans(c)); enP.setShadowLayer(U.dp(c, 6), 0, U.dp(c, 2), 0xAA000000);
+        arP.setColor(Color.WHITE); arP.setTypeface(U.arabic(c)); arP.setShadowLayer(U.dp(c, 6), 0, U.dp(c, 2), 0xAA000000);
+        refP.setColor(0xFFF0B43C); refP.setTypeface(U.sansBold(c)); refP.setShadowLayer(U.dp(c, 4), 0, U.dp(c, 1), 0x99000000);
         verse = U.verseOfHour(c);
     }
 
@@ -183,8 +183,8 @@ class SaverView extends View {
         if (ts.equals("small")) size *= .88f; else if (ts.equals("large")) size *= 1.12f;
         enP.setTextSize(size); arP.setTextSize(size * 1.02f); refP.setTextSize(size * .62f);
         boolean serifFont = U.prefs(getContext()).getString("verse_font", "system").equals("serif");
-        enP.setTypeface(serifFont ? U.serifBold(getContext()) : android.graphics.Typeface.DEFAULT_BOLD);
-        refP.setTypeface(serifFont ? U.serif(getContext()) : android.graphics.Typeface.DEFAULT);
+        enP.setTypeface(serifFont ? U.serif(getContext()) : U.sans(getContext()));
+        refP.setTypeface(serifFont ? U.serif(getContext()) : U.sansBold(getContext()));
         // the same clear colours as the home screen: deep navy on a bright sky, white on a dark one
         boolean bright = U.skyIsBright(getContext());
         enP.setColor(bright ? 0xFF23334A : Color.WHITE); arP.setColor(bright ? 0xFF23334A : Color.WHITE);
@@ -193,7 +193,7 @@ class SaverView extends View {
         evP.setColor(bright ? 0xFF23334A : Color.WHITE);
         evP.setTextSize(w * .042f);
         evP.setTextAlign(Paint.Align.CENTER);
-        evP.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        evP.setTypeface(U.sans(getContext()));
         int sh = 0xCC000000;
         float sr = U.dp(getContext(), 1.4f), sy = U.dp(getContext(), bright ? .6f : 1.2f);
         int sc = bright ? 0xB3FFFFFF : 0xB3000000;
@@ -450,9 +450,9 @@ class SaverView extends View {
         if (ev.isEmpty()) return;
         float d = getResources().getDisplayMetrics().density;
         float ts = w * .038f;
-        evTitle.setTextSize(ts); evTitle.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        evWhen.setTextSize(ts * .8f); evWhen.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
-        evHead.setTextSize(ts * .62f); evHead.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); evHead.setLetterSpacing(.18f);
+        evTitle.setTextSize(ts); evTitle.setTypeface(U.sansBold(getContext()));
+        evWhen.setTextSize(ts * .8f); evWhen.setTypeface(U.sans(getContext()));
+        evHead.setTextSize(ts * .62f); evHead.setTypeface(U.sansBold(getContext())); evHead.setLetterSpacing(.18f);
         float pad = 12 * d, rowH = ts * 1.2f + ts * .8f * 1.25f + 7 * d;
         float cw = w * .84f, cx = (w - cw) / 2f;
         float ch = pad + evHead.getTextSize() * 1.6f + rowH * ev.size() + pad * .5f;
