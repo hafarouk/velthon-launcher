@@ -127,8 +127,15 @@ final class Synax {
             // only if the article is about that saint: its title carries the saint's main name
             String main = who.split("[ ,]")[0].toLowerCase(java.util.Locale.ROOT);
             if (main.length() < 3 || !t.group(1).toLowerCase(java.util.Locale.ROOT).contains(main)) return null;
-            byte[] img = bytes(s.group(1).replace("\\/", "/"));
-            return BitmapFactory.decodeByteArray(img, 0, img.length);
+            String src = s.group(1).replace("\\/", "/");
+            if (!src.startsWith("https://upload.wikimedia.org/")) return null;          // pictures only from Wikimedia
+            byte[] img = bytes(src);
+            BitmapFactory.Options o = new BitmapFactory.Options(); o.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(img, 0, img.length, o);
+            if (o.outWidth <= 0 || o.outHeight <= 0 || o.outWidth > 4000 || o.outHeight > 4000) return null;
+            int sample = Math.max(1, Math.max(o.outWidth, o.outHeight) / 400);
+            o = new BitmapFactory.Options(); o.inSampleSize = sample;
+            return BitmapFactory.decodeByteArray(img, 0, img.length, o);
         } catch (Throwable e) { return null; }
     }
 
@@ -137,7 +144,9 @@ final class Synax {
                 .replace("&nbsp;", " ").replaceAll("\\s+", " ").replaceFirst("^\\d+\\.\\s*", "").trim();
     }
     private static String text(String url) throws Exception { return new String(bytes(url), "UTF-8"); }
+    private static final int MAX_BYTES = 2_000_000;   // nothing we fetch is larger: a bigger answer is refused
     private static byte[] bytes(String url) throws Exception {
+        if (!url.startsWith("https://")) throw new java.io.IOException("https only");
         HttpURLConnection h = (HttpURLConnection) new URL(url).openConnection();
         h.setConnectTimeout(12000); h.setReadTimeout(15000);
         h.setInstanceFollowRedirects(true);
@@ -145,7 +154,8 @@ final class Synax {
         try (InputStream in = h.getInputStream()) {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
             byte[] b = new byte[8192]; int n;
-            while ((n = in.read(b)) > 0) bo.write(b, 0, n);
+            while ((n = in.read(b)) > 0) { bo.write(b, 0, n); if (bo.size() > MAX_BYTES) throw new java.io.IOException("too large"); }
+            if (!h.getURL().getProtocol().equals("https")) throw new java.io.IOException("redirected off https");
             return bo.toByteArray();
         } finally { h.disconnect(); }
     }

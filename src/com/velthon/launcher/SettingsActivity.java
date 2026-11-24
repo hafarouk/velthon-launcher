@@ -90,7 +90,7 @@ public class SettingsActivity extends Activity {
         String ps = p().getString("pending_scale", null);
         if (ps != null && (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))) {
             p().edit().remove("pending_scale").apply();
-            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Float.parseFloat(ps)); } catch (Throwable ignored) { }
+            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(1.5f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
         }
         scene.refresh(); build();
     }
@@ -402,7 +402,7 @@ public class SettingsActivity extends Activity {
             return;
         }
         try {
-            Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Float.parseFloat(v));
+            Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(1.5f, Float.parseFloat(v))));
         } catch (Throwable t) {
             Toast.makeText(this, L.t("Change it in the phone's Display settings"), Toast.LENGTH_LONG).show();
             open(Settings.ACTION_DISPLAY_SETTINGS);

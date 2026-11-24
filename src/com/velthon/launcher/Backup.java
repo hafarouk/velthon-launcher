@@ -52,14 +52,17 @@ final class Backup {
 
     /** Puts a saved set-up back. Returns the number of settings restored. */
     static int restore(Context c, String json) throws Exception {
+        if (json == null || json.length() > 12_000_000) throw new IllegalArgumentException("not a Velthon backup");
         JSONObject root = new JSONObject(json);
         if (!root.optString("app").startsWith("Velthon")) throw new IllegalArgumentException("not a Velthon backup");
         JSONObject p = root.getJSONObject("settings");
         SharedPreferences.Editor ed = U.prefs(c).edit();
         java.util.Iterator<String> it = p.keys(); int n = 0;
         while (it.hasNext()) {
-            String k = it.next(); JSONObject o = p.getJSONObject(k);
-            if (skip(k)) continue;
+            String k = it.next(); JSONObject o = p.optJSONObject(k);
+            // only plain setting names and sensible values: a damaged or tampered file cannot inject anything else
+            if (o == null || skip(k) || k.length() > 64 || !k.matches("[A-Za-z0-9_.\\-]+")) continue;
+            if (o.has("s") && o.optString("s").length() > 20000) continue;
             if (o.has("b")) ed.putBoolean(k, o.getBoolean("b"));
             else if (o.has("i")) ed.putInt(k, o.getInt("i"));
             else if (o.has("l")) ed.putLong(k, o.getLong("l"));
@@ -70,7 +73,13 @@ final class Backup {
         }
         ed.commit();
         String bg = root.optString("background", "");
-        if (!bg.isEmpty()) try (FileOutputStream out = new FileOutputStream(new File(c.getFilesDir(), "bg_custom.jpg"))) { out.write(Base64.decode(bg, Base64.DEFAULT)); }
+        if (!bg.isEmpty() && bg.length() < 9_000_000) {
+            byte[] img = Base64.decode(bg, Base64.DEFAULT);
+            android.graphics.BitmapFactory.Options o = new android.graphics.BitmapFactory.Options(); o.inJustDecodeBounds = true;
+            android.graphics.BitmapFactory.decodeByteArray(img, 0, img.length, o);
+            if (o.outWidth > 0 && o.outHeight > 0 && o.outWidth <= 8000 && o.outHeight <= 8000)   // a real picture, not a bomb
+                try (FileOutputStream out = new FileOutputStream(new File(c.getFilesDir(), "bg_custom.jpg"))) { out.write(img); }
+        }
         return n;
     }
 

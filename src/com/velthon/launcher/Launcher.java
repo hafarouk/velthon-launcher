@@ -426,7 +426,7 @@ public class Launcher extends Activity {
         String ps = U.prefs(this).getString("pending_scale", null);
         if (ps != null && (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))) {
             U.prefs(this).edit().remove("pending_scale").apply();
-            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Float.parseFloat(ps)); } catch (Throwable ignored) { }
+            try { Settings.System.putFloat(getContentResolver(), Settings.System.FONT_SCALE, Math.max(.8f, Math.min(1.5f, Float.parseFloat(ps)))); } catch (Throwable ignored) { }
         }
         if (everResumed) entrance();
         everResumed = true;

@@ -161,13 +161,14 @@ final class Weather {
         try { return get1(url); } catch (java.io.IOException first) { Thread.sleep(1500); return get1(url); }   // one retry on a slow network
     }
     private static JSONObject get1(String url) throws Exception {
+        if (!url.startsWith("https://")) throw new java.io.IOException("https only");
         HttpURLConnection h = (HttpURLConnection) new URL(url).openConnection();
         h.setConnectTimeout(12000); h.setReadTimeout(15000);
         h.setRequestProperty("User-Agent", "VelthonLauncher/1.0");
         try (InputStream in = h.getInputStream()) {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
             byte[] b = new byte[8192]; int n;
-            while ((n = in.read(b)) > 0) bo.write(b, 0, n);
+            while ((n = in.read(b)) > 0) { bo.write(b, 0, n); if (bo.size() > 3_000_000) throw new java.io.IOException("too large"); }
             return new JSONObject(bo.toString("UTF-8"));
         } finally { h.disconnect(); }
     }
