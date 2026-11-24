@@ -49,12 +49,12 @@ final class Weather {
         new Thread(new Runnable() { @Override public void run() {
             try {
                 double lat = Double.NaN, lon = Double.NaN;
-                String city = null, country = null;
+                String city = null, country = null, region = null;
                 String typed = p.getString("city", "").trim();
                 if (!typed.isEmpty()) {
                     JSONObject g = get("https://geocoding-api.open-meteo.com/v1/search?count=1&name=" + URLEncoder.encode(typed, "UTF-8"));
                     JSONObject r = g.optJSONArray("results") != null ? g.getJSONArray("results").optJSONObject(0) : null;
-                    if (r != null) { lat = r.getDouble("latitude"); lon = r.getDouble("longitude"); city = r.optString("name"); country = r.optString("country_code"); }
+                    if (r != null) { lat = r.getDouble("latitude"); lon = r.getDouble("longitude"); city = r.optString("name"); country = r.optString("country_code"); region = r.optString("admin1", null); }
                 }
                 if (Double.isNaN(lat)) {
                     Location l = lastLocation(c);
@@ -66,6 +66,7 @@ final class Weather {
                                 city = a.get(0).getLocality();
                                 if (city == null) city = a.get(0).getSubAdminArea();
                                 country = a.get(0).getCountryCode();
+                                region = a.get(0).getAdminArea();
                             }
                         } catch (Throwable ignored) { }
                     }
@@ -74,7 +75,7 @@ final class Weather {
                     JSONObject g = get("https://get.geojs.io/v1/ip/geo.json");
                     lat = Double.parseDouble(g.optString("latitude", "NaN"));
                     lon = Double.parseDouble(g.optString("longitude", "NaN"));
-                    city = g.optString("city", null); country = g.optString("country_code", null);
+                    city = g.optString("city", null); country = g.optString("country_code", null); region = g.optString("region", null);
                 }
                 if (Double.isNaN(lat)) throw new IllegalStateException("no place");
                 boolean f = fahrenheit(c);
@@ -127,6 +128,7 @@ final class Weather {
                 p.edit()
                         .putLong("lat", Double.doubleToLongBits(lat)).putLong("lon", Double.doubleToLongBits(lon))
                         .putString("wx_city", city == null ? "" : city).putString("wx_cc", country == null ? "" : country)
+                        .putString("wx_region", region == null ? "" : region)
                         .putInt("wx_temp", (int) Math.round(cur.getDouble("temperature_2m")))
                         .putBoolean("wx_f", f)
                         .putInt("wx_code", cur.getInt("weather_code"))
@@ -160,7 +162,9 @@ final class Weather {
     private static JSONObject get(String url) throws Exception {
         try { return get1(url); } catch (java.io.IOException first) { Thread.sleep(1500); return get1(url); }   // one retry on a slow network
     }
-    private static JSONObject get1(String url) throws Exception {
+    private static JSONObject get1(String url) throws Exception { return new JSONObject(text(url)); }
+    /** A page's text over https (size-capped); "" for an empty answer. */
+    static String text(String url) throws Exception {
         if (!url.startsWith("https://")) throw new java.io.IOException("https only");
         HttpURLConnection h = (HttpURLConnection) new URL(url).openConnection();
         h.setConnectTimeout(12000); h.setReadTimeout(15000);
@@ -169,7 +173,7 @@ final class Weather {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
             byte[] b = new byte[8192]; int n;
             while ((n = in.read(b)) > 0) { bo.write(b, 0, n); if (bo.size() > 3_000_000) throw new java.io.IOException("too large"); }
-            return new JSONObject(bo.toString("UTF-8"));
+            return bo.toString("UTF-8");
         } finally { h.disconnect(); }
     }
 

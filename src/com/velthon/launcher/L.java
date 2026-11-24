@@ -310,6 +310,8 @@ final class L {
         {"Touch to unlock with your fingerprint", "المس لإلغاء القفل ببصمتك", "Touchez pour déverrouiller avec l'empreinte", "Toca para desbloquear con tu huella", "Mit Fingerabdruck entsperren", "Toque para desbloquear com a impressão digital"},
         {"Also remembered today", "نتذكر اليوم أيضًا", "Également commémorés aujourd'hui", "También se recuerda hoy", "Heute ebenfalls gedacht", "Também lembrados hoje"},
         {"Every Coptic month", "كل شهر قبطي", "Chaque mois copte", "Cada mes copto", "Jeden koptischen Monat", "Todos os meses coptas"},
+        {"Public holidays", "العطلات الرسمية", "Jours fériés", "Días festivos", "Gesetzliche Feiertage", "Feriados"},
+        {"Holidays: Nager.Date", "العطلات: Nager.Date", "Jours fériés : Nager.Date", "Festivos: Nager.Date", "Feiertage: Nager.Date", "Feriados: Nager.Date"},
         {"Feasts and fasts ahead", "الأعياد والأصوام القادمة", "Fêtes et jeûnes à venir", "Fiestas y ayunos próximos", "Kommende Feste und Fasten", "Festas e jejuns próximos"},
         {"Loading the Synaxarium…", "جارٍ تحميل السنكسار…", "Chargement du Synaxaire…", "Cargando el Sinaxario…", "Synaxarion wird geladen…", "A carregar o Sinaxário…"},
         {"Read today's Synaxarium  ›", "اقرأ سنكسار اليوم  ›", "Lire le Synaxaire du jour  ›", "Leer el Sinaxario de hoy  ›", "Heutiges Synaxarion lesen  ›", "Ler o Sinaxário de hoje  ›"},

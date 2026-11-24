@@ -93,6 +93,8 @@ public class ChurchActivity extends Activity {
             U.prefs(this).edit().putBoolean("cal_asked", true).apply();
             requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5);
         }
+        Holidays.load(this, new Runnable() { @Override public void run() {
+            runOnUiThread(new Runnable() { @Override public void run() { if (!isFinishing()) build(); } }); } });
         Synax.load(this, new Runnable() { @Override public void run() {
             runOnUiThread(new Runnable() { @Override public void run() { build(); } }); } });
         if (U.anims(this)) {
@@ -104,6 +106,22 @@ public class ChurchActivity extends Activity {
 
 
     @Override public void onRequestPermissionsResult(int req, String[] p, int[] g) { build(); }
+
+    /** Holidays show in a soft blue, apart from the gold of the Church's feasts. */
+    private static final int HOLIDAY = 0xFF8CCBFF;
+
+    /** Asks for the calendar; once the phone stops asking (it was refused before), opens this app's settings instead. */
+    private void askCalendar() {
+        if (Build.VERSION.SDK_INT < 23) return;
+        if (U.prefs(this).getBoolean("cal_asked", false) && !shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CALENDAR)) {
+            try { startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))); }
+            catch (Throwable ignored) { }
+            return;
+        }
+        U.prefs(this).edit().putBoolean("cal_asked", true).apply();
+        requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5);
+    }
+    @Override protected void onResume() { super.onResume(); if (list != null && list.getChildCount() > 0) build(); }
 
     /** The first day shown in the week list (today, then a week at a time with the arrows). */
     private final Calendar weekStart = Calendar.getInstance();
@@ -154,6 +172,9 @@ public class ChurchActivity extends Activity {
             // the day's feast and your events
             LinearLayout what = new LinearLayout(this); what.setOrientation(LinearLayout.VERTICAL);
             if (f != null) { TextView ft = text(14, 0xFFF2B640, U.sansBold(this)); ft.setText("✦ " + f.in(lang)); what.addView(ft); }
+            for (String h : Holidays.on(this, d)) {   // the public holiday where you are
+                TextView ht = text(14, HOLIDAY, U.sansBold(this)); ht.setText("⚑ " + h); what.addView(ht);
+            }
             if (ev != null) for (String[] e : ev) {
                 TextView et = text(14.5f, Color.WHITE, U.sans(this));
                 et.setText(e[0] + (e[1] == null || e[1].isEmpty() ? "" : "   ·   " + e[1]));
@@ -169,7 +190,7 @@ public class ChurchActivity extends Activity {
             et.setText(t("Allow the calendar to see your own events here.")); et.setPadding(0, dp(8), 0, 0);
             card.addView(et);
             card.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= 23) requestPermissions(new String[] {android.Manifest.permission.READ_CALENDAR}, 5); } });
+                askCalendar(); } });
         }
         add(card);
     }
@@ -303,6 +324,47 @@ public class ChurchActivity extends Activity {
             }
             add(card);
         }
+        java.util.ArrayList<Object[]> hs = Holidays.ahead(this, 60);
+        if (!hs.isEmpty()) {
+            LinearLayout card = card();
+            TextView h = text(12.5f, HOLIDAY, U.sansBold(this));
+            String where = Holidays.countryName(this, loc);
+            h.setText(t("Public holidays") + (where.isEmpty() ? "" : "  ·  " + where));
+            h.setPadding(0, 0, 0, dp(6));
+            card.addView(h);
+            Calendar day = Calendar.getInstance();
+            for (int i = 0; i < hs.size() && i < 5; i++) {
+                int in = (Integer) hs.get(i)[0];
+                Calendar on = (Calendar) day.clone(); on.add(Calendar.DAY_OF_MONTH, in);
+                LinearLayout row = new LinearLayout(this);
+                row.setGravity(Gravity.CENTER_VERTICAL);
+                row.setPadding(0, dp(7), 0, dp(7));
+                LinearLayout when = new LinearLayout(this);
+                when.setOrientation(LinearLayout.VERTICAL);
+                when.setGravity(Gravity.CENTER);
+                TextView dd = text(19, in == 0 ? HOLIDAY : Color.WHITE, U.sansBold(this));
+                dd.setGravity(Gravity.CENTER);
+                dd.setText(String.valueOf(on.get(Calendar.DAY_OF_MONTH)));
+                when.addView(dd);
+                TextView mm = text(11, 0xB3FFFFFF, U.sans(this));
+                mm.setGravity(Gravity.CENTER);
+                mm.setText(new SimpleDateFormat("MMM", loc).format(on.getTime()).toUpperCase(loc));
+                when.addView(mm);
+                row.addView(when, new LinearLayout.LayoutParams(dp(46), -2));
+                LinearLayout tx = new LinearLayout(this);
+                tx.setOrientation(LinearLayout.VERTICAL);
+                tx.setPadding(dp(12), 0, 0, 0);
+                TextView n = text(15.5f, Color.WHITE, in == 0 ? U.sansBold(this) : U.sans(this));
+                n.setText((String) hs.get(i)[1]);
+                tx.addView(n);
+                TextView w = text(12, 0xB3FFFFFF, U.sans(this));
+                w.setText(in == 0 ? t("Today") : in == 1 ? t("Tomorrow") : String.format(loc, t("In %d days"), in));
+                tx.addView(w);
+                row.addView(tx, new LinearLayout.LayoutParams(0, -2, 1f));
+                card.addView(row);
+            }
+            add(card);
+        }
         if (orthodox) {
             LinearLayout card = card();
             TextView h = text(12.5f, 0xFFF2B640, U.sansBold(this));
@@ -319,7 +381,7 @@ public class ChurchActivity extends Activity {
             add(card);
         }
         TextView src = text(11.5f, 0x99FFFFFF, U.sans(this));
-        src.setText(t("Synaxarium: CopticChurch.net"));
+        src.setText(t("Synaxarium: CopticChurch.net") + (Holidays.ahead(this, 60).isEmpty() ? "" : "  ·  " + t("Holidays: Nager.Date")));
         src.setGravity(Gravity.CENTER);
         src.setPadding(0, dp(18), 0, 0);
         list.addView(src);

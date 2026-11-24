@@ -55,6 +55,7 @@ def clean(s):
 FIX = {'mirándo los': 'mirándolos', 'du, Christ': 'du Christ'}
 def tidy(s):
     for k, v in FIX.items(): s = s.replace(k, v)
+    s = re.sub(r'\[([^\]]*)\]', r'\1', s)
     s = re.sub(r'^[—\s]+', '', s).strip()
     if s.count('«') != s.count('»'): s = s.replace('«', '').replace('»', '')
     s = re.sub(r'[,;:،؛]+$', '', s.strip()) 
