@@ -171,6 +171,7 @@ setpref text_theme -; setpref icon_style colorglass
 adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 82_icons_colorglass
 adb shell input swipe 540 1700 540 800 250; sleep 2; shot 83_drawer_colorglass; adb shell input keyevent KEYCODE_BACK; sleep 1
 setpref icon_style -
+setpref dock_symbol gold; adb shell am start -n $P/.Launcher >/dev/null; sleep 6; shot 84b_dock_gold; setpref dock_symbol -
 adb shell "cat $F" | grep -o 'fcolor[^<]*' > rec/fcolor.txt
 folderkey=$(adb shell "cat $F" | grep -o 'folder:[0-9]*' | head -1)
 adb shell am force-stop $P; sleep 1; adb shell cat $F > rec/p.xml

@@ -2037,6 +2037,8 @@ public class Launcher extends Activity {
                 android.graphics.Bitmap ib = st.equals("classic") ? Shape.icon(this, a.key, a.icon, dp(46))
                         : st.equals("colorglass") ? Shape.colorGlass(this, a.key, a.icon, dp(46), false)
                         : Shape.glass(this, a.key, a.icon, dp(46));
+                // Settings › Dock symbols: the white glass symbols can be gold, like the sun and moon above
+                if (st.equals("glass") && U.prefs(this).getString("dock_symbol", "white").equals("gold")) ib = goldSymbols(ib);
                 ((ImageView) ((LinearLayout) t).getChildAt(0)).setImageDrawable(new android.graphics.drawable.BitmapDrawable(getResources(), ib));
             }
             t.setOnClickListener(new View.OnClickListener() { @Override public void onClick(final View v) { pressDock(index, v); } });
@@ -2077,6 +2079,27 @@ public class Launcher extends Activity {
         }
         dockBar.holeR = sz * .27f;
         dockBar.invalidate();
+    }
+    private final HashMap<android.graphics.Bitmap, android.graphics.Bitmap> goldCache = new HashMap<>();
+    /** The same icon, with only its light symbol turned gold (the faint glass tile stays as it is). */
+    private android.graphics.Bitmap goldSymbols(android.graphics.Bitmap src) {
+        android.graphics.Bitmap done = goldCache.get(src);
+        if (done != null) return done;
+        int w = src.getWidth(), h = src.getHeight();
+        int[] px = new int[w * h];
+        src.getPixels(px, 0, w, 0, 0, w, h);
+        for (int i = 0; i < px.length; i++) {
+            int c = px[i], a = c >>> 24;
+            if (a < 0x40) continue;                                   // the frosted tile: untouched
+            int r = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255;
+            int lum = (r * 3 + g * 6 + b) / 10;
+            if (lum < 90 || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 40) continue;   // only the white symbol
+            float k = lum / 255f;
+            px[i] = (a << 24) | (Math.round(0xF2 * k) << 16) | (Math.round(0xB6 * k) << 8) | Math.round(0x40 * k);
+        }
+        android.graphics.Bitmap out = android.graphics.Bitmap.createBitmap(px, w, h, android.graphics.Bitmap.Config.ARGB_8888);
+        goldCache.put(src, out);
+        return out;
     }
     private App dockApp(int i) { return i >= 0 && i < dockApps.size() ? dockApps.get(i) : null; }
 
