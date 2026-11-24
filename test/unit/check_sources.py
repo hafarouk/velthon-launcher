@@ -34,6 +34,19 @@ _bad = [e.get('ref') for e in _v if not all(e.get(k) for k in ('en', 'ar', 'fr',
 if _bad:
     print('verses missing a language:', _bad[:10]); sys.exit(1)
 print('verses: %d, each in English, Arabic, French and Spanish' % len(_v))
+# a verse must read as a whole sentence: no repeats, no half sentence, every feast reading present
+import re as _re, collections as _co
+_dup = [t for t, n in _co.Counter(e['en'] for e in _v).items() if n > 1]
+_cut = [(e['ref'], k) for e in _v for k in ('en', 'ar', 'fr', 'es') if not _re.search(r'[.!?»؟”")]$', e[k].strip())
+        or e[k].count('«') != e[k].count('»') or _re.search(r'Selah|سِلَاهْ', e[k])]
+_FRAG = ('These things I command', 'This is the first and great', 'On these two commandments', 'Not of works', 'Proving what',
+         'Distributing to', 'Endeavouring', 'Submitting yourselves', 'Naked, and', 'It shall be health', 'Her ways', 'She is a tree')
+_frag = [e['ref'] for e in _v if e['en'].startswith(_FRAG)]
+_src = open(_os.path.join(_os.path.dirname(__file__), '..', '..', 'src', 'com', 'velthon', 'launcher', 'Church.java'), encoding='utf-8').read()
+_feast = set(_re.findall(r'"((?:\d?[A-Z][a-z]+|1John) \d+:\d+(?:-\d+)?)"', _src)) - {e['ref'] for e in _v}
+if _dup or _cut or _frag or _feast:
+    print('verse problems: repeated', _dup[:3], 'cut', _cut[:5], 'fragments', _frag, 'feast refs missing', sorted(_feast)); sys.exit(1)
+print('verses: no repeats, no half sentences, all feast readings present')
 
 # every word shown on screen has a translation row (English, Arabic, French, Spanish, German, Portuguese)
 import re as _re, glob as _glob, os as _os
