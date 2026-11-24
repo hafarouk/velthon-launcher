@@ -694,15 +694,15 @@ public class Launcher extends Activity {
         now.setGravity(Gravity.CENTER);
         wxIcon = new ImageView(this);
         wxIcon.setVisibility(View.GONE);
-        LinearLayout.LayoutParams wil = lp(dp(28), dp(28)); wil.rightMargin = dp(6);
+        LinearLayout.LayoutParams wil = lp(dp(24), dp(24)); wil.rightMargin = dp(6);
         now.addView(wxIcon, wil);
-        wxTemp = text(15.5f, Color.WHITE, U.sansBold(this));
+        wxTemp = text(13.5f, Color.WHITE, U.sansBold(this));
         wxTemp.setSingleLine(true);
         shadow(wxTemp, 5);
         now.addView(wxTemp);
         wxNow = now;
         wxPill.addView(now, lp(-2, -2));
-        wxText = text(14.5f, Color.WHITE, U.sans(this));
+        wxText = text(12.5f, Color.WHITE, U.sans(this));
         wxText.setSingleLine(true); wxText.setEllipsize(TextUtils.TruncateAt.END);
         wxText.setGravity(Gravity.CENTER);
         shadow(wxText, 4);
