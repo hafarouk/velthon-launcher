@@ -1,0 +1,20 @@
+name: TV verse voices
+# Records the verses TV Bible Screensaver reads aloud (edge-tts, Ava and Zariyah) and keeps them on the tv-voices branch.
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  voices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y ffmpeg >/dev/null && pip install edge-tts >/dev/null
+      - run: cd tools/tvvoice && python3 gen.py && ls out/voice/en | wc -l && ls out/voice/ar | wc -l
+      - name: Keep them on tv-voices
+        run: |
+          cd tools/tvvoice/out
+          git init -q -b tv-voices && git add -A
+          git -c user.name=ci -c user.email=ci@velthon commit -qm "voices ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" tv-voices
