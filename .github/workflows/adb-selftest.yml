@@ -1,0 +1,22 @@
+name: TV self-setup connection test
+# The TV app's on-device ADB client (TV Bible Screensaver v1.70, "Make it my screensaver") against a real adbd.
+on: workflow_dispatch
+jobs:
+  adb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash test/adbself/run.sh 2>&1 | tee adbself.log; grep -q "RESULT: PASS" adbself.log
