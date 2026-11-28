@@ -1,0 +1,5 @@
+  mCurrentFocus=Window{7f0b5df u0 NotificationShade}
+  mFocusedApp=ActivityRecord{d3ebefe u0 com.google.android.deskclock/com.android.deskclock.DeskClock t14}
+      fullscreenIntent=null
+      fullscreenIntent=null
+        NotificationChannel{mId='velthon_lock', mName=Loc..., mDescription=hasDescription , mImportance=4, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=null, mLights=false, mLightColor=0, mVibration=null, mUserLockedFields=0, mFgServiceShown=false, mVibrationEnabled=false, mShowBadge=false, mDeleted=false, mGroup='null', mAudioAttributes=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedByOEM=false, mImportanceLockedDefaultApp=false, mOriginalImp=4, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false}

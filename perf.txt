@@ -1,0 +1,377 @@
++ echo '== cold start (3 runs)'
+== cold start (3 runs)
++ for i in 1 2 3
++ adb shell am force-stop com.velthon.launcher
++ sleep 2
++ adb shell am start -W -n com.velthon.launcher/.Launcher
++ grep -E 'TotalTime|WaitTime'
+TotalTime: 2990
+WaitTime: 3003
++ sleep 4
++ for i in 1 2 3
++ adb shell am force-stop com.velthon.launcher
++ sleep 2
++ adb shell am start -W -n com.velthon.launcher/.Launcher
++ grep -E 'TotalTime|WaitTime'
+TotalTime: 2668
+WaitTime: 2670
++ sleep 4
++ for i in 1 2 3
++ adb shell am force-stop com.velthon.launcher
++ sleep 2
++ adb shell am start -W -n com.velthon.launcher/.Launcher
++ grep -E 'TotalTime|WaitTime'
+TotalTime: 2735
+WaitTime: 2736
++ sleep 4
++ echo '== warm start (home pressed from another app, 3 runs)'
+== warm start (home pressed from another app, 3 runs)
++ for i in 1 2 3
++ adb shell am start -n com.android.settings/.Settings
++ sleep 3
++ adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME
++ grep -E 'TotalTime|WaitTime'
+TotalTime: 676
+WaitTime: 677
++ sleep 3
++ for i in 1 2 3
++ adb shell am start -n com.android.settings/.Settings
+Warning: Activity not started, its current task has been brought to the front
++ sleep 3
++ adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME
++ grep -E 'TotalTime|WaitTime'
+TotalTime: 233
+WaitTime: 264
++ sleep 3
++ for i in 1 2 3
++ adb shell am start -n com.android.settings/.Settings
+Warning: Activity not started, its current task has been brought to the front
++ sleep 3
++ adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME
++ grep -E 'TotalTime|WaitTime'
+TotalTime: 189
+WaitTime: 208
++ sleep 3
++ echo '== smoothness while using it (swipes, app list, pages, panel)'
+== smoothness while using it (swipes, app list, pages, panel)
++ adb shell dumpsys gfxinfo com.velthon.launcher reset
++ for i in 1 2 3
++ adb shell input swipe 540 1700 540 700 250
++ sleep 1.2
++ adb shell input swipe 540 900 540 1700 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ adb shell input swipe 900 1300 200 1310 250
++ sleep 1.2
++ adb shell input swipe 200 1300 900 1310 250
++ sleep 1.2
++ adb shell input swipe 540 700 540 1500 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ for i in 1 2 3
++ adb shell input swipe 540 1700 540 700 250
++ sleep 1.2
++ adb shell input swipe 540 900 540 1700 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ adb shell input swipe 900 1300 200 1310 250
++ sleep 1.2
++ adb shell input swipe 200 1300 900 1310 250
++ sleep 1.2
++ adb shell input swipe 540 700 540 1500 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ for i in 1 2 3
++ adb shell input swipe 540 1700 540 700 250
++ sleep 1.2
++ adb shell input swipe 540 900 540 1700 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ adb shell input swipe 900 1300 200 1310 250
++ sleep 1.2
++ adb shell input swipe 200 1300 900 1310 250
++ sleep 1.2
++ adb shell input swipe 540 700 540 1500 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ adb shell dumpsys gfxinfo com.velthon.launcher
++ grep -E 'Total frames rendered|Janky frames|50th percentile|90th percentile|95th percentile|99th percentile|Number Slow|Number Frozen'
+Total frames rendered: 420
+Janky frames: 419 (99.76%)
+50th percentile: 150ms
+90th percentile: 300ms
+95th percentile: 350ms
+99th percentile: 850ms
+Number Slow UI thread: 257
+Number Slow bitmap uploads: 9
+Number Slow issue draw commands: 405
++ echo '== baseline: the phone'\''s own Settings app scrolling on this same emulator (software graphics)'
+== baseline: the phone's own Settings app scrolling on this same emulator (software graphics)
++ adb shell am start -n com.android.settings/.Settings
+Warning: Activity not started, its current task has been brought to the front
++ sleep 3
++ adb shell dumpsys gfxinfo com.android.settings reset
++ for i in 1 2 3 4 5 6
++ adb shell input swipe 540 1600 540 600 250
++ sleep 1
++ adb shell input swipe 540 600 540 1600 250
++ sleep 1
++ for i in 1 2 3 4 5 6
++ adb shell input swipe 540 1600 540 600 250
++ sleep 1
++ adb shell input swipe 540 600 540 1600 250
++ sleep 1
++ for i in 1 2 3 4 5 6
++ adb shell input swipe 540 1600 540 600 250
++ sleep 1
++ adb shell input swipe 540 600 540 1600 250
++ sleep 1
++ for i in 1 2 3 4 5 6
++ adb shell input swipe 540 1600 540 600 250
++ sleep 1
++ adb shell input swipe 540 600 540 1600 250
++ sleep 1
++ for i in 1 2 3 4 5 6
++ adb shell input swipe 540 1600 540 600 250
++ sleep 1
++ adb shell input swipe 540 600 540 1600 250
++ sleep 1
++ for i in 1 2 3 4 5 6
++ adb shell input swipe 540 1600 540 600 250
++ sleep 1
++ adb shell input swipe 540 600 540 1600 250
++ sleep 1
++ adb shell dumpsys gfxinfo com.android.settings
++ grep -E 'Total frames rendered|Janky frames|50th percentile|90th percentile'
+Total frames rendered: 542
+Janky frames: 528 (97.42%)
+50th percentile: 48ms
+90th percentile: 65ms
++ adb shell input keyevent KEYCODE_HOME
++ sleep 3
++ echo '== where the launcher'\''s time goes (CPU profile while using it)'
+== where the launcher's time goes (CPU profile while using it)
+++ adb shell pidof com.velthon.launcher
++ pid=9711
++ adb shell simpleperf record -p 9711 -e cpu-clock -f 1000 -g --duration 14 -o /data/local/tmp/perf.data
++ sleep 1
++ for i in 1 2
++ adb shell input swipe 540 1700 540 700 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ adb shell input swipe 900 1300 200 1310 250
++ sleep 1.2
++ adb shell input swipe 200 1300 900 1310 250
++ sleep 1.2
++ adb shell input swipe 540 700 540 1500 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ for i in 1 2
++ adb shell input swipe 540 1700 540 700 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ adb shell input swipe 900 1300 200 1310 250
++ sleep 1.2
++ adb shell input swipe 200 1300 900 1310 250
++ sleep 1.2
++ adb shell input swipe 540 700 540 1500 250
++ sleep 1.2
++ adb shell input keyevent KEYCODE_BACK
++ sleep .8
++ sleep 4
++ sleep 3
++ cat rec/simpleperf_record.txt
+simpleperf I cmd_record.cpp:673] Samples recorded: 10376. Samples lost: 10.
++ adb shell simpleperf report -i /data/local/tmp/perf.data --sort comm,dso --percent-limit 2
++ head -40
+Cmdline: /system/bin/simpleperf record -p 9711 -e cpu-clock -f 1000 -g --duration 14 -o /data/local/tmp/perf.data
+Arch: x86_64
+Event: cpu-clock (type 1, config 0)
+Samples: 10376
+Event count: 10376000000
+
+Overhead  Command               Shared Object
+91.06%    RenderThread          [kernel.kallsyms]
+1.79%     com.velthon.launcher  /apex/com.android.art/lib64/libart.so
+1.54%     Jit thread pool       [kernel.kallsyms]
+1.00%     RenderThread          /system/lib64/libhwui.so
+0.82%     com.velthon.launcher  [kernel.kallsyms]
+0.60%     RenderThread          /apex/com.android.runtime/lib64/bionic/libc.so
+0.38%     com.velthon.launcher  /system/lib64/libhwui.so
+0.23%     Jit thread pool       /apex/com.android.art/lib64/libart-compiler.so
+0.20%     com.velthon.launcher  /data/local/tmp/TemporaryFile-cLyXL5
+0.19%     com.velthon.launcher  /data/local/tmp/TemporaryFile-RydJRC
+0.17%     ReferenceQueueD       [kernel.kallsyms]
+0.17%     com.velthon.launcher  /apex/com.android.runtime/lib64/bionic/libc.so
+0.13%     com.velthon.launcher  /data/local/tmp/TemporaryFile-zOgU9J
+0.12%     com.velthon.launcher  /system/lib64/libminikin.so
+0.11%     RenderThread          /vendor/lib64/libOpenglCodecCommon.so
+0.11%     RenderThread          /vendor/lib64/libOpenglSystemCommon.so
+0.10%     com.velthon.launcher  /data/local/tmp/TemporaryFile-CjMM2l
+0.08%     HeapTaskDaemon        /apex/com.android.art/lib64/libart.so
+0.08%     RenderThread          /system/lib64/libbinder.so
+0.08%     com.velthon.launcher  /system/framework/x86_64/boot-framework.oat
+0.07%     com.velthon.launcher  /data/local/tmp/TemporaryFile-0Mvv3E
+0.07%     com.velthon.launcher  /data/local/tmp/TemporaryFile-8cWIEK
+0.07%     com.velthon.launcher  /data/local/tmp/TemporaryFile-lbMboR
+0.05%     RenderThread          /vendor/lib64/libGLESv2_enc.so
+0.05%     com.velthon.launcher  /data/local/tmp/TemporaryFile-4Pu0Gy
+0.05%     com.velthon.launcher  /data/local/tmp/TemporaryFile-ZWSYa0
+0.05%     com.velthon.launcher  /data/local/tmp/TemporaryFile-n6HYiY
+0.05%     com.velthon.launcher  /data/local/tmp/TemporaryFile-r5GY2Y
+0.04%     HeapTaskDaemon        [kernel.kallsyms]
+0.04%     RenderThread          /system/lib64/libgui.so
+0.04%     hwuiTask1             /system/lib64/libhwui.so
+0.03%     RenderThread          /system/lib64/libui.so
+0.03%     com.velthon.launcher  /apex/com.android.art/lib64/libicuuc.so
++ adb shell simpleperf report -i /data/local/tmp/perf.data --sort symbol --percent-limit 1
++ head -60
+Cmdline: /system/bin/simpleperf record -p 9711 -e cpu-clock -f 1000 -g --duration 14 -o /data/local/tmp/perf.data
+Arch: x86_64
+Event: cpu-clock (type 1, config 0)
+Samples: 10376
+Event count: 10376000000
+
+Overhead  Symbol
+78.78%    goldfish_pipe_read_write
+5.19%     preempt_schedule_irq
+3.65%     get_user_pages_fast
+1.32%     smp_call_function_single
+0.90%     _raw_spin_unlock_irqrestore
+0.74%     _raw_spin_unlock_irq
+0.48%     __softirqentry_text_start
+0.32%     prepare_exit_to_usermode
+0.26%     read
+0.22%     do_syscall_64
+0.17%     smp_call_function_many
+0.14%     selinux_file_permission$1c3e1168219e31c86710c44c2a5e6936
+0.13%     __seccomp_filter
+0.13%     bool art::interpreter::DoCall<false, false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, art::JValue*)
+0.12%     scudo::Allocator<scudo::AndroidConfig, &(scudo_malloc_postinit)>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)
+0.12%     seccomp_run_filters
+0.11%     __fget.llvm.15764419711493844512
+0.11%     rwsem_spin_on_owner
+0.10%     artQuickToInterpreterBridge
+0.10%     art_jni_trampoline
+0.10%     preempt_count_add
+0.08%     __errno
+0.08%     __fdget_pos
+0.08%     __vfs_read
+0.08%     __x2apic_send_IPI_dest
+0.08%     art::ArtMethod* art::ClassLinker::ResolveMethod<(art::ClassLinker::ResolveMode)0>(art::Thread*, unsigned int, art::ArtMethod*, art::InvokeType)
+0.07%     android::uirenderer::skiapipeline::SkiaDisplayList::prepareListAndChildren(android::uirenderer::TreeObserver&, android::uirenderer::TreeInfo&, bool, std::__1::function<void (android::uirenderer::RenderNode*, android::uirenderer::TreeObserver&, android::uirenderer::TreeInfo&, bool)>)
+0.07%     art::(anonymous namespace)::ScopedCheck::Check(art::ScopedObjectAccess&, bool, char const*, art::(anonymous namespace)::JniValueType*)
+0.07%     art::interpreter::ArtInterpreterToCompiledCodeBridge(art::Thread*, art::ArtMethod*, art::ShadowFrame*, unsigned short, art::JValue*)
+0.07%     cleanup_module
+0.06%     MterpInvokeVirtual
+0.06%     __x64_sys_read
+0.06%     art::gc::Heap::IsValidObjectAddress(void const*) const
+0.06%     std::__1::__hash_iterator<std::__1::__hash_node<android::LruCache<minikin::LayoutCacheKey, minikin::LayoutPiece*>::KeyedEntry*, void*>*> std::__1::__hash_table<android::LruCache<minikin::LayoutCacheKey, minikin::LayoutPiece*>::KeyedEntry*, android::LruCache<minikin::LayoutCacheKey, minikin::LayoutPiece*>::HashForEntry, android::LruCache<minikin::LayoutCacheKey, minikin::LayoutPiece*>::EqualityForHashedEntries, std::__1::allocator<android::LruCache<minikin::LayoutCacheKey, minikin::LayoutPiece*>::KeyedEntry*> >::find<android::LruCache<minikin::LayoutCacheKey, minikin::LayoutPiece*>::KeyedEntry*>(android::LruCache<minikin::LayoutCacheKey, minikin::LayoutPiece*>::KeyedEntry* const&)
+0.05%     __set_errno_internal
+0.05%     art::(anonymous namespace)::ScopedCheck::CheckPossibleHeapValue(art::ScopedObjectAccess&, char, art::(anonymous namespace)::JniValueType)
+0.05%     art_quick_invoke_stub
+0.05%     art_quick_to_interpreter_bridge
+0.05%     ksys_read
+0.05%     memset
+0.05%     vfs_read
+0.04%     @plt
+0.04%     MterpInvokeStatic
+0.04%     QemuPipeStream::commitBufferAndReadFully(unsigned long, void*, unsigned long)
+0.04%     SkBitmap::setInfo(SkImageInfo const&, unsigned long)
+0.04%     __secure_computing
+0.04%     android::uirenderer::DamageAccumulator::popTransform()
+0.04%     android::uirenderer::RenderNode::prepareTreeImpl(android::uirenderer::TreeObserver&, android::uirenderer::TreeInfo&, bool)
+0.04%     art::(anonymous namespace)::CheckJNI::GetPrimitiveArrayElements(char const*, art::Primitive::Type, _JNIEnv*, _jarray*, unsigned char*)
+0.04%     art::BuildQuickShadowFrameVisitor::Visit()
+0.04%     art::ClassTable::Lookup(char const*, unsigned long)
+0.04%     art::Thread::DecodeJObject(_jobject*) const
+0.04%     art::mirror::Class::FindClassMethod(art::ObjPtr<art::mirror::DexCache>, unsigned int, art::PointerSize)
++ echo '-- launcher'\''s own code'
+-- launcher's own code
++ adb shell simpleperf report -i /data/local/tmp/perf.data --sort symbol --percent-limit 0.2
++ grep -i velthon
++ head -40
+0.02%     com.velthon.launcher.Scene.brightness
+0.01%     com.velthon.launcher.Launcher.access$600
+0.01%     com.velthon.launcher.Launcher.filter
+0.01%     com.velthon.launcher.Launcher.ink
+0.01%     com.velthon.launcher.U.skyIsBright
+0.01%     com.velthon.launcher.U.sunAltitude
+0.01%     com.velthon.launcher.Weather.has
++ echo '== memory'
+== memory
++ adb shell dumpsys meminfo com.velthon.launcher
++ grep -E 'TOTAL PSS|TOTAL RSS|Native Heap|Dalvik Heap|Graphics|TOTAL:'
++ head -8
+  Native Heap    53288    53252        4       31    54508    62304    50819     7339
+  Dalvik Heap     6513     6396       72       99     7600     9440     4720     4720
+         Native Heap:    53252                          54508
+            Graphics:        0                              0
+           TOTAL PSS:    81767            TOTAL RSS:   182824       TOTAL SWAP PSS:      224
++ echo '== CPU at rest on the home screen (after the 1-minute rest)'
+== CPU at rest on the home screen (after the 1-minute rest)
++ sleep 70
++ grep -E velthon
++ adb shell top -b -n 3 -d 5 -o PID,%CPU,RES,NAME
+  9711 89.6 172M com.velthon.launcher
+  9711 96.4 173M com.velthon.launcher
+  9711 96.4 170M com.velthon.launcher
++ echo '== CPU while another app is in front (30 s)'
+== CPU while another app is in front (30 s)
++ adb shell am start -n com.android.settings/.Settings
+Warning: Activity not started, its current task has been brought to the front
++ sleep 30
++ adb shell top -b -n 3 -d 5 -o PID,%CPU,RES,NAME
++ grep -E velthon
+  9711  0.0 168M com.velthon.launcher
+  9711  0.0 168M com.velthon.launcher
+  9711  0.0 168M com.velthon.launcher
++ echo '== threads'
+== threads
+++ adb shell pidof com.velthon.launcher
++ pid=9711
++ adb shell ls /proc/9711/task
++ wc -l
+21
++ echo '== alarms and wake locks held'
+== alarms and wake locks held
++ adb shell dumpsys alarm
++ grep -c com.velthon.launcher
+0
++ adb shell dumpsys power
++ grep -i com.velthon.launcher
++ head -5
++ echo '== app list reload under load: an app turned off and on 3 times (real package events)'
+== app list reload under load: an app turned off and on 3 times (real package events)
++ for i in 1 2 3
++ adb shell pm disable-user --user 0 com.android.camera2
++ sleep 1
++ adb shell pm enable com.android.camera2
++ sleep 1
++ for i in 1 2 3
++ adb shell pm disable-user --user 0 com.android.camera2
++ sleep 1
++ adb shell pm enable com.android.camera2
++ sleep 1
++ for i in 1 2 3
++ adb shell pm disable-user --user 0 com.android.camera2
++ sleep 1
++ adb shell pm enable com.android.camera2
++ sleep 1
++ sleep 4
++ adb shell pidof com.velthon.launcher
++ echo 'launcher still running'
+launcher still running
++ adb logcat -d
++ grep -E 'FATAL EXCEPTION|Process: com.velthon.launcher'
++ head -5
++ adb shell input keyevent KEYCODE_HOME

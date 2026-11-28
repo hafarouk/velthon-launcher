@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="wx_alert"></string>
+    <boolean name="dock_filled6" value="true" />
+    <string name="lock_log">18:16:03 unlocked</string>
+    <string name="syn_day">3_19</string>
+    <string name="wx_region">Iowa</string>
+    <string name="wx_official"></string>
+    <long name="lon" value="-4587084211779825513" />
+    <string name="syn_all">The Consecration of the Church of St. Sergius and St. Bacchus.&#10;The Commemoration of the Preaching of St. Bartholomew, the Apostle.</string>
+    <boolean name="asked_loc" value="true" />
+    <int name="wx_temp" value="52" />
+    <long name="syn_at" value="1795889750506" />
+    <long name="wx_at" value="1795889753235" />
+    <string name="wx_cc">US</string>
+    <string name="dock">com.android.dialer/com.android.dialer.main.impl.MainActivity|com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity|com.android.camera2/com.android.camera.CameraLauncher|com.android.chrome/com.google.android.apps.chrome.Main|com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity|com.android.contacts/com.android.contacts.activities.PeopleActivity</string>
+    <string name="wx_city">Des Moines</string>
+    <string name="syn_name">The Consecration of the Church of St. Sergius and St. Bacchus.</string>
+    <long name="lat" value="4631051707931313570" />
+    <boolean name="wx_f" value="true" />
+    <int name="wx_code" value="0" />
+    <string name="wx_fc">15,54,3,1;18,46,3,0;21,44,3,0;00,43,61,0;03,41,53,0;</string>
+<string name="desk">0=folder:77;1=com.google.android.deskclock/com.android.deskclock.DeskClock;2=com.android.settings/com.android.settings.Settings;3=com.android.contacts/com.android.contacts.activities.PeopleActivity;4=com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+<string name="hfolders">77Toolscom.android.contacts/com.android.contacts.activities.PeopleActivity,com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+</map>

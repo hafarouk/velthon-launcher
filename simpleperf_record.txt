@@ -1,0 +1,1 @@
+simpleperf I cmd_record.cpp:673] Samples recorded: 10376. Samples lost: 10.

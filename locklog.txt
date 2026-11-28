@@ -1,0 +1,11 @@
+    <string name="lock_log">18:21:23 unlocked&#10;18:21:17 on L&#10;18:21:16 off L&#10;18:21:06 unlocked&#10;18:21:02 on L&#10;18:20:59 off L&#10;18:20:48 on L&#10;18:20:42 off L&#10;18:20:31 unlocked shown&#10;18:20:28 on L shown&#10;18:20:26 lock widget: none found&#10;18:20:26 window opened</string>
+    <boolean name="lock_setup_asked" value="true" />
+    <long name="hol_at_US_2026" value="1795889824733" />
+    <string name="desk">0=folder:77;1=com.google.android.deskclock/com.android.deskclock.DeskClock;2=com.android.settings/com.android.settings.Settings;3=com.android.contacts/com.android.contacts.activities.PeopleActivity;4=com.google.android.documentsui/com.android.documentsui.LauncherActivity</string>
+    <long name="hol_at_US_2027" value="1795889824733" />
+    <string name="wx_cc">US</string>
+    <string name="wx_city">Des Moines</string>
+    <string name="syn_name">The Consecration of the Church of St. Sergius and St. Bacchus.</string>
+    <boolean name="wx_f" value="true" />
+    <int name="wx_code" value="0" />
+</map>
