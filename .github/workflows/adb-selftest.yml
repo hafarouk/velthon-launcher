@@ -1,6 +1,7 @@
 name: TV self-setup connection test
 # The TV app's on-device ADB client (TV Bible Screensaver v1.70, "Make it my screensaver") against a real adbd.
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 jobs:
   adb:
     runs-on: ubuntu-latest
